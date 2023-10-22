@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "rats",
+    "video",
+    "video_tests/init"
+]
+
+resolver = "2"
