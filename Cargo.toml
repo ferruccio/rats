@@ -2,7 +2,8 @@
 members = [
     "rats",
     "video",
-    "video_tests/init"
+    "video_tests/init",
+    "video_tests/font"
 ]
 
 resolver = "2"
