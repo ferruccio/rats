@@ -1,9 +1,9 @@
 use std::{thread::sleep, time::Duration};
 
-use video::init;
+use video::{init, InitOptions};
 
 fn main() {
-    match init(0) {
+    match init(InitOptions::new()) {
         Ok(mut video) => {
             for i in 0..255 {
                 // cycle from black to magenta

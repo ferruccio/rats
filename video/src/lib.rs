@@ -2,11 +2,7 @@ use buffer::Buffer;
 use charmaps::ASCII;
 use errors::{sdl_error, Result};
 use sdl2::{
-    pixels::{Color, PixelFormatEnum},
-    rect::Rect,
-    render::Canvas,
-    surface::Surface,
-    video::Window,
+    pixels::Color, rect::Rect, render::Canvas, surface::Surface, video::Window,
     EventPump, Sdl, VideoSubsystem,
 };
 
@@ -16,45 +12,22 @@ pub use sdl2::keyboard::Keycode;
 mod buffer;
 mod charmaps;
 mod errors;
+mod init;
+
+pub use init::{init, InitOptions};
 
 pub struct Video {
     _context: Sdl,
     _video: VideoSubsystem,
     bounds: Rect,
+    scale: u32,
+    rows: usize,
+    cols: usize,
     canvas: Canvas<Window>,
     event_pump: EventPump,
     charmap: Surface<'static>,
     pub buffer: Buffer,
     back_buffer: Buffer,
-}
-
-pub fn init(display_index: i32) -> Result<Video> {
-    let context = sdl2::init().map_err(sdl_error)?;
-    let video = context.video().map_err(sdl_error)?;
-    let bounds = video.display_bounds(display_index).map_err(sdl_error)?;
-    let window = video
-        .window("", bounds.width(), bounds.height())
-        .fullscreen()
-        .position_centered()
-        .build()?;
-    let canvas = window.into_canvas().build()?;
-    let event_pump = context.event_pump().map_err(sdl_error)?;
-
-    Ok(Video {
-        _context: context,
-        _video: video,
-        bounds,
-        canvas,
-        event_pump,
-        charmap: Surface::new(
-            CHAR_CELL_WIDTH,
-            CHARACTERS * CHAR_CELL_HEIGHT,
-            PixelFormatEnum::RGB24,
-        )
-        .map_err(sdl_error)?,
-        buffer: Buffer::new(33, 80),
-        back_buffer: Buffer::new(33, 80),
-    })
 }
 
 const CHARACTERS: u32 = 256;
@@ -79,6 +52,14 @@ impl Video {
 
     pub fn width(&self) -> u32 {
         self.bounds.width()
+    }
+
+    pub fn rows(&self) -> usize {
+        self.rows
+    }
+
+    pub fn cols(&self) -> usize {
+        self.cols
     }
 
     pub fn handle_events<F>(&mut self, mut handler: F)
@@ -150,7 +131,9 @@ impl Video {
     pub fn render_buffer(&mut self) -> Result<()> {
         let texture_creator = self.canvas.texture_creator();
         let texture = self.charmap.as_texture(&texture_creator)?;
-        self.canvas.set_scale(3.0, 3.0).map_err(sdl_error)?;
+        self.canvas
+            .set_scale(self.scale as f32, self.scale as f32)
+            .map_err(sdl_error)?;
         for row in 0..self.buffer.rows {
             for col in 0..self.buffer.cols {
                 let ch = self.buffer.get(row, col);

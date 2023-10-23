@@ -1,0 +1,101 @@
+use crate::{
+    buffer::Buffer, errors::sdl_error, Result, Video, CHARACTERS,
+    CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
+};
+use sdl2::{pixels::PixelFormatEnum, rect::Rect, surface::Surface};
+
+#[derive(Debug, Default)]
+pub struct InitOptions {
+    display_index: Option<u32>,
+    window_width: Option<u32>,
+    window_height: Option<u32>,
+    scale: Option<u32>,
+}
+
+impl InitOptions {
+    pub fn new() -> InitOptions {
+        InitOptions {
+            ..InitOptions::default()
+        }
+    }
+
+    pub fn display_index(mut self, index: Option<u32>) -> Self {
+        if let Some(index) = index {
+            self.display_index = Some(index);
+        }
+        self
+    }
+
+    pub fn window_width(mut self, width: Option<u32>) -> Self {
+        if let Some(width) = width {
+            if width >= 640 {
+                // make sure width is a multiple of CHAR_CELL_WIDTH
+                self.window_width = Some(width - width % CHAR_CELL_WIDTH);
+            }
+        }
+        self
+    }
+
+    pub fn window_height(mut self, height: Option<u32>) -> Self {
+        if let Some(height) = height {
+            if height >= 480 {
+                // make sure height is a multiple of CHAR_CELL_HEIGHT
+                self.window_height = Some(height - height % CHAR_CELL_HEIGHT);
+            }
+        }
+        self
+    }
+
+    pub fn scale(mut self, scale: Option<u32>) -> Self {
+        if let Some(scale) = scale {
+            if scale > 0 && scale < 5 {
+                self.scale = Some(scale);
+            }
+        }
+        self
+    }
+}
+
+pub fn init(opts: InitOptions) -> Result<Video> {
+    let context = sdl2::init().map_err(sdl_error)?;
+    let video = context.video().map_err(sdl_error)?;
+    let bounds = video
+        .display_bounds(opts.display_index.unwrap_or(0) as i32)
+        .map_err(sdl_error)?;
+    dbg!(&bounds);
+    let bounds = Rect::new(
+        bounds.x(),
+        bounds.y(),
+        opts.window_width.unwrap_or(bounds.width()),
+        opts.window_height.unwrap_or(bounds.height()),
+    );
+    let scale = opts.scale.unwrap_or(1);
+    let rows = (bounds.height() / CHAR_CELL_HEIGHT / scale) as usize;
+    let cols = (bounds.width() / CHAR_CELL_WIDTH / scale) as usize;
+    let window = video
+        .window("", bounds.width(), bounds.height())
+        .fullscreen()
+        .position(bounds.x(), bounds.y())
+        .build()?;
+    let canvas = window.into_canvas().build()?;
+    let event_pump = context.event_pump().map_err(sdl_error)?;
+
+    Ok(Video {
+        _context: context,
+        _video: video,
+        bounds,
+        scale,
+        rows,
+        cols,
+        canvas,
+        event_pump,
+        charmap: Surface::new(
+            CHAR_CELL_WIDTH,
+            CHARACTERS * CHAR_CELL_HEIGHT,
+            PixelFormatEnum::RGB24,
+        )
+        .map_err(sdl_error)?,
+        buffer: Buffer::new(rows, cols),
+        back_buffer: Buffer::new(rows, cols),
+    })
+}

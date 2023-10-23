@@ -1,9 +1,36 @@
+use clap::Parser;
 use std::time::Instant;
+use video::{init, Event, InitOptions, Keycode};
 
-use video::{init, Event, Keycode};
+#[derive(Parser, Debug)]
+struct Options {
+    /// Display index
+    #[clap(short = 'd', long = "display")]
+    display: Option<u32>,
+
+    /// Window width
+    #[clap(short = 'x', long = "x-width")]
+    width: Option<u32>,
+
+    /// Window height
+    #[clap(short = 'y', long = "y-height")]
+    height: Option<u32>,
+
+    /// Scale factor (1 to 4)
+    #[clap(short = 's', long = "scale")]
+    scale: Option<u32>,
+}
 
 fn main() {
-    let mut video = init(0).unwrap();
+    let opts = Options::parse();
+    let mut video = init(
+        InitOptions::new()
+            .display_index(opts.display)
+            .window_height(opts.height)
+            .window_width(opts.width)
+            .scale(opts.scale),
+    )
+    .unwrap();
     _ = video.init_charmap();
 
     let mut running = true;
@@ -26,18 +53,19 @@ fn main() {
         let mut fps = frames / if seconds == 0 { 1 } else { seconds };
         let mut pos = 5;
         while fps != 0 {
-            video.buffer.set(0, 74 + pos, (fps % 10) as u8 + b'0');
+            video.buffer.set(0, pos - 1, (fps % 10) as u8 + b'0');
             fps /= 10;
             pos -= 1;
         }
         while pos > 0 {
-            video.buffer.set(0, 74 + pos, b' ');
+            video.buffer.set(0, pos - 1, b' ');
             pos -= 1;
         }
 
         _ = video.render_buffer();
 
         offset = 0;
+        let cols = video.cols() as i32;
         video.handle_events(|event| match event {
             Event::Quit { .. } => running = false,
             Event::KeyDown {
@@ -47,11 +75,16 @@ fn main() {
                 Keycode::Escape | Keycode::Q => running = false,
                 Keycode::Right => offset = 1,
                 Keycode::Left => offset = -1,
-                Keycode::Up => offset = -80,
-                Keycode::Down => offset = 80,
+                Keycode::Up => offset = -cols,
+                Keycode::Down => offset = cols,
                 _ => {}
             },
             _ => {}
         });
     }
+    println!(
+        "rows: {rows}, cols: {cols}",
+        rows = video.rows(),
+        cols = video.cols()
+    );
 }
