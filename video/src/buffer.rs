@@ -13,8 +13,8 @@ impl Buffer {
         }
     }
 
-    pub fn clear(&mut self, ch: u8) {
-        self.buffer.fill(ch);
+    pub fn clear(&mut self) {
+        self.buffer.fill(b' ');
     }
 
     pub fn set(&mut self, row: usize, col: usize, ch: u8) {

@@ -92,12 +92,10 @@ impl Video {
 
     // this is for diagnostic use only
     pub fn draw_font(&mut self) -> Result<()> {
-        self.buffer.clear(0);
-        let mut ch = 0;
+        self.buffer.clear();
         for col in 0..16 {
             for row in 0..16 {
-                self.buffer.set(row, col * 2, ch);
-                ch = ch.wrapping_add(1);
+                self.buffer.set(row, col * 2, (col as u8) << 4 | row as u8);
             }
         }
         self.render_buffer()?;
@@ -111,6 +109,21 @@ impl Video {
                 Color::RGB(0, 0, 0),
             )
             .map_err(sdl_error)?;
+        for ch in 0..256 {
+            self.charmap
+                .fill_rect(
+                    Rect::new(
+                        CHAR_CELL_WIDTH as i32 / 2 - 1,
+                        ch * CHAR_CELL_HEIGHT as i32
+                            + CHAR_CELL_WIDTH as i32 / 2
+                            - 1,
+                        2,
+                        2,
+                    ),
+                    Color::RGB(255, 0, 0),
+                )
+                .map_err(sdl_error)?;
+        }
         self.load_charmap(&ASCII, 0x20);
         Ok(())
     }
@@ -131,10 +144,10 @@ impl Video {
                 let mut mask = 0x80;
                 while mask != 0 {
                     // set pixel color only if bit is 1
-                    if byte & mask != 0 {
-                        // set the G in RGB
-                        pixels[offset + 1] = 0xff;
-                    }
+                    pixels[offset] = 0;
+                    pixels[offset + 1] =
+                        if byte & mask != 0 { 0xff } else { 0 };
+                    pixels[offset + 2] = 0;
                     offset += BYTES_PER_PIXEL as usize;
                     mask >>= 1;
                 }
@@ -177,7 +190,7 @@ impl Video {
         }
         self.render();
         self.swap_buffers();
-        self.buffer.clear(0);
+        self.buffer.clear();
         Ok(())
     }
 }
