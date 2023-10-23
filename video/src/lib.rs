@@ -168,23 +168,19 @@ impl Video {
                 let ch = self.buffer.get(row, col);
                 let bch = self.back_buffer.get(row, col);
                 if bch == 0 || ch != bch {
-                    self.canvas
-                        .copy(
-                            &texture,
-                            Rect::new(
-                                0,
-                                ch as i32 * CHAR_CELL_HEIGHT as i32,
-                                CHAR_CELL_WIDTH,
-                                CHAR_CELL_HEIGHT,
-                            ),
-                            Rect::new(
-                                col as i32 * CHAR_CELL_WIDTH as i32,
-                                row as i32 * CHAR_CELL_HEIGHT as i32,
-                                CHAR_CELL_WIDTH,
-                                CHAR_CELL_HEIGHT,
-                            ),
-                        )
-                        .map_err(sdl_error)?;
+                    let src = Rect::new(
+                        0,
+                        ch as i32 * CHAR_CELL_HEIGHT as i32,
+                        CHAR_CELL_WIDTH,
+                        CHAR_CELL_HEIGHT,
+                    );
+                    let dst = Rect::new(
+                        col as i32 * CHAR_CELL_WIDTH as i32,
+                        row as i32 * CHAR_CELL_HEIGHT as i32,
+                        CHAR_CELL_WIDTH,
+                        CHAR_CELL_HEIGHT,
+                    );
+                    self.canvas.copy(&texture, src, dst).map_err(sdl_error)?;
                 }
             }
         }
