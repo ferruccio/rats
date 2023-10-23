@@ -1,6 +1,5 @@
 use charmaps::ASCII;
 use errors::{sdl_error, Result};
-use font::Font;
 use sdl2::{
     pixels::{Color, PixelFormatEnum},
     rect::Rect,
@@ -15,7 +14,6 @@ pub use sdl2::keyboard::Keycode;
 
 mod charmaps;
 mod errors;
-mod font;
 
 pub struct Video {
     _context: Sdl,
@@ -23,6 +21,7 @@ pub struct Video {
     bounds: Rect,
     canvas: Canvas<Window>,
     event_pump: EventPump,
+    charmap: Surface<'static>,
 }
 
 pub fn init(display_index: i32) -> Result<Video> {
@@ -43,6 +42,12 @@ pub fn init(display_index: i32) -> Result<Video> {
         bounds,
         canvas,
         event_pump,
+        charmap: Surface::new(
+            CHAR_CELL_WIDTH,
+            CHARACTERS * CHAR_CELL_HEIGHT,
+            PixelFormatEnum::RGB24,
+        )
+        .map_err(sdl_error)?,
     })
 }
 
@@ -79,15 +84,9 @@ impl Video {
         }
     }
 
-    pub fn draw_char(
-        &mut self,
-        row: usize,
-        col: usize,
-        ch: u8,
-        font: &Font,
-    ) -> Result<()> {
+    pub fn draw_char(&mut self, row: usize, col: usize, ch: u8) -> Result<()> {
         let texture_creator = self.canvas.texture_creator();
-        let texture = font.surface.as_texture(&texture_creator)?;
+        let texture = self.charmap.as_texture(&texture_creator)?;
         self.canvas.set_scale(3.0, 3.0).map_err(sdl_error)?;
         _ = self.canvas.copy(
             &texture,
@@ -108,9 +107,9 @@ impl Video {
     }
 
     // this is for diagnostic use only
-    pub fn draw_font(&mut self, font: &Font) -> Result<()> {
+    pub fn draw_font(&mut self) -> Result<()> {
         let texture_creator = self.canvas.texture_creator();
-        let texture = font.surface.as_texture(&texture_creator)?;
+        let texture = self.charmap.as_texture(&texture_creator)?;
         self.canvas.set_scale(4.0, 4.0).map_err(sdl_error)?;
         for col in 0..16 {
             let src = Rect::new(
@@ -125,46 +124,42 @@ impl Video {
         }
         Ok(())
     }
-}
 
-pub fn ascii_font() -> Result<Font<'static>> {
-    create_font(&ASCII, 0x20)
-}
+    pub fn init_charmap(&mut self) -> Result<()> {
+        self.charmap
+            .fill_rect(
+                Rect::new(0, 0, CHAR_CELL_WIDTH, CHARACTERS * CHAR_CELL_HEIGHT),
+                Color::RGB(0, 50, 0),
+            )
+            .map_err(sdl_error)?;
+        self.load_charmap(&ASCII, 0x20);
+        Ok(())
+    }
 
-fn create_font(font: &[u8], first: u8) -> Result<Font> {
-    let mut surface = Surface::new(
-        CHAR_CELL_WIDTH,
-        256 * CHAR_CELL_HEIGHT,
-        PixelFormatEnum::RGB24,
-    )
-    .map_err(sdl_error)?;
-    // paint it black
-    surface
-        .fill_rect(
-            Rect::new(0, 0, CHAR_CELL_WIDTH, CHARACTERS * CHAR_CELL_HEIGHT),
-            Color::RGB(0, 50, 0),
-        )
-        .map_err(sdl_error)?;
-    surface.with_lock_mut(|pixels| {
-        assert_eq!(
-            pixels.len(),
-            (CHARACTERS * BYTES_PER_PIXEL * CHAR_CELL_WIDTH * CHAR_CELL_HEIGHT)
-                as usize
-        );
-        let mut offset: usize = first as usize
-            * (BYTES_PER_PIXEL * CHAR_CELL_WIDTH * CHAR_CELL_HEIGHT) as usize;
-        for byte in font {
-            let mut mask = 0x80;
-            while mask != 0 {
-                // set pixel color only if bit is 1
-                if byte & mask != 0 {
-                    // set the G in RGB
-                    pixels[offset + 1] = 0xff;
+    pub fn load_charmap(&mut self, bitmap: &[u8], first: u8) {
+        self.charmap.with_lock_mut(|pixels| {
+            assert_eq!(
+                pixels.len(),
+                (CHARACTERS
+                    * BYTES_PER_PIXEL
+                    * CHAR_CELL_WIDTH
+                    * CHAR_CELL_HEIGHT) as usize
+            );
+            let mut offset: usize = first as usize
+                * (BYTES_PER_PIXEL * CHAR_CELL_WIDTH * CHAR_CELL_HEIGHT)
+                    as usize;
+            for byte in bitmap {
+                let mut mask = 0x80;
+                while mask != 0 {
+                    // set pixel color only if bit is 1
+                    if byte & mask != 0 {
+                        // set the G in RGB
+                        pixels[offset + 1] = 0xff;
+                    }
+                    offset += BYTES_PER_PIXEL as usize;
+                    mask >>= 1;
                 }
-                offset += BYTES_PER_PIXEL as usize;
-                mask >>= 1;
             }
-        }
-    });
-    Ok(Font::new(surface))
+        });
+    }
 }

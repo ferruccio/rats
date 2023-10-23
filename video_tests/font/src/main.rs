@@ -1,8 +1,8 @@
-use video::{ascii_font, init, Event, Keycode};
+use video::{init, Event, Keycode};
 
 fn main() {
     let mut video = init(0).unwrap();
-    let font = ascii_font().unwrap();
+    _ = video.init_charmap();
 
     enum Action {
         Nothing,
@@ -17,7 +17,7 @@ fn main() {
             Action::Nothing => {}
             Action::ShowCharmap => {
                 video.clear(0, 0, 0);
-                _ = video.draw_font(&font);
+                _ = video.draw_font();
                 video.render();
             }
             Action::FillScreen => {
@@ -25,7 +25,7 @@ fn main() {
                 let mut ch = 0x20;
                 for row in 0..33 {
                     for col in 0..80 {
-                        _ = video.draw_char(row, col, ch, &font);
+                        _ = video.draw_char(row, col, ch);
                         ch += 1;
                         if ch > 0x7f {
                             ch = 0x20
