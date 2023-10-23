@@ -12,27 +12,29 @@ fn main() {
     }
 
     let mut action = Action::ShowCharmap;
+    let mut start_ch: u8 = 0x20;
     loop {
         match action {
             Action::Nothing => {}
             Action::ShowCharmap => {
-                video.clear(0, 0, 0);
                 _ = video.draw_font();
-                video.render();
             }
             Action::FillScreen => {
-                video.clear(0, 0, 0);
-                let mut ch = 0x20;
-                for row in 0..33 {
-                    for col in 0..80 {
-                        _ = video.draw_char(row, col, ch);
+                let mut ch = start_ch;
+                start_ch += 1;
+                if start_ch > 0x7f {
+                    start_ch = 0x20;
+                }
+                for row in 0..video.buffer.rows {
+                    for col in 0..video.buffer.cols {
+                        video.buffer.set(row, col, ch);
                         ch += 1;
                         if ch > 0x7f {
                             ch = 0x20
                         }
                     }
                 }
-                video.render();
+                _ = video.render_buffer();
             }
             Action::Quit => {
                 break;

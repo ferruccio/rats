@@ -1,3 +1,4 @@
+use buffer::Buffer;
 use charmaps::ASCII;
 use errors::{sdl_error, Result};
 use sdl2::{
@@ -12,6 +13,7 @@ use sdl2::{
 pub use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
 
+mod buffer;
 mod charmaps;
 mod errors;
 
@@ -22,6 +24,8 @@ pub struct Video {
     canvas: Canvas<Window>,
     event_pump: EventPump,
     charmap: Surface<'static>,
+    pub buffer: Buffer,
+    back_buffer: Buffer,
 }
 
 pub fn init(display_index: i32) -> Result<Video> {
@@ -48,6 +52,8 @@ pub fn init(display_index: i32) -> Result<Video> {
             PixelFormatEnum::RGB24,
         )
         .map_err(sdl_error)?,
+        buffer: Buffer::new(33, 80),
+        back_buffer: Buffer::new(33, 80),
     })
 }
 
@@ -84,44 +90,17 @@ impl Video {
         }
     }
 
-    pub fn draw_char(&mut self, row: usize, col: usize, ch: u8) -> Result<()> {
-        let texture_creator = self.canvas.texture_creator();
-        let texture = self.charmap.as_texture(&texture_creator)?;
-        self.canvas.set_scale(3.0, 3.0).map_err(sdl_error)?;
-        _ = self.canvas.copy(
-            &texture,
-            Rect::new(
-                0,
-                ch as i32 * CHAR_CELL_HEIGHT as i32,
-                CHAR_CELL_WIDTH,
-                CHAR_CELL_HEIGHT,
-            ),
-            Rect::new(
-                col as i32 * CHAR_CELL_WIDTH as i32,
-                row as i32 * CHAR_CELL_HEIGHT as i32,
-                CHAR_CELL_WIDTH,
-                CHAR_CELL_HEIGHT,
-            ),
-        );
-        Ok(())
-    }
-
     // this is for diagnostic use only
     pub fn draw_font(&mut self) -> Result<()> {
-        let texture_creator = self.canvas.texture_creator();
-        let texture = self.charmap.as_texture(&texture_creator)?;
-        self.canvas.set_scale(4.0, 4.0).map_err(sdl_error)?;
+        self.buffer.clear(0);
+        let mut ch = 0;
         for col in 0..16 {
-            let src = Rect::new(
-                0,
-                col * 16 * CHAR_CELL_HEIGHT as i32,
-                CHAR_CELL_WIDTH,
-                CHAR_CELL_HEIGHT * 16,
-            );
-            let dst =
-                Rect::new(col * 16, 0, CHAR_CELL_WIDTH, CHAR_CELL_HEIGHT * 16);
-            _ = self.canvas.copy(&texture, src, dst);
+            for row in 0..16 {
+                self.buffer.set(row, col * 2, ch);
+                ch = ch.wrapping_add(1);
+            }
         }
+        self.render_buffer()?;
         Ok(())
     }
 
@@ -129,7 +108,7 @@ impl Video {
         self.charmap
             .fill_rect(
                 Rect::new(0, 0, CHAR_CELL_WIDTH, CHARACTERS * CHAR_CELL_HEIGHT),
-                Color::RGB(0, 50, 0),
+                Color::RGB(0, 0, 0),
             )
             .map_err(sdl_error)?;
         self.load_charmap(&ASCII, 0x20);
@@ -161,5 +140,44 @@ impl Video {
                 }
             }
         });
+    }
+
+    pub fn swap_buffers(&mut self) {
+        self.buffer.swap(&mut self.back_buffer);
+    }
+
+    pub fn render_buffer(&mut self) -> Result<()> {
+        let texture_creator = self.canvas.texture_creator();
+        let texture = self.charmap.as_texture(&texture_creator)?;
+        self.canvas.set_scale(3.0, 3.0).map_err(sdl_error)?;
+        for row in 0..self.buffer.rows {
+            for col in 0..self.buffer.cols {
+                let ch = self.buffer.get(row, col);
+                let bch = self.back_buffer.get(row, col);
+                if bch == 0 || ch != bch {
+                    self.canvas
+                        .copy(
+                            &texture,
+                            Rect::new(
+                                0,
+                                ch as i32 * CHAR_CELL_HEIGHT as i32,
+                                CHAR_CELL_WIDTH,
+                                CHAR_CELL_HEIGHT,
+                            ),
+                            Rect::new(
+                                col as i32 * CHAR_CELL_WIDTH as i32,
+                                row as i32 * CHAR_CELL_HEIGHT as i32,
+                                CHAR_CELL_WIDTH,
+                                CHAR_CELL_HEIGHT,
+                            ),
+                        )
+                        .map_err(sdl_error)?;
+                }
+            }
+        }
+        self.render();
+        self.swap_buffers();
+        self.buffer.clear(0);
+        Ok(())
     }
 }
