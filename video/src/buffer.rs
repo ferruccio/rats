@@ -6,11 +6,13 @@ pub struct Buffer {
 
 impl Buffer {
     pub fn new(rows: usize, cols: usize) -> Buffer {
-        Buffer {
+        let mut buffer = Buffer {
             rows,
             cols,
             buffer: vec![0; rows * cols],
-        }
+        };
+        buffer.clear();
+        buffer
     }
 
     pub fn clear(&mut self) {

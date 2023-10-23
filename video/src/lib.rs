@@ -90,18 +90,6 @@ impl Video {
         }
     }
 
-    // this is for diagnostic use only
-    pub fn draw_font(&mut self) -> Result<()> {
-        self.buffer.clear();
-        for col in 0..16 {
-            for row in 0..16 {
-                self.buffer.set(row, col * 2, (col as u8) << 4 | row as u8);
-            }
-        }
-        self.render_buffer()?;
-        Ok(())
-    }
-
     pub fn init_charmap(&mut self) -> Result<()> {
         self.charmap
             .fill_rect(
@@ -166,22 +154,19 @@ impl Video {
         for row in 0..self.buffer.rows {
             for col in 0..self.buffer.cols {
                 let ch = self.buffer.get(row, col);
-                let bch = self.back_buffer.get(row, col);
-                if bch == 0 || ch != bch {
-                    let src = Rect::new(
-                        0,
-                        ch as i32 * CHAR_CELL_HEIGHT as i32,
-                        CHAR_CELL_WIDTH,
-                        CHAR_CELL_HEIGHT,
-                    );
-                    let dst = Rect::new(
-                        col as i32 * CHAR_CELL_WIDTH as i32,
-                        row as i32 * CHAR_CELL_HEIGHT as i32,
-                        CHAR_CELL_WIDTH,
-                        CHAR_CELL_HEIGHT,
-                    );
-                    self.canvas.copy(&texture, src, dst).map_err(sdl_error)?;
-                }
+                let src = Rect::new(
+                    0,
+                    ch as i32 * CHAR_CELL_HEIGHT as i32,
+                    CHAR_CELL_WIDTH,
+                    CHAR_CELL_HEIGHT,
+                );
+                let dst = Rect::new(
+                    col as i32 * CHAR_CELL_WIDTH as i32,
+                    row as i32 * CHAR_CELL_HEIGHT as i32,
+                    CHAR_CELL_WIDTH,
+                    CHAR_CELL_HEIGHT,
+                );
+                self.canvas.copy(&texture, src, dst).map_err(sdl_error)?;
             }
         }
         self.render();
