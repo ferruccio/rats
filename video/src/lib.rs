@@ -1,6 +1,6 @@
 use buffer::Buffer;
 use charmaps::ASCII;
-use errors::{sdl_error, Result};
+use errors::sdl_error;
 use sdl2::{
     pixels::Color, rect::Rect, render::Canvas, surface::Surface, video::Window,
     EventPump, Sdl, VideoSubsystem,
@@ -14,6 +14,7 @@ mod charmaps;
 mod errors;
 mod init;
 
+pub use errors::Result;
 pub use init::{init, InitOptions};
 
 pub struct Video {
@@ -64,7 +65,7 @@ impl Video {
 
     pub fn handle_events<F>(&mut self, mut handler: F)
     where
-        F: FnMut(Event) -> (),
+        F: FnMut(Event),
     {
         for event in self.event_pump.poll_iter() {
             handler(event);
