@@ -21,7 +21,7 @@ pub struct Video {
     _context: Sdl,
     _video: VideoSubsystem,
     bounds: Rect,
-    scale: u32,
+    scale: usize,
     rows: usize,
     cols: usize,
     canvas: Canvas<Window>,
@@ -31,10 +31,10 @@ pub struct Video {
     back_buffer: Buffer,
 }
 
-const CHARACTERS: u32 = 256;
-const BYTES_PER_PIXEL: u32 = 3;
-const CHAR_CELL_WIDTH: u32 = 8;
-const CHAR_CELL_HEIGHT: u32 = 12;
+const CHARACTERS: usize = 256;
+const BYTES_PER_PIXEL: usize = 3;
+const CHAR_CELL_WIDTH: usize = 8;
+const CHAR_CELL_HEIGHT: usize = 12;
 
 impl Video {
     pub fn render(&mut self) {
@@ -47,12 +47,12 @@ impl Video {
         self.canvas.present();
     }
 
-    pub fn height(&self) -> u32 {
-        self.bounds.height()
+    pub fn height(&self) -> usize {
+        self.bounds.height() as usize
     }
 
-    pub fn width(&self) -> u32 {
-        self.bounds.width()
+    pub fn width(&self) -> usize {
+        self.bounds.width() as usize
     }
 
     pub fn rows(&self) -> usize {
@@ -75,7 +75,12 @@ impl Video {
     pub fn init_charmap(&mut self) -> Result<()> {
         self.charmap
             .fill_rect(
-                Rect::new(0, 0, CHAR_CELL_WIDTH, CHARACTERS * CHAR_CELL_HEIGHT),
+                Rect::new(
+                    0,
+                    0,
+                    CHAR_CELL_WIDTH as u32,
+                    (CHARACTERS * CHAR_CELL_HEIGHT) as u32,
+                ),
                 Color::RGB(0, 0, 0),
             )
             .map_err(sdl_error)?;
@@ -102,14 +107,15 @@ impl Video {
         self.charmap.with_lock_mut(|pixels| {
             assert_eq!(
                 pixels.len(),
-                (CHARACTERS
+                CHARACTERS
                     * BYTES_PER_PIXEL
                     * CHAR_CELL_WIDTH
-                    * CHAR_CELL_HEIGHT) as usize
+                    * CHAR_CELL_HEIGHT
             );
             let mut offset: usize = first as usize
-                * (BYTES_PER_PIXEL * CHAR_CELL_WIDTH * CHAR_CELL_HEIGHT)
-                    as usize;
+                * BYTES_PER_PIXEL
+                * CHAR_CELL_WIDTH
+                * CHAR_CELL_HEIGHT;
             for byte in bitmap {
                 let mut mask = 0x80;
                 while mask != 0 {
@@ -118,7 +124,7 @@ impl Video {
                     pixels[offset + 1] =
                         if byte & mask != 0 { 0xff } else { 0 };
                     pixels[offset + 2] = 0;
-                    offset += BYTES_PER_PIXEL as usize;
+                    offset += BYTES_PER_PIXEL;
                     mask >>= 1;
                 }
             }
@@ -140,15 +146,15 @@ impl Video {
                 let ch = self.buffer.get(row, col);
                 let src = Rect::new(
                     0,
-                    ch as i32 * CHAR_CELL_HEIGHT as i32,
-                    CHAR_CELL_WIDTH,
-                    CHAR_CELL_HEIGHT,
+                    (ch as usize * CHAR_CELL_HEIGHT) as i32,
+                    CHAR_CELL_WIDTH as u32,
+                    CHAR_CELL_HEIGHT as u32,
                 );
                 let dst = Rect::new(
-                    col as i32 * CHAR_CELL_WIDTH as i32,
-                    row as i32 * CHAR_CELL_HEIGHT as i32,
-                    CHAR_CELL_WIDTH,
-                    CHAR_CELL_HEIGHT,
+                    (col * CHAR_CELL_WIDTH) as i32,
+                    (row * CHAR_CELL_HEIGHT) as i32,
+                    CHAR_CELL_WIDTH as u32,
+                    CHAR_CELL_HEIGHT as u32,
                 );
                 self.canvas.copy(&texture, src, dst).map_err(sdl_error)?;
             }

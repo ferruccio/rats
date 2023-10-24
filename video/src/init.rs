@@ -6,10 +6,10 @@ use sdl2::{pixels::PixelFormatEnum, rect::Rect, surface::Surface};
 
 #[derive(Debug, Default)]
 pub struct InitOptions {
-    display_index: Option<u32>,
-    window_width: Option<u32>,
-    window_height: Option<u32>,
-    scale: Option<u32>,
+    display_index: Option<usize>,
+    window_width: Option<usize>,
+    window_height: Option<usize>,
+    scale: Option<usize>,
 }
 
 impl InitOptions {
@@ -19,14 +19,14 @@ impl InitOptions {
         }
     }
 
-    pub fn display_index(mut self, index: Option<u32>) -> Self {
+    pub fn display_index(mut self, index: Option<usize>) -> Self {
         if let Some(index) = index {
             self.display_index = Some(index);
         }
         self
     }
 
-    pub fn window_width(mut self, width: Option<u32>) -> Self {
+    pub fn window_width(mut self, width: Option<usize>) -> Self {
         if let Some(width) = width {
             if width >= 640 {
                 // make sure width is a multiple of CHAR_CELL_WIDTH
@@ -36,7 +36,7 @@ impl InitOptions {
         self
     }
 
-    pub fn window_height(mut self, height: Option<u32>) -> Self {
+    pub fn window_height(mut self, height: Option<usize>) -> Self {
         if let Some(height) = height {
             if height >= 480 {
                 // make sure height is a multiple of CHAR_CELL_HEIGHT
@@ -46,7 +46,7 @@ impl InitOptions {
         self
     }
 
-    pub fn scale(mut self, scale: Option<u32>) -> Self {
+    pub fn scale(mut self, scale: Option<usize>) -> Self {
         if let Some(scale) = scale {
             if scale > 0 && scale < 5 {
                 self.scale = Some(scale);
@@ -66,12 +66,12 @@ pub fn init(opts: InitOptions) -> Result<Video> {
     let bounds = Rect::new(
         bounds.x(),
         bounds.y(),
-        opts.window_width.unwrap_or(bounds.width()),
-        opts.window_height.unwrap_or(bounds.height()),
+        opts.window_width.unwrap_or(bounds.width() as usize) as u32,
+        opts.window_height.unwrap_or(bounds.height() as usize) as u32,
     );
     let scale = opts.scale.unwrap_or(1);
-    let rows = (bounds.height() / CHAR_CELL_HEIGHT / scale) as usize;
-    let cols = (bounds.width() / CHAR_CELL_WIDTH / scale) as usize;
+    let rows = (bounds.height() as usize / CHAR_CELL_HEIGHT / scale) as usize;
+    let cols = (bounds.width() as usize / CHAR_CELL_WIDTH / scale) as usize;
     let window = video
         .window("", bounds.width(), bounds.height())
         .fullscreen()
@@ -90,8 +90,8 @@ pub fn init(opts: InitOptions) -> Result<Video> {
         canvas,
         event_pump,
         charmap: Surface::new(
-            CHAR_CELL_WIDTH,
-            CHARACTERS * CHAR_CELL_HEIGHT,
+            CHAR_CELL_WIDTH as u32,
+            (CHARACTERS * CHAR_CELL_HEIGHT) as u32,
             PixelFormatEnum::RGB24,
         )
         .map_err(sdl_error)?,

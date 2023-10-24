@@ -6,19 +6,19 @@ use video::{init, Event, InitOptions, Keycode};
 struct Options {
     /// Display index
     #[clap(short = 'd', long = "display")]
-    display: Option<u32>,
+    display: Option<usize>,
 
     /// Window width
     #[clap(short = 'x', long = "x-width")]
-    width: Option<u32>,
+    width: Option<usize>,
 
     /// Window height
     #[clap(short = 'y', long = "y-height")]
-    height: Option<u32>,
+    height: Option<usize>,
 
     /// Scale factor (1 to 4)
     #[clap(short = 's', long = "scale")]
-    scale: Option<u32>,
+    scale: Option<usize>,
 }
 
 fn main() {
@@ -65,7 +65,7 @@ fn main() {
         _ = video.render_buffer();
 
         offset = 0;
-        let cols = video.cols() as i32;
+        let cols = video.cols() as isize;
         video.handle_events(|event| match event {
             Event::Quit { .. } => running = false,
             Event::KeyDown {

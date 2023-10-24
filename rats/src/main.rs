@@ -9,15 +9,15 @@ mod maze;
 struct RatsOpts {
     /// Display index
     #[clap(short = 'd', long = "display")]
-    display: Option<u32>,
+    display: Option<usize>,
 
     /// Window width
     #[clap(long = "window-width", alias = "w-wt")]
-    window_width: Option<u32>,
+    window_width: Option<usize>,
 
     /// Window height
     #[clap(long = "window_height", alias = "w-ht")]
-    window_height: Option<u32>,
+    window_height: Option<usize>,
 
     /// Maze width
     #[clap(long = "maze-width", alias = "m-wt")]
@@ -29,7 +29,7 @@ struct RatsOpts {
 
     /// Scale factor (1 to 4)
     #[clap(short = 's', long = "scale")]
-    scale: Option<u32>,
+    scale: Option<usize>,
 }
 
 fn main() {
