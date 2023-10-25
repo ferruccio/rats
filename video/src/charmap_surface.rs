@@ -1,6 +1,6 @@
 use crate::{
     buffer::{ATTR_DIM, ATTR_NONE, ATTR_REVERSE},
-    charmaps::ASCII,
+    charmaps::{ASCII, ASCII_START, MAZE_WALLS, MAZE_WALLS_START},
     errors::sdl_error,
     Result, Video, BYTES_PER_PIXEL, CHARACTERS, CHAR_CELL_HEIGHT,
     CHAR_CELL_WIDTH,
@@ -38,7 +38,8 @@ impl Video {
                     .map_err(sdl_error)?;
             }
         }
-        self.load_charmap(&ASCII, 0x20);
+        self.load_charmap(&ASCII, ASCII_START);
+        self.load_charmap(&MAZE_WALLS, MAZE_WALLS_START);
         Ok(())
     }
 
