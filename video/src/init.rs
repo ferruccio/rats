@@ -1,6 +1,7 @@
 use crate::{
-    buffer::Buffer, errors::sdl_error, Result, Video, CHARACTERS,
-    CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
+    buffer::{Buffer, ATTR_COMBOS},
+    errors::sdl_error,
+    Result, Video, CHARACTERS, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
 };
 use sdl2::{pixels::PixelFormatEnum, rect::Rect, surface::Surface};
 
@@ -80,6 +81,18 @@ pub fn init(opts: InitOptions) -> Result<Video> {
     let canvas = window.into_canvas().build()?;
     let event_pump = context.event_pump().map_err(sdl_error)?;
 
+    let mut charmap_surfaces = vec![];
+    for _ in 0..ATTR_COMBOS {
+        charmap_surfaces.push(
+            Surface::new(
+                CHAR_CELL_WIDTH as u32,
+                (CHARACTERS * CHAR_CELL_HEIGHT) as u32,
+                PixelFormatEnum::RGB24,
+            )
+            .map_err(sdl_error)?,
+        );
+    }
+
     Ok(Video {
         _context: context,
         _video: video,
@@ -89,12 +102,7 @@ pub fn init(opts: InitOptions) -> Result<Video> {
         cols,
         canvas,
         event_pump,
-        charmap: Surface::new(
-            CHAR_CELL_WIDTH as u32,
-            (CHARACTERS * CHAR_CELL_HEIGHT) as u32,
-            PixelFormatEnum::RGB24,
-        )
-        .map_err(sdl_error)?,
+        charmap_surfaces,
         buffer: Buffer::new(rows, cols),
         back_buffer: Buffer::new(rows, cols),
     })

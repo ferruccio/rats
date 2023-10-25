@@ -1,6 +1,8 @@
 use clap::Parser;
 use std::time::Instant;
-use video::{init, Event, InitOptions, Keycode};
+use video::{
+    init, Event, InitOptions, Keycode, ATTR_DIM, ATTR_NONE, ATTR_REVERSE,
+};
 
 #[derive(Parser, Debug)]
 struct Options {
@@ -36,6 +38,8 @@ fn main() {
     let mut running = true;
     let mut offset = 0;
     let mut start_ch: u8 = 0;
+    let mut reverse = false;
+    let mut dim = false;
     let mut frames = 0;
     let start = Instant::now();
     while running {
@@ -43,7 +47,15 @@ fn main() {
         let mut ch = start_ch;
         for row in 0..video.buffer.rows {
             for col in 0..video.buffer.cols {
-                video.buffer.set(row, col, ch);
+                video.buffer.set_char(row, col, ch);
+                let mut attr = ATTR_NONE;
+                if reverse {
+                    attr |= ATTR_REVERSE;
+                }
+                if dim {
+                    attr |= ATTR_DIM;
+                }
+                video.buffer.set_attr(row, col, attr);
                 ch = ch.wrapping_add(1);
             }
         }
@@ -53,12 +65,12 @@ fn main() {
         let mut fps = frames / if seconds == 0 { 1 } else { seconds };
         let mut pos = 5;
         while fps != 0 {
-            video.buffer.set(0, pos - 1, (fps % 10) as u8 + b'0');
+            video.buffer.set_char(0, pos - 1, (fps % 10) as u8 + b'0');
             fps /= 10;
             pos -= 1;
         }
         while pos > 0 {
-            video.buffer.set(0, pos - 1, b' ');
+            video.buffer.set_char(0, pos - 1, b' ');
             pos -= 1;
         }
 
@@ -77,6 +89,8 @@ fn main() {
                 Keycode::Left => offset = -1,
                 Keycode::Up => offset = -cols,
                 Keycode::Down => offset = cols,
+                Keycode::R => reverse = !reverse,
+                Keycode::D => dim = !dim,
                 _ => {}
             },
             _ => {}

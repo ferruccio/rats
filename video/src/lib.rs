@@ -1,5 +1,4 @@
-use buffer::Buffer;
-use charmaps::ASCII;
+use buffer::{Buffer, ATTR_COMBOS, ATTR_MASK};
 use errors::sdl_error;
 use sdl2::{
     pixels::Color, rect::Rect, render::Canvas, surface::Surface, video::Window,
@@ -10,10 +9,12 @@ pub use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
 
 mod buffer;
+mod charmap_surface;
 mod charmaps;
 mod errors;
 mod init;
 
+pub use buffer::{ATTR_DIM, ATTR_NONE, ATTR_REVERSE};
 pub use errors::Result;
 pub use init::{init, InitOptions};
 
@@ -26,7 +27,7 @@ pub struct Video {
     cols: usize,
     canvas: Canvas<Window>,
     event_pump: EventPump,
-    charmap: Surface<'static>,
+    charmap_surfaces: Vec<Surface<'static>>,
     pub buffer: Buffer,
     back_buffer: Buffer,
 }
@@ -72,78 +73,25 @@ impl Video {
         }
     }
 
-    pub fn init_charmap(&mut self) -> Result<()> {
-        self.charmap
-            .fill_rect(
-                Rect::new(
-                    0,
-                    0,
-                    CHAR_CELL_WIDTH as u32,
-                    (CHARACTERS * CHAR_CELL_HEIGHT) as u32,
-                ),
-                Color::RGB(0, 0, 0),
-            )
-            .map_err(sdl_error)?;
-        for ch in 0..256 {
-            self.charmap
-                .fill_rect(
-                    Rect::new(
-                        CHAR_CELL_WIDTH as i32 / 2 - 1,
-                        ch * CHAR_CELL_HEIGHT as i32
-                            + CHAR_CELL_WIDTH as i32 / 2
-                            - 1,
-                        2,
-                        2,
-                    ),
-                    Color::RGB(255, 0, 0),
-                )
-                .map_err(sdl_error)?;
-        }
-        self.load_charmap(&ASCII, 0x20);
-        Ok(())
-    }
-
-    pub fn load_charmap(&mut self, bitmap: &[u8], first: u8) {
-        self.charmap.with_lock_mut(|pixels| {
-            assert_eq!(
-                pixels.len(),
-                CHARACTERS
-                    * BYTES_PER_PIXEL
-                    * CHAR_CELL_WIDTH
-                    * CHAR_CELL_HEIGHT
-            );
-            let mut offset: usize = first as usize
-                * BYTES_PER_PIXEL
-                * CHAR_CELL_WIDTH
-                * CHAR_CELL_HEIGHT;
-            for byte in bitmap {
-                let mut mask = 0x80;
-                while mask != 0 {
-                    // set pixel color only if bit is 1
-                    pixels[offset] = 0;
-                    pixels[offset + 1] =
-                        if byte & mask != 0 { 0xff } else { 0 };
-                    pixels[offset + 2] = 0;
-                    offset += BYTES_PER_PIXEL;
-                    mask >>= 1;
-                }
-            }
-        });
-    }
-
     pub fn swap_buffers(&mut self) {
         self.buffer.swap(&mut self.back_buffer);
     }
 
     pub fn render_buffer(&mut self) -> Result<()> {
         let texture_creator = self.canvas.texture_creator();
-        let texture = self.charmap.as_texture(&texture_creator)?;
+        let mut textures = vec![];
+        for index in 0..ATTR_COMBOS {
+            textures.push(
+                self.charmap_surfaces[index].as_texture(&texture_creator)?,
+            );
+        }
         self.canvas
             .set_scale(self.scale as f32, self.scale as f32)
             .map_err(sdl_error)?;
         for row in 0..self.buffer.rows {
             for col in 0..self.buffer.cols {
-                let ch = self.buffer.get(row, col);
+                let ch = self.buffer.get_char(row, col);
+                let attr = self.buffer.get_attr(row, col);
                 let src = Rect::new(
                     0,
                     (ch as usize * CHAR_CELL_HEIGHT) as i32,
@@ -156,7 +104,9 @@ impl Video {
                     CHAR_CELL_WIDTH as u32,
                     CHAR_CELL_HEIGHT as u32,
                 );
-                self.canvas.copy(&texture, src, dst).map_err(sdl_error)?;
+                self.canvas
+                    .copy(&textures[(attr & ATTR_MASK) as usize], src, dst)
+                    .map_err(sdl_error)?;
             }
         }
         self.render();
