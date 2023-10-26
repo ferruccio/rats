@@ -63,7 +63,6 @@ pub fn init(opts: InitOptions) -> Result<Video> {
     let bounds = video
         .display_bounds(opts.display_index.unwrap_or(0) as i32)
         .map_err(sdl_error)?;
-    dbg!(&bounds);
     let bounds = Rect::new(
         bounds.x(),
         bounds.y(),
