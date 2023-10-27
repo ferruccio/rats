@@ -12,8 +12,8 @@ pub struct GameContext {
     pub maze: Maze,
     pub player: Player,
     pub direction: Direction,
-    pub move_player: bool,
     pub running: bool,
+    pub motion_start: Instant,
 }
 
 impl GameContext {
@@ -42,8 +42,8 @@ impl GameContext {
             maze: the_maze,
             player,
             direction: DIR_NONE,
-            move_player: false,
             running: true,
+            motion_start: Instant::now(),
         })
     }
 

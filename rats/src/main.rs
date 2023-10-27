@@ -1,7 +1,8 @@
 use clap::Parser;
 use game_context::GameContext;
 use maze::Maze;
-use player::{DIR_DOWN, DIR_LEFT, DIR_RIGHT, DIR_UP};
+use player::{DIR_DOWN, DIR_LEFT, DIR_NONE, DIR_RIGHT, DIR_UP};
+use std::time::{Duration, Instant};
 use video::{sdl_error, Event, InitOptions, Keycode, Pixels, Result};
 
 mod game_context;
@@ -56,6 +57,8 @@ fn play(opts: CommandLineParams) -> Result<()> {
 
     let mut maze = Maze::new(cell_rows, cell_cols);
     let mut event_pump = context.video.sdl.event_pump().map_err(sdl_error)?;
+    // player moves every 1/10th of a second
+    let motion_time = Duration::new(0, 1_000_000_000 / 10);
     while context.running {
         context.maze.buffer.copy_to(&mut maze.buffer);
         context.render_frame(&mut maze)?;
@@ -73,9 +76,11 @@ fn play(opts: CommandLineParams) -> Result<()> {
                 _ => {}
             }
         }
-        if context.move_player {
+        if context.direction != DIR_NONE
+            && context.motion_start.elapsed() >= motion_time
+        {
             context.player.advance(context.direction);
-            context.move_player = false;
+            context.motion_start = Instant::now();
         }
     }
 
@@ -85,22 +90,10 @@ fn play(opts: CommandLineParams) -> Result<()> {
 fn key_down(context: &mut GameContext, keycode: Keycode) {
     match keycode {
         Keycode::Escape | Keycode::Q => context.running = false,
-        Keycode::Up => {
-            context.direction |= DIR_UP;
-            context.move_player = true;
-        }
-        Keycode::Down => {
-            context.direction |= DIR_DOWN;
-            context.move_player = true;
-        }
-        Keycode::Left => {
-            context.direction |= DIR_LEFT;
-            context.move_player = true;
-        }
-        Keycode::Right => {
-            context.direction |= DIR_RIGHT;
-            context.move_player = true;
-        }
+        Keycode::Up => context.direction |= DIR_UP,
+        Keycode::Down => context.direction |= DIR_DOWN,
+        Keycode::Left => context.direction |= DIR_LEFT,
+        Keycode::Right => context.direction |= DIR_RIGHT,
         _ => {}
     }
 }
