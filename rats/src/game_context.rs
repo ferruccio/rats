@@ -27,7 +27,7 @@ impl GameContext {
         let cell_rows = max((video.rows() - 2) / MAZE_CELL_ROWS, maze_height);
         let cell_cols = max(video.cols() / MAZE_CELL_COLS, maze_width);
         let mut the_maze = Maze::new(cell_rows, cell_cols);
-        the_maze.test_pattern();
+        the_maze.generate(false);
         let mut player = Player::new(&the_maze);
         for _ in 0..MAZE_CELL_COLS / 2 {
             player.advance(DIR_RIGHT);
@@ -77,8 +77,8 @@ impl GameContext {
             ATTR_REVERSE | ATTR_DIM,
             format!(
                 "maze: {rows}x{cols} player: {player}",
-                rows = maze.cols(),
-                cols = maze.rows(),
+                rows = maze.rows(),
+                cols = maze.cols(),
                 player = self.player.position()
             ),
         );
