@@ -34,6 +34,7 @@ fn main() {
     )
     .unwrap();
     _ = video.init_charmap();
+    let mut event_pump = video.sdl.event_pump().unwrap();
 
     let mut running = true;
     let mut offset = 0;
@@ -78,23 +79,26 @@ fn main() {
 
         offset = 0;
         let cols = video.cols() as isize;
-        video.handle_events(|event| match event {
-            Event::Quit { .. } => running = false,
-            Event::KeyDown {
-                keycode: Some(keycode),
-                ..
-            } => match keycode {
-                Keycode::Escape | Keycode::Q => running = false,
-                Keycode::Right => offset = 1,
-                Keycode::Left => offset = -1,
-                Keycode::Up => offset = -cols,
-                Keycode::Down => offset = cols,
-                Keycode::R => reverse = !reverse,
-                Keycode::D => dim = !dim,
+
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::Quit { .. } => running = false,
+                Event::KeyDown {
+                    keycode: Some(keycode),
+                    ..
+                } => match keycode {
+                    Keycode::Escape | Keycode::Q => running = false,
+                    Keycode::Right => offset = 1,
+                    Keycode::Left => offset = -1,
+                    Keycode::Up => offset = -cols,
+                    Keycode::Down => offset = cols,
+                    Keycode::R => reverse = !reverse,
+                    Keycode::D => dim = !dim,
+                    _ => {}
+                },
                 _ => {}
-            },
-            _ => {}
-        });
+            }
+        }
     }
     println!(
         "rows: {rows}, cols: {cols}",

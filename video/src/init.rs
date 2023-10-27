@@ -58,8 +58,8 @@ impl InitOptions {
 }
 
 pub fn init(opts: InitOptions) -> Result<Video> {
-    let context = sdl2::init().map_err(sdl_error)?;
-    let video = context.video().map_err(sdl_error)?;
+    let sdl = sdl2::init().map_err(sdl_error)?;
+    let video = sdl.video().map_err(sdl_error)?;
     let bounds = video
         .display_bounds(opts.display_index.unwrap_or(0) as i32)
         .map_err(sdl_error)?;
@@ -78,7 +78,6 @@ pub fn init(opts: InitOptions) -> Result<Video> {
         .position(bounds.x(), bounds.y())
         .build()?;
     let canvas = window.into_canvas().build()?;
-    let event_pump = context.event_pump().map_err(sdl_error)?;
 
     let mut charmap_surfaces = vec![];
     for _ in 0..ATTR_COMBOS {
@@ -93,14 +92,12 @@ pub fn init(opts: InitOptions) -> Result<Video> {
     }
 
     Ok(Video {
-        _context: context,
-        _video: video,
+        sdl,
         bounds,
         scale,
         rows,
         cols,
         canvas,
-        event_pump,
         charmap_surfaces,
         buffer: Buffer::new(rows, cols),
         back_buffer: Buffer::new(rows, cols),

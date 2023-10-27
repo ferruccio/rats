@@ -1,8 +1,7 @@
 use buffer::{ATTR_COMBOS, ATTR_MASK};
-use errors::sdl_error;
 use sdl2::{
     pixels::Color, rect::Rect, render::Canvas, surface::Surface, video::Window,
-    EventPump, Sdl, VideoSubsystem,
+    Sdl,
 };
 
 pub use sdl2::event::Event;
@@ -20,7 +19,7 @@ pub use charmaps::{
     MAZE_CROSS, MAZE_DOWN, MAZE_LEFT_T, MAZE_RIGHT_T, MAZE_TOP_LEFT,
     MAZE_TOP_RIGHT, MAZE_TOP_T,
 };
-pub use errors::Result;
+pub use errors::{sdl_error, Result};
 pub use init::{init, InitOptions};
 
 // use Pixels for bitmap dimensions
@@ -29,14 +28,12 @@ pub type Pixels = usize;
 pub type Chars = usize;
 
 pub struct Video {
-    _context: Sdl,
-    _video: VideoSubsystem,
+    pub sdl: Sdl,
     bounds: Rect,
     scale: usize,
     rows: Chars,
     cols: Chars,
     canvas: Canvas<Window>,
-    event_pump: EventPump,
     charmap_surfaces: Vec<Surface<'static>>,
     pub buffer: Buffer,
     back_buffer: Buffer,
@@ -72,15 +69,6 @@ impl Video {
 
     pub fn cols(&self) -> Chars {
         self.cols
-    }
-
-    pub fn handle_events<F>(&mut self, mut handler: F)
-    where
-        F: FnMut(Event),
-    {
-        for event in self.event_pump.poll_iter() {
-            handler(event);
-        }
     }
 
     pub fn swap_buffers(&mut self) {
