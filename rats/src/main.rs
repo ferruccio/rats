@@ -61,6 +61,13 @@ fn play(opts: CommandLineParams) -> Result<()> {
     the_maze.test_pattern();
 
     let mut player = Player::new(&the_maze);
+    for _ in 0..MAZE_CELL_COLS / 2 {
+        player.advance(DIR_RIGHT);
+    }
+    for _ in 0..MAZE_CELL_ROWS / 2 {
+        player.advance(DIR_DOWN);
+    }
+    dbg!(&player);
     let mut direction: Direction = DIR_NONE;
 
     let mut running = true;
