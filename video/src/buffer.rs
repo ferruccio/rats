@@ -1,7 +1,8 @@
-#[derive(Clone)]
+use crate::Chars;
+
 pub struct Buffer {
-    pub rows: usize,
-    pub cols: usize,
+    pub rows: Chars,
+    pub cols: Chars,
     pub characters: Vec<u8>,
     pub attributes: Vec<u8>,
 }
@@ -23,7 +24,7 @@ pub const ATTR_MASK: u8 = 0x03;
 pub const ATTR_COMBOS: usize = 4;
 
 impl Buffer {
-    pub fn new(rows: usize, cols: usize) -> Buffer {
+    pub fn new(rows: Chars, cols: Chars) -> Buffer {
         let mut buffer = Buffer {
             rows,
             cols,
@@ -39,13 +40,13 @@ impl Buffer {
         self.attributes.fill(ATTR_NONE);
     }
 
-    pub fn set_char(&mut self, row: usize, col: usize, ch: u8) {
+    pub fn set_char(&mut self, row: Chars, col: Chars, ch: u8) {
         if row < self.rows && col < self.cols {
             self.characters[row * self.cols + col] = ch;
         }
     }
 
-    pub fn get_char(&self, row: usize, col: usize) -> u8 {
+    pub fn get_char(&self, row: Chars, col: Chars) -> u8 {
         if row < self.rows && col < self.cols {
             self.characters[row * self.cols + col]
         } else {
@@ -53,13 +54,13 @@ impl Buffer {
         }
     }
 
-    pub fn set_attr(&mut self, row: usize, col: usize, ch: u8) {
+    pub fn set_attr(&mut self, row: Chars, col: Chars, ch: u8) {
         if row < self.rows && col < self.cols {
             self.attributes[row * self.cols + col] = ch & ATTR_MASK;
         }
     }
 
-    pub fn get_attr(&self, row: usize, col: usize) -> u8 {
+    pub fn get_attr(&self, row: Chars, col: Chars) -> u8 {
         if row < self.rows && col < self.cols {
             self.attributes[row * self.cols + col]
         } else {
@@ -67,14 +68,14 @@ impl Buffer {
         }
     }
 
-    pub fn set_chattr(&mut self, row: usize, col: usize, ch: u8, attr: u8) {
+    pub fn set_chattr(&mut self, row: Chars, col: Chars, ch: u8, attr: u8) {
         if row < self.rows && col < self.cols {
             self.characters[row * self.cols + col] = ch;
             self.attributes[row * self.cols + col] = attr;
         }
     }
 
-    pub fn get_chattr(&self, row: usize, col: usize) -> (u8, u8) {
+    pub fn get_chattr(&self, row: Chars, col: Chars) -> (u8, u8) {
         if row < self.rows && col < self.cols {
             (
                 self.characters[row * self.cols + col],
@@ -90,7 +91,7 @@ impl Buffer {
         self.attributes.swap_with_slice(&mut other.attributes);
     }
 
-    pub fn print<S>(&mut self, row: usize, mut col: usize, attr: u8, s: S)
+    pub fn print<S>(&mut self, row: Chars, mut col: Chars, attr: u8, s: S)
     where
         S: AsRef<str>,
     {
@@ -104,27 +105,25 @@ impl Buffer {
 
     pub fn copy_buffer(
         &self,
-        mut row: usize,   // starting row in source buffer
-        col: usize,       // starting column in source buffer
-        dst: &mut Buffer, // destination buffer
-        dst_row: usize,   // first row in destination buffer
+        mut src_row: Chars, // starting row in source buffer
+        src_col: Chars,     // starting column in source buffer
+        dst: &mut Buffer,   // destination buffer
+        dst_row: Chars,     // first row in destination buffer
     ) {
         for dst_row in dst_row..dst.rows {
-            let mut col = col;
+            let mut col = src_col;
             for dst_col in 0..dst.cols {
-                dst.set_char(dst_row, dst_col, self.get_char(row, col));
-                dst.set_attr(dst_row, dst_col, self.get_attr(row, col));
-                col = (col + 1) % dst.cols;
+                dst.set_char(dst_row, dst_col, self.get_char(src_row, col));
+                dst.set_attr(dst_row, dst_col, self.get_attr(src_row, col));
+                col = (col + 1) % self.cols;
             }
-            row = (row + 1) % dst.rows;
+            src_row = (src_row + 1) % self.rows;
         }
     }
 
     pub fn copy_to(&self, dst: &mut Buffer) {
         assert!(self.rows == dst.rows);
         assert!(self.cols == dst.cols);
-        // dst.characters.extend_from_slice(&self.characters);
-        // dst.attributes.extend_from_slice(&self.attributes);
         for (index, ch) in self.characters.iter().enumerate() {
             dst.characters[index] = *ch;
             dst.attributes[index] = self.attributes[index];

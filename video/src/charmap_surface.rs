@@ -2,8 +2,8 @@ use crate::{
     buffer::{ATTR_DIM, ATTR_NONE, ATTR_REVERSE},
     charmaps::{ASCII, ASCII_START, MAZE_WALLS, MAZE_WALLS_START},
     errors::sdl_error,
-    Result, Video, BYTES_PER_PIXEL, CHARACTERS, CHAR_CELL_HEIGHT,
-    CHAR_CELL_WIDTH,
+    Result, Video, BYTES_PER_PIXEL, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
+    FONT_SIZE,
 };
 use sdl2::{pixels::Color, rect::Rect};
 
@@ -17,7 +17,7 @@ impl Video {
                         0,
                         0,
                         CHAR_CELL_WIDTH as u32,
-                        (CHARACTERS * CHAR_CELL_HEIGHT) as u32,
+                        (FONT_SIZE * CHAR_CELL_HEIGHT) as u32,
                     ),
                     Color::RGB(0, 0, 0),
                 )
@@ -64,7 +64,7 @@ impl Video {
 fn set_pixels(pixels: &mut [u8], bitmap: &[u8], first: u8, attrs: u8) {
     assert_eq!(
         pixels.len(),
-        CHARACTERS * BYTES_PER_PIXEL * CHAR_CELL_WIDTH * CHAR_CELL_HEIGHT
+        FONT_SIZE * BYTES_PER_PIXEL * CHAR_CELL_WIDTH * CHAR_CELL_HEIGHT
     );
     let mut offset: usize =
         first as usize * BYTES_PER_PIXEL * CHAR_CELL_WIDTH * CHAR_CELL_HEIGHT;

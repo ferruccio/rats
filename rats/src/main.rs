@@ -1,11 +1,9 @@
 use clap::Parser;
-use maze::{Maze, MAZE_CELL_HEIGHT, MAZE_CELL_WIDTH};
-use std::{
-    cmp::{max, min},
-    time::Instant,
-};
+use maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS};
+use std::{cmp::max, time::Instant};
 use video::{
-    Event, InitOptions, Keycode, Result, Video, ATTR_DIM, ATTR_REVERSE,
+    Chars, Event, InitOptions, Keycode, Pixels, Result, Video, ATTR_DIM,
+    ATTR_REVERSE,
 };
 
 use crate::player::{
@@ -16,26 +14,26 @@ mod maze;
 mod player;
 
 #[derive(Parser)]
-struct RatsOpts {
+struct CommandLineParams {
     /// Display index
     #[clap(short = 'd', long = "display")]
     display: Option<usize>,
 
     /// Window height (pixels)
     #[clap(long = "window_height", alias = "w-ht")]
-    window_height: Option<usize>,
+    window_height: Option<Pixels>,
 
     /// Window width (pixels)
     #[clap(long = "window-width", alias = "w-wt")]
-    window_width: Option<usize>,
+    window_width: Option<Pixels>,
 
     /// Maze height (characters)
     #[clap(long = "maze-height", alias = "m-ht")]
-    maze_height: Option<usize>,
+    maze_height: Option<Chars>,
 
     /// Maze width (characters)
     #[clap(long = "maze-width", alias = "m-wt")]
-    maze_width: Option<usize>,
+    maze_width: Option<Chars>,
 
     /// Scale factor (1 to 4)
     #[clap(short = 's', long = "scale")]
@@ -43,12 +41,12 @@ struct RatsOpts {
 }
 
 fn main() {
-    if let Err(error) = play(RatsOpts::parse()) {
+    if let Err(error) = play(CommandLineParams::parse()) {
         println!("{error}");
     }
 }
 
-fn play(opts: RatsOpts) -> Result<()> {
+fn play(opts: CommandLineParams) -> Result<()> {
     let mut video = video::init(
         InitOptions::new()
             .display_index(opts.display)
@@ -56,12 +54,10 @@ fn play(opts: RatsOpts) -> Result<()> {
             .window_width(opts.window_width)
             .scale(opts.scale),
     )?;
-    dbg!(&video.buffer);
     video.init_charmap()?;
 
-    let (maze_width, maze_height) = maze_dimensions(&opts, &video);
-    let mut the_maze = Maze::new(maze_height, maze_width);
-    dbg!(&the_maze);
+    let (cell_rows, cell_cols) = maze_dimensions(&opts, &video);
+    let mut the_maze = Maze::new(cell_rows, cell_cols);
     the_maze.test_pattern();
 
     let mut player = Player::new(&the_maze);
@@ -70,25 +66,22 @@ fn play(opts: RatsOpts) -> Result<()> {
     let mut running = true;
     let mut frames = 0;
     let mut move_player = false;
-    let mut maze = Maze::new(maze_height, maze_width);
+    let mut maze = Maze::new(cell_rows, cell_cols);
     let start = Instant::now();
     while running {
         the_maze.buffer.copy_to(&mut maze.buffer);
         player.render(&mut maze);
 
-        let start_row = if player.row() >= video.buffer.rows / 2 {
-            player.row() - video.buffer.rows / 2
-        } else {
-            maze.buffer.rows - video.buffer.rows / 2
-        };
-        let start_col = if player.col() >= video.buffer.cols / 2 {
-            player.col() - video.buffer.cols / 2
-        } else {
-            maze.buffer.cols - video.buffer.cols / 2
-        };
+        let mut start_pos = player.position();
+        start_pos.move_up((video.buffer.rows - 2) / 2);
+        start_pos.move_left(video.buffer.cols / 2);
 
-        maze.buffer
-            .copy_buffer(start_row, start_col, &mut video.buffer, 2);
+        maze.buffer.copy_buffer(
+            start_pos.row,
+            start_pos.col,
+            &mut video.buffer,
+            2,
+        );
         frames += 1;
 
         let seconds = start.elapsed().as_secs_f32();
@@ -97,17 +90,17 @@ fn play(opts: RatsOpts) -> Result<()> {
             0,
             0,
             ATTR_REVERSE | ATTR_DIM,
-            format!("FPS: {fps:.0} dir: {direction:02X} sr: {start_row} sc: {start_col}"));
+            format!("FPS: {fps:.0} dir: {direction:02X} start: {start_pos}"),
+        );
         video.buffer.print(
             1,
             0,
             ATTR_REVERSE | ATTR_DIM,
             format!(
-                "maze: {maze_width}W x {maze_height}H ({wt} x {ht}) player r:{row} c:{col}",
-                wt = maze.buffer.cols,
-                ht = maze.buffer.rows,
-                row = player.row(),
-                col = player.col()
+                "maze: {cell_rows}R x {cell_cols}C ({rows} x {cols}) player: {player}",
+                rows = maze.cols(),
+                cols = maze.rows(),
+                player = player.position()
             ),
         );
 
@@ -159,18 +152,14 @@ fn play(opts: RatsOpts) -> Result<()> {
     Ok(())
 }
 
-fn maze_dimensions(opts: &RatsOpts, video: &Video) -> (usize, usize) {
+fn maze_dimensions(opts: &CommandLineParams, video: &Video) -> (Chars, Chars) {
     (
-        // height
-        if let Some(height) = opts.maze_height {
-            min(height, 30)
-        } else {
-            max(video.rows() / (MAZE_CELL_HEIGHT), 30)
-        }, //width
-        if let Some(width) = opts.maze_width {
-            min(width, 15)
-        } else {
-            max(video.cols() / (MAZE_CELL_WIDTH + 1), 15)
-        },
+        // rows
+        max(
+            (video.rows() - 2) / MAZE_CELL_ROWS,
+            opts.maze_height.unwrap_or(15),
+        ),
+        // cols
+        max(video.cols() / MAZE_CELL_COLS, opts.maze_width.unwrap_or(15)),
     )
 }

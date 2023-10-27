@@ -23,13 +23,18 @@ pub use charmaps::{
 pub use errors::Result;
 pub use init::{init, InitOptions};
 
+// use Pixels for bitmap dimensions
+pub type Pixels = usize;
+// use Chars for character map dimensions & positions
+pub type Chars = usize;
+
 pub struct Video {
     _context: Sdl,
     _video: VideoSubsystem,
     bounds: Rect,
     scale: usize,
-    rows: usize,
-    cols: usize,
+    rows: Chars,
+    cols: Chars,
     canvas: Canvas<Window>,
     event_pump: EventPump,
     charmap_surfaces: Vec<Surface<'static>>,
@@ -37,10 +42,10 @@ pub struct Video {
     back_buffer: Buffer,
 }
 
-const CHARACTERS: usize = 256;
+const FONT_SIZE: Chars = 256;
 const BYTES_PER_PIXEL: usize = 3;
-const CHAR_CELL_WIDTH: usize = 8;
-const CHAR_CELL_HEIGHT: usize = 12;
+const CHAR_CELL_WIDTH: Pixels = 8;
+const CHAR_CELL_HEIGHT: Pixels = 12;
 
 impl Video {
     pub fn render(&mut self) {
@@ -53,19 +58,19 @@ impl Video {
         self.canvas.present();
     }
 
-    pub fn height(&self) -> usize {
-        self.bounds.height() as usize
+    pub fn height(&self) -> Pixels {
+        self.bounds.height() as Pixels
     }
 
-    pub fn width(&self) -> usize {
-        self.bounds.width() as usize
+    pub fn width(&self) -> Pixels {
+        self.bounds.width() as Pixels
     }
 
-    pub fn rows(&self) -> usize {
+    pub fn rows(&self) -> Chars {
         self.rows
     }
 
-    pub fn cols(&self) -> usize {
+    pub fn cols(&self) -> Chars {
         self.cols
     }
 

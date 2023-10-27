@@ -1,7 +1,7 @@
 use crate::{
     buffer::{Buffer, ATTR_COMBOS},
     errors::sdl_error,
-    Result, Video, CHARACTERS, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
+    Pixels, Result, Video, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, FONT_SIZE,
 };
 use sdl2::{pixels::PixelFormatEnum, rect::Rect, surface::Surface};
 
@@ -27,7 +27,7 @@ impl InitOptions {
         self
     }
 
-    pub fn window_width(mut self, width: Option<usize>) -> Self {
+    pub fn window_width(mut self, width: Option<Pixels>) -> Self {
         if let Some(width) = width {
             if width >= 640 {
                 // make sure width is a multiple of CHAR_CELL_WIDTH
@@ -37,7 +37,7 @@ impl InitOptions {
         self
     }
 
-    pub fn window_height(mut self, height: Option<usize>) -> Self {
+    pub fn window_height(mut self, height: Option<Pixels>) -> Self {
         if let Some(height) = height {
             if height >= 480 {
                 // make sure height is a multiple of CHAR_CELL_HEIGHT
@@ -85,7 +85,7 @@ pub fn init(opts: InitOptions) -> Result<Video> {
         charmap_surfaces.push(
             Surface::new(
                 CHAR_CELL_WIDTH as u32,
-                (CHARACTERS * CHAR_CELL_HEIGHT) as u32,
+                (FONT_SIZE * CHAR_CELL_HEIGHT) as u32,
                 PixelFormatEnum::RGB24,
             )
             .map_err(sdl_error)?,
