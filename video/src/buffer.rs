@@ -122,11 +122,8 @@ impl Buffer {
     }
 
     pub fn copy_to(&self, dst: &mut Buffer) {
-        assert!(self.rows == dst.rows);
-        assert!(self.cols == dst.cols);
-        for (index, ch) in self.characters.iter().enumerate() {
-            dst.characters[index] = *ch;
-            dst.attributes[index] = self.attributes[index];
-        }
+        assert!(self.rows == dst.rows && self.cols == dst.cols);
+        dst.characters.copy_from_slice(&self.characters);
+        dst.attributes.copy_from_slice(&self.attributes);
     }
 }
