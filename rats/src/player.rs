@@ -24,15 +24,14 @@ pub const DIR_RIGHT: Direction = 0x08;
 
 impl Player {
     pub fn new(maze: &Maze) -> Player {
-        let player = Player {
+        Player {
             position: Position {
                 row: 0,
                 col: 0,
                 maze_rows: maze.rows(),
                 maze_cols: maze.cols(),
             },
-        };
-        player
+        }
     }
 
     pub fn position(&self) -> Position {

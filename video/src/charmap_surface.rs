@@ -79,12 +79,10 @@ fn set_pixels(pixels: &mut [u8], bitmap: &[u8], first: u8, attrs: u8) {
                 } else {
                     0
                 }
+            } else if byte & mask != 0 {
+                intensity
             } else {
-                if byte & mask != 0 {
-                    intensity
-                } else {
-                    0
-                }
+                0
             };
             pixels[offset + 2] = 0;
             offset += BYTES_PER_PIXEL;
