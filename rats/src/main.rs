@@ -55,6 +55,10 @@ fn play(opts: CommandLineParams) -> Result<()> {
         cell_cols,
     )?;
 
+    const FPS_LIMIT: u32 = 60;
+    const NANOS_PER_FRAME: u32 = 1_000_000_000 / FPS_LIMIT;
+    let mut frame_time = Instant::now();
+
     let mut maze = Maze::new(cell_rows, cell_cols);
     let mut event_pump = context.video.sdl.event_pump().map_err(sdl_error)?;
     // player moves every 1/10th of a second
@@ -82,6 +86,15 @@ fn play(opts: CommandLineParams) -> Result<()> {
             context.player.advance(context.direction);
             context.motion_start = Instant::now();
         }
+
+        let nanos_elapsed = frame_time.elapsed().as_nanos() as u32;
+        if nanos_elapsed < NANOS_PER_FRAME {
+            std::thread::sleep(Duration::new(
+                0,
+                NANOS_PER_FRAME - nanos_elapsed,
+            ));
+        }
+        frame_time = Instant::now();
     }
 
     Ok(())
