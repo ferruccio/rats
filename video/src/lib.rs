@@ -14,11 +14,7 @@ mod errors;
 mod init;
 
 pub use buffer::{Buffer, ATTR_DIM, ATTR_NONE, ATTR_REVERSE};
-pub use charmaps::{
-    MAZE_ACROSS, MAZE_BOTTOM_LEFT, MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T,
-    MAZE_CROSS, MAZE_DOWN, MAZE_LEFT_T, MAZE_RIGHT_T, MAZE_TOP_LEFT,
-    MAZE_TOP_RIGHT, MAZE_TOP_T,
-};
+pub use charmaps::*;
 pub use errors::{sdl_error, Result};
 pub use init::{init, InitOptions};
 

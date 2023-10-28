@@ -1,5 +1,22 @@
+pub const MAZE_NONE: u8 = b' ';
+pub const MAZE_ACROSS: u8 = MAZE_WALLS_START;
+pub const MAZE_DOWN: u8 = MAZE_WALLS_START + 1;
+pub const MAZE_TOP_LEFT: u8 = MAZE_WALLS_START + 2;
+pub const MAZE_TOP_RIGHT: u8 = MAZE_WALLS_START + 3;
+pub const MAZE_BOTTOM_LEFT: u8 = MAZE_WALLS_START + 4;
+pub const MAZE_BOTTOM_RIGHT: u8 = MAZE_WALLS_START + 5;
+pub const MAZE_LEFT_T: u8 = MAZE_WALLS_START + 6;
+pub const MAZE_RIGHT_T: u8 = MAZE_WALLS_START + 7;
+pub const MAZE_TOP_T: u8 = MAZE_WALLS_START + 8;
+pub const MAZE_BOTTOM_T: u8 = MAZE_WALLS_START + 9;
+pub const MAZE_CROSS: u8 = MAZE_WALLS_START + 10;
+pub const MAZE_TOP: u8 = MAZE_WALLS_START + 11;
+pub const MAZE_BOTTOM: u8 = MAZE_WALLS_START + 12;
+pub const MAZE_LEFT: u8 = MAZE_WALLS_START + 13;
+pub const MAZE_RIGHT: u8 = MAZE_WALLS_START + 14;
+
 pub const MAZE_WALLS_START: u8 = 0x80;
-pub const MAZE_WALLS: [u8; 11 * 12] = [
+pub const MAZE_WALLS: [u8; 15 * 12] = [
     // across
     0b_00000000, // comments on each line keep rustfmt from changing this layout
     0b_00000000, //
@@ -143,16 +160,56 @@ pub const MAZE_WALLS: [u8; 11 * 12] = [
     0b_00111100, //
     0b_00111100, //
     0b_00111100, //
+    // top
+    0b_00111100, //
+    0b_00111100, //
+    0b_00111100, //
+    0b_00111100, //
+    0b_00111100, //
+    0b_00111100, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    // bottom
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00111100, //
+    0b_00111100, //
+    0b_00111100, //
+    0b_00111100, //
+    0b_00111100, //
+    0b_00111100, //
+    // left
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_11110000, //
+    0b_11110000, //
+    0b_11110000, //
+    0b_11110000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    // right
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00001111, //
+    0b_00001111, //
+    0b_00001111, //
+    0b_00001111, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
 ];
-
-pub const MAZE_ACROSS: u8 = MAZE_WALLS_START;
-pub const MAZE_DOWN: u8 = MAZE_WALLS_START + 1;
-pub const MAZE_TOP_LEFT: u8 = MAZE_WALLS_START + 2;
-pub const MAZE_TOP_RIGHT: u8 = MAZE_WALLS_START + 3;
-pub const MAZE_BOTTOM_LEFT: u8 = MAZE_WALLS_START + 4;
-pub const MAZE_BOTTOM_RIGHT: u8 = MAZE_WALLS_START + 5;
-pub const MAZE_LEFT_T: u8 = MAZE_WALLS_START + 6;
-pub const MAZE_RIGHT_T: u8 = MAZE_WALLS_START + 7;
-pub const MAZE_TOP_T: u8 = MAZE_WALLS_START + 8;
-pub const MAZE_BOTTOM_T: u8 = MAZE_WALLS_START + 9;
-pub const MAZE_CROSS: u8 = MAZE_WALLS_START + 10;

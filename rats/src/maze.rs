@@ -1,8 +1,9 @@
 use knossos::maze::{HuntAndKill, OrthogonalMaze, OrthogonalMazeBuilder};
 use video::{
-    Buffer, Chars, ATTR_DIM, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM_LEFT,
-    MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T, MAZE_CROSS, MAZE_DOWN, MAZE_LEFT_T,
-    MAZE_RIGHT_T, MAZE_TOP_LEFT, MAZE_TOP_RIGHT, MAZE_TOP_T,
+    Buffer, Chars, ATTR_DIM, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM,
+    MAZE_BOTTOM_LEFT, MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T, MAZE_CROSS, MAZE_DOWN,
+    MAZE_LEFT, MAZE_LEFT_T, MAZE_NONE, MAZE_RIGHT, MAZE_RIGHT_T, MAZE_TOP,
+    MAZE_TOP_LEFT, MAZE_TOP_RIGHT, MAZE_TOP_T,
 };
 
 #[derive(Debug)]
@@ -208,7 +209,11 @@ impl MazeGenerator {
             (false, true, true, false) => MAZE_TOP_LEFT,
             (false, true, false, true) => MAZE_ACROSS,
             (false, false, true, true) => MAZE_TOP_RIGHT,
-            _ => b' ',
+            (true, false, false, false) => MAZE_TOP,
+            (false, true, false, false) => MAZE_RIGHT,
+            (false, false, true, false) => MAZE_BOTTOM,
+            (false, false, false, true) => MAZE_LEFT,
+            (false, false, false, false) => MAZE_NONE,
         }
     }
 }
