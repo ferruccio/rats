@@ -77,6 +77,7 @@ pub fn init(opts: InitOptions) -> Result<Video> {
         .fullscreen()
         .position(bounds.x(), bounds.y())
         .build()?;
+    sdl.mouse().show_cursor(false);
     let canvas = window.into_canvas().build()?;
 
     let mut charmap_surfaces = vec![];
