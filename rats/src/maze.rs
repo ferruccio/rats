@@ -191,29 +191,37 @@ impl MazeGenerator {
     fn joiner(&mut self, row: usize, col: usize) -> u8 {
         let row_1 = if row == 0 { self.rows - 1 } else { row - 1 };
         let col_1 = if col == 0 { self.cols - 1 } else { col - 1 };
-        let walls = (
-            self.walls(row_1, col).left, // .0
-            self.walls(row, col).top,    // .1
-            self.walls(row, col).left,   // .2
-            self.walls(row, col_1).top,  // .3
-        );
-        match walls {
-            (true, true, true, true) => MAZE_CROSS,
-            (true, true, true, false) => MAZE_LEFT_T,
-            (true, true, false, true) => MAZE_BOTTOM_T,
-            (true, true, false, false) => MAZE_BOTTOM_RIGHT,
-            (true, false, true, true) => MAZE_RIGHT_T,
-            (true, false, true, false) => MAZE_DOWN,
-            (true, false, false, true) => MAZE_BOTTOM_LEFT,
-            (false, true, true, true) => MAZE_TOP_T,
-            (false, true, true, false) => MAZE_TOP_LEFT,
-            (false, true, false, true) => MAZE_ACROSS,
-            (false, false, true, true) => MAZE_TOP_RIGHT,
-            (true, false, false, false) => MAZE_TOP,
-            (false, true, false, false) => MAZE_RIGHT,
-            (false, false, true, false) => MAZE_BOTTOM,
-            (false, false, false, true) => MAZE_LEFT,
-            (false, false, false, false) => MAZE_NONE,
+        let mut wall_index = 0;
+        if self.walls(row_1, col).left {
+            wall_index |= 0b_1000;
         }
+        if self.walls(row, col).top {
+            wall_index |= 0b_0100;
+        }
+        if self.walls(row, col).left {
+            wall_index |= 0b_0010;
+        }
+        if self.walls(row, col_1).top {
+            wall_index |= 0b_0001;
+        }
+        let wall_chars: [u8; 16] = [
+            /* 0000 */ MAZE_NONE,
+            /* 0001 */ MAZE_LEFT,
+            /* 0010 */ MAZE_BOTTOM,
+            /* 0011 */ MAZE_TOP_RIGHT,
+            /* 0100 */ MAZE_RIGHT,
+            /* 0101 */ MAZE_ACROSS,
+            /* 0110 */ MAZE_TOP_LEFT,
+            /* 0111 */ MAZE_TOP_T,
+            /* 1000 */ MAZE_TOP,
+            /* 1001 */ MAZE_BOTTOM_LEFT,
+            /* 1010 */ MAZE_DOWN,
+            /* 1011 */ MAZE_RIGHT_T,
+            /* 1100 */ MAZE_BOTTOM_RIGHT,
+            /* 1101 */ MAZE_BOTTOM_T,
+            /* 1110 */ MAZE_LEFT_T,
+            /* 1111 */ MAZE_CROSS,
+        ];
+        wall_chars[wall_index]
     }
 }
