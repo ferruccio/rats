@@ -3,7 +3,7 @@ use crate::{
     player::{Direction, Player, DIR_DOWN, DIR_NONE, DIR_RIGHT},
 };
 use std::{cmp::max, time::Instant};
-use video::{InitOptions, Result, Video, ATTR_DIM, ATTR_REVERSE};
+use video::{InitOptions, RenderMode, Result, Video, ATTR_DIM, ATTR_REVERSE};
 
 pub struct GameContext {
     pub video: Video,
@@ -47,7 +47,11 @@ impl GameContext {
         })
     }
 
-    pub fn render_frame(&mut self, maze: &mut Maze) -> Result<()> {
+    pub fn render_frame(
+        &mut self,
+        maze: &mut Maze,
+        mode: RenderMode,
+    ) -> Result<()> {
         self.player.render(maze);
 
         let mut start_pos = self.player.position();
@@ -83,6 +87,6 @@ impl GameContext {
             ),
         );
 
-        self.video.render_buffer()
+        self.video.render_buffer(mode)
     }
 }

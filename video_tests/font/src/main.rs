@@ -75,7 +75,7 @@ fn main() {
             pos -= 1;
         }
 
-        _ = video.render_buffer();
+        _ = video.render_buffer(video::RenderMode::Full);
 
         offset = 0;
         let cols = video.cols() as isize;

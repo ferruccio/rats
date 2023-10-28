@@ -3,7 +3,9 @@ use game_context::GameContext;
 use maze::Maze;
 use player::{DIR_DOWN, DIR_LEFT, DIR_NONE, DIR_RIGHT, DIR_UP};
 use std::time::{Duration, Instant};
-use video::{sdl_error, Event, InitOptions, Keycode, Pixels, Result};
+use video::{
+    sdl_error, Event, InitOptions, Keycode, Pixels, RenderMode, Result,
+};
 
 mod game_context;
 mod maze;
@@ -65,7 +67,14 @@ fn play(opts: CommandLineParams) -> Result<()> {
     let motion_time = Duration::new(0, 1_000_000_000 / 10);
     while context.running {
         context.maze.buffer.copy_to(&mut maze.buffer);
-        context.render_frame(&mut maze)?;
+        context.render_frame(
+            &mut maze,
+            if context.frames % 8 == 0 {
+                RenderMode::Full
+            } else {
+                RenderMode::Delta
+            },
+        )?;
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => context.running = false,
