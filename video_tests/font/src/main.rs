@@ -1,7 +1,9 @@
 use clap::Parser;
 use std::time::Instant;
 use video::{
-    init, Event, InitOptions, Keycode, ATTR_DIM, ATTR_NONE, ATTR_REVERSE,
+    init, Event, InitOptions, Keycode, PixelFormatEnum, RenderMode,
+    ATTR_COMBOS, ATTR_DIM, ATTR_NONE, ATTR_REVERSE, CHAR_CELL_HEIGHT,
+    CHAR_CELL_WIDTH, FONT_SIZE,
 };
 
 #[derive(Parser, Debug)]
@@ -33,7 +35,19 @@ fn main() {
             .scale(opts.scale),
     )
     .unwrap();
-    _ = video.init_charmap();
+    let texture_creator = video.canvas.texture_creator();
+    let mut textures = vec![];
+    for _ in 0..ATTR_COMBOS {
+        let texture = texture_creator
+            .create_texture_streaming(
+                PixelFormatEnum::RGB24,
+                CHAR_CELL_WIDTH as u32,
+                (FONT_SIZE * CHAR_CELL_HEIGHT) as u32,
+            )
+            .unwrap();
+        textures.push(texture);
+    }
+    _ = video.init_charmap_textures(&mut textures);
     let mut event_pump = video.sdl.event_pump().unwrap();
 
     let mut running = true;
@@ -75,7 +89,7 @@ fn main() {
             pos -= 1;
         }
 
-        _ = video.render_buffer(video::RenderMode::Full);
+        _ = video.render_buffer(&textures, RenderMode::Full);
 
         offset = 0;
         let cols = video.cols() as isize;

@@ -355,6 +355,7 @@ name = "font"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "sdl2",
  "video",
 ]
 
@@ -698,6 +699,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "knossos",
+ "sdl2",
  "video",
 ]
 

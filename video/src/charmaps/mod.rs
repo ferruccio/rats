@@ -2,6 +2,21 @@ mod maze_walls;
 
 pub use maze_walls::*;
 
+pub const EMPTY: [u8; 12] = [
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00111100, //
+    0b_00100100, //
+    0b_00100100, //
+    0b_00111100, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+    0b_00000000, //
+];
+
 // 8x12 bitmap font
 // source: http://www.massmind.org/techref/datafile/charset/extractor/font8x12pic8.asm.txt
 pub const ASCII_START: u8 = 0x20;

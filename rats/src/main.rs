@@ -4,7 +4,9 @@ use maze::Maze;
 use player::{DIR_DOWN, DIR_LEFT, DIR_NONE, DIR_RIGHT, DIR_UP};
 use std::time::{Duration, Instant};
 use video::{
-    sdl_error, Event, InitOptions, Keycode, Pixels, RenderMode, Result,
+    sdl_error, Event, InitOptions, Keycode, PixelFormatEnum, Pixels,
+    RenderMode, Result, ATTR_COMBOS, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
+    FONT_SIZE,
 };
 
 mod game_context;
@@ -57,6 +59,18 @@ fn play(opts: CommandLineParams) -> Result<()> {
         cell_cols,
     )?;
 
+    let texture_creator = context.video.canvas.texture_creator();
+    let mut textures = vec![];
+    for _ in 0..ATTR_COMBOS {
+        let texture = texture_creator.create_texture_streaming(
+            PixelFormatEnum::RGB24,
+            CHAR_CELL_WIDTH as u32,
+            (FONT_SIZE * CHAR_CELL_HEIGHT) as u32,
+        )?;
+        textures.push(texture);
+    }
+    context.video.init_charmap_textures(&mut textures)?;
+
     const FPS_LIMIT: u32 = 60;
     const NANOS_PER_FRAME: u32 = 1_000_000_000 / FPS_LIMIT;
     let mut frame_time = Instant::now();
@@ -67,14 +81,7 @@ fn play(opts: CommandLineParams) -> Result<()> {
     let motion_time = Duration::new(0, 1_000_000_000 / 10);
     while context.running {
         context.maze.buffer.copy_to(&mut maze.buffer);
-        context.render_frame(
-            &mut maze,
-            if context.frames % 8 == 0 {
-                RenderMode::Full
-            } else {
-                RenderMode::Delta
-            },
-        )?;
+        context.render_frame(&mut maze, &textures, RenderMode::Delta)?;
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => context.running = false,

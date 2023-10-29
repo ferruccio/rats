@@ -1,9 +1,8 @@
 use crate::{
-    buffer::{Buffer, ATTR_COMBOS},
-    errors::sdl_error,
-    Pixels, Result, Video, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, FONT_SIZE,
+    buffer::Buffer, errors::sdl_error, Pixels, Result, Video, CHAR_CELL_HEIGHT,
+    CHAR_CELL_WIDTH,
 };
-use sdl2::{pixels::PixelFormatEnum, rect::Rect, surface::Surface};
+use sdl2::rect::Rect;
 
 #[derive(Debug, Default)]
 pub struct InitOptions {
@@ -80,18 +79,6 @@ pub fn init(opts: InitOptions) -> Result<Video> {
     sdl.mouse().show_cursor(false);
     let canvas = window.into_canvas().build()?;
 
-    let mut charmap_surfaces = vec![];
-    for _ in 0..ATTR_COMBOS {
-        charmap_surfaces.push(
-            Surface::new(
-                CHAR_CELL_WIDTH as u32,
-                (FONT_SIZE * CHAR_CELL_HEIGHT) as u32,
-                PixelFormatEnum::RGB24,
-            )
-            .map_err(sdl_error)?,
-        );
-    }
-
     Ok(Video {
         sdl,
         bounds,
@@ -99,7 +86,6 @@ pub fn init(opts: InitOptions) -> Result<Video> {
         rows,
         cols,
         canvas,
-        charmap_surfaces,
         buffer: Buffer::new(rows, cols),
         back_buffer: Buffer::new(rows, cols),
     })

@@ -1,6 +1,9 @@
-use buffer::{ATTR_COMBOS, ATTR_MASK};
+use buffer::ATTR_MASK;
 use sdl2::{
-    pixels::Color, rect::Rect, render::Canvas, surface::Surface, video::Window,
+    pixels::Color,
+    rect::Rect,
+    render::{Canvas, Texture},
+    video::Window,
     Sdl,
 };
 
@@ -8,15 +11,16 @@ pub use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
 
 mod buffer;
-mod charmap_surface;
+mod charmap_textures;
 mod charmaps;
 mod errors;
 mod init;
 
-pub use buffer::{Buffer, ATTR_DIM, ATTR_NONE, ATTR_REVERSE};
+pub use buffer::{Buffer, ATTR_COMBOS, ATTR_DIM, ATTR_NONE, ATTR_REVERSE};
 pub use charmaps::*;
 pub use errors::{sdl_error, Result};
 pub use init::{init, InitOptions};
+pub use sdl2::pixels::PixelFormatEnum;
 
 // use Pixels for bitmap dimensions
 pub type Pixels = usize;
@@ -29,16 +33,15 @@ pub struct Video {
     scale: usize,
     rows: Chars,
     cols: Chars,
-    canvas: Canvas<Window>,
-    charmap_surfaces: Vec<Surface<'static>>,
+    pub canvas: Canvas<Window>,
     pub buffer: Buffer,
     back_buffer: Buffer,
 }
 
-const FONT_SIZE: Chars = 256;
-const BYTES_PER_PIXEL: usize = 3;
-const CHAR_CELL_WIDTH: Pixels = 8;
-const CHAR_CELL_HEIGHT: Pixels = 12;
+pub const FONT_SIZE: Chars = 256;
+pub const BYTES_PER_PIXEL: usize = 3;
+pub const CHAR_CELL_WIDTH: Pixels = 8;
+pub const CHAR_CELL_HEIGHT: Pixels = 12;
 
 #[derive(PartialEq, Eq)]
 pub enum RenderMode {
@@ -77,14 +80,18 @@ impl Video {
         self.buffer.swap(&mut self.back_buffer);
     }
 
-    pub fn render_buffer(&mut self, mode: RenderMode) -> Result<()> {
-        let texture_creator = self.canvas.texture_creator();
-        let mut textures = vec![];
-        for index in 0..ATTR_COMBOS {
-            textures.push(
-                self.charmap_surfaces[index].as_texture(&texture_creator)?,
-            );
-        }
+    pub fn render_buffer(
+        &mut self,
+        textures: &[Texture],
+        mode: RenderMode,
+    ) -> Result<()> {
+        // let texture_creator = self.canvas.texture_creator();
+        // let mut textures = vec![];
+        // for index in 0..ATTR_COMBOS {
+        //     textures.push(
+        //         self.charmap_surfaces[index].as_texture(&texture_creator)?,
+        //     );
+        // }
         self.canvas
             .set_scale(self.scale as f32, self.scale as f32)
             .map_err(sdl_error)?;

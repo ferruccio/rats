@@ -7,3 +7,4 @@ edition = "2021"
 clap = { version = "4.4.6", features = ["derive"] }
 knossos = "0.3.0"
 video = { path = "../video" }
+sdl2 = { workspace = true }

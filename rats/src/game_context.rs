@@ -2,6 +2,7 @@ use crate::{
     maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS},
     player::{Direction, Player, DIR_DOWN, DIR_NONE, DIR_RIGHT},
 };
+use sdl2::render::Texture;
 use std::{cmp::max, time::Instant};
 use video::{InitOptions, RenderMode, Result, Video, ATTR_DIM, ATTR_REVERSE};
 
@@ -22,8 +23,7 @@ impl GameContext {
         maze_height: usize,
         maze_width: usize,
     ) -> Result<GameContext> {
-        let mut video = video::init(opts)?;
-        video.init_charmap()?;
+        let video = video::init(opts)?;
         let cell_rows = max((video.rows() - 2) / MAZE_CELL_ROWS, maze_height);
         let cell_cols = max(video.cols() / MAZE_CELL_COLS, maze_width);
         let mut the_maze = Maze::new(cell_rows, cell_cols);
@@ -50,6 +50,7 @@ impl GameContext {
     pub fn render_frame(
         &mut self,
         maze: &mut Maze,
+        textures: &[Texture],
         mode: RenderMode,
     ) -> Result<()> {
         self.player.render(maze);
@@ -87,6 +88,6 @@ impl GameContext {
             ),
         );
 
-        self.video.render_buffer(mode)
+        self.video.render_buffer(textures, mode)
     }
 }

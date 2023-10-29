@@ -7,3 +7,6 @@ members = [
 ]
 
 resolver = "2"
+
+[workspace.dependencies]
+sdl2 = { version = "0.35.2", features = ["bundled"] }
