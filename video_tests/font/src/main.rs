@@ -1,9 +1,8 @@
 use clap::Parser;
 use std::time::Instant;
 use video::{
-    init, Event, InitOptions, Keycode, PixelFormatEnum, RenderMode,
-    ATTR_COMBOS, ATTR_DIM, ATTR_NONE, ATTR_REVERSE, CHAR_CELL_HEIGHT,
-    CHAR_CELL_WIDTH, FONT_SIZE,
+    init, Event, InitOptions, Keycode, PixelFormatEnum, ATTR_COMBOS, ATTR_DIM,
+    ATTR_NONE, ATTR_REVERSE, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, FONT_SIZE,
 };
 
 #[derive(Parser, Debug)]
@@ -89,7 +88,7 @@ fn main() {
             pos -= 1;
         }
 
-        _ = video.render_buffer(&textures, RenderMode::Full);
+        _ = video.render_buffer(&textures);
 
         offset = 0;
         let cols = video.cols() as isize;

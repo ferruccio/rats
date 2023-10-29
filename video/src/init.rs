@@ -87,6 +87,5 @@ pub fn init(opts: InitOptions) -> Result<Video> {
         cols,
         canvas,
         buffer: Buffer::new(rows, cols),
-        back_buffer: Buffer::new(rows, cols),
     })
 }

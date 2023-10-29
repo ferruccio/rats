@@ -4,7 +4,7 @@ use crate::{
 };
 use sdl2::render::Texture;
 use std::{cmp::max, time::Instant};
-use video::{InitOptions, RenderMode, Result, Video, ATTR_DIM, ATTR_REVERSE};
+use video::{InitOptions, Result, Video, ATTR_DIM, ATTR_REVERSE};
 
 pub struct GameContext {
     pub video: Video,
@@ -51,7 +51,6 @@ impl GameContext {
         &mut self,
         maze: &mut Maze,
         textures: &[Texture],
-        mode: RenderMode,
     ) -> Result<()> {
         self.player.render(maze);
 
@@ -88,6 +87,6 @@ impl GameContext {
             ),
         );
 
-        self.video.render_buffer(textures, mode)
+        self.video.render_buffer(textures)
     }
 }

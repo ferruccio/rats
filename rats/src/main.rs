@@ -2,11 +2,13 @@ use clap::Parser;
 use game_context::GameContext;
 use maze::Maze;
 use player::{DIR_DOWN, DIR_LEFT, DIR_NONE, DIR_RIGHT, DIR_UP};
-use std::time::{Duration, Instant};
+use std::{
+    thread::sleep,
+    time::{Duration, Instant},
+};
 use video::{
-    sdl_error, Event, InitOptions, Keycode, PixelFormatEnum, Pixels,
-    RenderMode, Result, ATTR_COMBOS, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
-    FONT_SIZE,
+    sdl_error, Event, InitOptions, Keycode, PixelFormatEnum, Pixels, Result,
+    ATTR_COMBOS, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, FONT_SIZE,
 };
 
 mod game_context;
@@ -81,7 +83,7 @@ fn play(opts: CommandLineParams) -> Result<()> {
     let motion_time = Duration::new(0, 1_000_000_000 / 10);
     while context.running {
         context.maze.buffer.copy_to(&mut maze.buffer);
-        context.render_frame(&mut maze, &textures, RenderMode::Delta)?;
+        context.render_frame(&mut maze, &textures)?;
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => context.running = false,
@@ -105,10 +107,7 @@ fn play(opts: CommandLineParams) -> Result<()> {
 
         let nanos_elapsed = frame_time.elapsed().as_nanos() as u32;
         if nanos_elapsed < NANOS_PER_FRAME {
-            std::thread::sleep(Duration::new(
-                0,
-                NANOS_PER_FRAME - nanos_elapsed,
-            ));
+            sleep(Duration::new(0, NANOS_PER_FRAME - nanos_elapsed));
         }
         frame_time = Instant::now();
     }
