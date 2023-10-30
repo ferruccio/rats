@@ -107,7 +107,7 @@ fn play(opts: CommandLineParams) -> Result<()> {
             }
         }
         if context.motion_start.elapsed() >= motion_time {
-            context.player.advance(context.direction);
+            context.player.advance_all(&maze, context.direction);
             context.motion_start = Instant::now();
             motion_cycle = (motion_cycle + 1) & 3;
         }

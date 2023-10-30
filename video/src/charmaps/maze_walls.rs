@@ -18,6 +18,7 @@ pub const MAZE_LEFT: u8 = MAZE_WALLS_START + 13;
 pub const MAZE_RIGHT: u8 = MAZE_WALLS_START + 14;
 
 pub const MAZE_WALLS_START: u8 = 0x80;
+pub const MAZE_WALLS_END: u8 = MAZE_RIGHT;
 // comments on each line prevent rustfmt from changing this layout
 pub const MAZE_WALLS: [u8; 15 * CHAR_CELL_HEIGHT] = [
     // across

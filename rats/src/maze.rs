@@ -3,7 +3,8 @@ use video::{
     Buffer, Chars, ATTR_DIM, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM,
     MAZE_BOTTOM_LEFT, MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T, MAZE_CROSS, MAZE_DOWN,
     MAZE_LEFT, MAZE_LEFT_T, MAZE_NONE, MAZE_RIGHT, MAZE_RIGHT_T, MAZE_TOP,
-    MAZE_TOP_LEFT, MAZE_TOP_RIGHT, MAZE_TOP_T,
+    MAZE_TOP_LEFT, MAZE_TOP_RIGHT, MAZE_TOP_T, MAZE_WALLS_END,
+    MAZE_WALLS_START,
 };
 
 #[derive(Debug)]
@@ -41,6 +42,13 @@ impl Maze {
 
     pub fn cols(&self) -> Chars {
         self.cols
+    }
+
+    pub fn empty(&self, row: Chars, col: Chars) -> bool {
+        !is_wall_char(self.buffer.get_char(row, col))
+            && !is_wall_char(self.buffer.get_char(row, col + 1))
+            && !is_wall_char(self.buffer.get_char(row + 1, col))
+            && !is_wall_char(self.buffer.get_char(row + 1, col + 1))
     }
 
     pub fn generate(&mut self, legend: bool) {
@@ -224,4 +232,8 @@ impl MazeGenerator {
         ];
         wall_chars[wall_index]
     }
+}
+
+fn is_wall_char(ch: u8) -> bool {
+    ch >= MAZE_WALLS_START && ch <= MAZE_WALLS_END
 }

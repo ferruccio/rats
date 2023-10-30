@@ -59,6 +59,40 @@ impl Player {
         }
     }
 
+    pub fn advance_all(&mut self, maze: &Maze, direction: Direction) {
+        if self.can_advance(maze, direction) {
+            self.advance(direction);
+        } else {
+            if direction & DIR_UP != 0 && self.can_advance(maze, DIR_UP) {
+                self.advance(DIR_UP);
+            }
+            if direction & DIR_DOWN != 0 && self.can_advance(maze, DIR_DOWN) {
+                self.advance(DIR_DOWN);
+            }
+            if direction & DIR_LEFT != 0 && self.can_advance(maze, DIR_LEFT) {
+                self.advance(DIR_LEFT);
+            }
+            if direction & DIR_RIGHT != 0 && self.can_advance(maze, DIR_RIGHT) {
+                self.advance(DIR_RIGHT);
+            }
+        }
+    }
+
+    pub fn can_advance(&self, maze: &Maze, direction: Direction) -> bool {
+        let pos = &self.position;
+        match direction {
+            DIR_DOWN => maze.empty(pos.row + 1, pos.col),
+            DIR_DOWN_LEFT => maze.empty(pos.row + 1, pos.col - 1),
+            DIR_DOWN_RIGHT => maze.empty(pos.row + 1, pos.col + 1),
+            DIR_UP => maze.empty(pos.row - 1, pos.col),
+            DIR_UP_LEFT => maze.empty(pos.row - 1, pos.col - 1),
+            DIR_UP_RIGHT => maze.empty(pos.row - 1, pos.col + 1),
+            DIR_LEFT => maze.empty(pos.row, pos.col - 1),
+            DIR_RIGHT => maze.empty(pos.row, pos.col + 1),
+            _ => false,
+        }
+    }
+
     pub fn render(&self, maze: &mut Maze, direction: Direction, offset: u8) {
         let row1 = self.position.row;
         let col1 = self.position.col;
