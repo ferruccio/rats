@@ -1,4 +1,6 @@
-use video::{Chars, ATTR_REVERSE};
+use video::{
+    Chars, ATTR_NONE, PLAYER_DOWN, PLAYER_LEFT, PLAYER_RIGHT, PLAYER_UP,
+};
 
 use crate::maze::Maze;
 
@@ -21,6 +23,10 @@ pub const DIR_UP: Direction = 0x01;
 pub const DIR_DOWN: Direction = 0x02;
 pub const DIR_LEFT: Direction = 0x04;
 pub const DIR_RIGHT: Direction = 0x08;
+pub const DIR_UP_LEFT: usize = DIR_UP | DIR_LEFT;
+pub const DIR_UP_RIGHT: usize = DIR_UP | DIR_RIGHT;
+pub const DIR_DOWN_LEFT: usize = DIR_DOWN | DIR_LEFT;
+pub const DIR_DOWN_RIGHT: usize = DIR_DOWN | DIR_RIGHT;
 
 impl Player {
     pub fn new(maze: &Maze) -> Player {
@@ -53,15 +59,26 @@ impl Player {
         }
     }
 
-    pub fn render(&self, maze: &mut Maze) {
+    pub fn render(&self, maze: &mut Maze, direction: Direction, offset: u8) {
         let row1 = self.position.row;
         let col1 = self.position.col;
         let row2 = (self.position.row + 1) % self.position.maze_rows;
         let col2 = (self.position.col + 1) % self.position.maze_cols;
-        maze.buffer.set_chattr(row1, col1, b'/', ATTR_REVERSE);
-        maze.buffer.set_chattr(row1, col2, b'\\', ATTR_REVERSE);
-        maze.buffer.set_chattr(row2, col1, b'\\', ATTR_REVERSE);
-        maze.buffer.set_chattr(row2, col2, b'/', ATTR_REVERSE);
+        let ch = match direction {
+            DIR_DOWN => PLAYER_DOWN,
+            DIR_DOWN_LEFT => PLAYER_LEFT,
+            DIR_DOWN_RIGHT => PLAYER_RIGHT,
+            DIR_UP => PLAYER_UP,
+            DIR_UP_LEFT => PLAYER_LEFT,
+            DIR_UP_RIGHT => PLAYER_RIGHT,
+            DIR_LEFT => PLAYER_LEFT,
+            DIR_RIGHT => PLAYER_RIGHT,
+            _ => PLAYER_DOWN,
+        } + offset * 4;
+        maze.buffer.set_chattr(row1, col1, ch, ATTR_NONE);
+        maze.buffer.set_chattr(row1, col2, ch + 1, ATTR_NONE);
+        maze.buffer.set_chattr(row2, col1, ch + 2, ATTR_NONE);
+        maze.buffer.set_chattr(row2, col2, ch + 3, ATTR_NONE);
     }
 }
 

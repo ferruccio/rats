@@ -1,7 +1,7 @@
 use clap::Parser;
 use game_context::GameContext;
 use maze::Maze;
-use player::{DIR_DOWN, DIR_LEFT, DIR_NONE, DIR_RIGHT, DIR_UP};
+use player::{DIR_DOWN, DIR_LEFT, DIR_RIGHT, DIR_UP};
 use std::{
     thread::sleep,
     time::{Duration, Instant},
@@ -10,6 +10,8 @@ use video::{
     sdl_error, Event, InitOptions, Keycode, PixelFormatEnum, Pixels, Result,
     ATTR_COMBOS, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, FONT_SIZE,
 };
+
+use crate::player::DIR_NONE;
 
 mod game_context;
 mod maze;
@@ -81,9 +83,15 @@ fn play(opts: CommandLineParams) -> Result<()> {
     let mut event_pump = context.video.sdl.event_pump().map_err(sdl_error)?;
     // player moves every 1/10th of a second
     let motion_time = Duration::new(0, 1_000_000_000 / 10);
+    let mut motion_cycle: u8 = 0;
     while context.running {
         context.maze.buffer.copy_to(&mut maze.buffer);
-        context.render_frame(&mut maze, &textures)?;
+        let offset = if context.direction == DIR_NONE {
+            0
+        } else {
+            (motion_cycle >> 1) + 1
+        };
+        context.render_frame(&mut maze, offset, &textures)?;
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => context.running = false,
@@ -98,11 +106,10 @@ fn play(opts: CommandLineParams) -> Result<()> {
                 _ => {}
             }
         }
-        if context.direction != DIR_NONE
-            && context.motion_start.elapsed() >= motion_time
-        {
+        if context.motion_start.elapsed() >= motion_time {
             context.player.advance(context.direction);
             context.motion_start = Instant::now();
+            motion_cycle = (motion_cycle + 1) & 3;
         }
 
         let nanos_elapsed = frame_time.elapsed().as_nanos() as u32;
@@ -118,20 +125,20 @@ fn play(opts: CommandLineParams) -> Result<()> {
 fn key_down(context: &mut GameContext, keycode: Keycode) {
     match keycode {
         Keycode::Escape | Keycode::Q => context.running = false,
-        Keycode::Up => context.direction |= DIR_UP,
-        Keycode::Down => context.direction |= DIR_DOWN,
-        Keycode::Left => context.direction |= DIR_LEFT,
-        Keycode::Right => context.direction |= DIR_RIGHT,
+        Keycode::Up => context.start(DIR_UP),
+        Keycode::Down => context.start(DIR_DOWN),
+        Keycode::Left => context.start(DIR_LEFT),
+        Keycode::Right => context.start(DIR_RIGHT),
         _ => {}
     }
 }
 
 fn key_up(context: &mut GameContext, keycode: Keycode) {
     match keycode {
-        Keycode::Up => context.direction &= !DIR_UP,
-        Keycode::Down => context.direction &= !DIR_DOWN,
-        Keycode::Left => context.direction &= !DIR_LEFT,
-        Keycode::Right => context.direction &= !DIR_RIGHT,
+        Keycode::Up => context.stop(DIR_UP),
+        Keycode::Down => context.stop(DIR_DOWN),
+        Keycode::Left => context.stop(DIR_LEFT),
+        Keycode::Right => context.stop(DIR_RIGHT),
         _ => {}
     }
 }

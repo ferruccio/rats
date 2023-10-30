@@ -1,6 +1,9 @@
 use crate::{
     maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS},
-    player::{Direction, Player, DIR_DOWN, DIR_NONE, DIR_RIGHT},
+    player::{
+        Direction, Player, DIR_DOWN, DIR_DOWN_LEFT, DIR_DOWN_RIGHT, DIR_LEFT,
+        DIR_NONE, DIR_RIGHT, DIR_UP, DIR_UP_LEFT, DIR_UP_RIGHT,
+    },
 };
 use sdl2::render::Texture;
 use std::{cmp::max, time::Instant};
@@ -13,6 +16,7 @@ pub struct GameContext {
     pub maze: Maze,
     pub player: Player,
     pub direction: Direction,
+    pub stop_direction: Direction,
     pub running: bool,
     pub motion_start: Instant,
 }
@@ -42,6 +46,7 @@ impl GameContext {
             maze: the_maze,
             player,
             direction: DIR_NONE,
+            stop_direction: DIR_DOWN,
             running: true,
             motion_start: Instant::now(),
         })
@@ -50,9 +55,19 @@ impl GameContext {
     pub fn render_frame(
         &mut self,
         maze: &mut Maze,
+        offset: u8,
         textures: &[Texture],
     ) -> Result<()> {
-        self.player.render(maze);
+        self.video.buffer.clear();
+        self.player.render(
+            maze,
+            if self.direction == DIR_NONE {
+                self.stop_direction
+            } else {
+                self.direction
+            },
+            offset,
+        );
 
         let mut start_pos = self.player.position();
         start_pos.move_up((self.video.buffer.rows - 2) / 2);
@@ -88,5 +103,19 @@ impl GameContext {
         );
 
         self.video.render_buffer(textures)
+    }
+
+    pub fn start(&mut self, dir: Direction) {
+        self.direction |= dir;
+        self.stop_direction = match self.direction {
+            DIR_UP | DIR_DOWN | DIR_LEFT | DIR_RIGHT => self.direction,
+            DIR_UP_LEFT | DIR_DOWN_LEFT => DIR_LEFT,
+            DIR_UP_RIGHT | DIR_DOWN_RIGHT => DIR_RIGHT,
+            _ => DIR_UP,
+        };
+    }
+
+    pub fn stop(&mut self, dir: Direction) {
+        self.direction = self.direction & !dir;
     }
 }

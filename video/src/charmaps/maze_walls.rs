@@ -1,3 +1,5 @@
+use crate::CHAR_CELL_HEIGHT;
+
 pub const MAZE_NONE: u8 = b' ';
 pub const MAZE_ACROSS: u8 = MAZE_WALLS_START;
 pub const MAZE_DOWN: u8 = MAZE_WALLS_START + 1;
@@ -16,9 +18,10 @@ pub const MAZE_LEFT: u8 = MAZE_WALLS_START + 13;
 pub const MAZE_RIGHT: u8 = MAZE_WALLS_START + 14;
 
 pub const MAZE_WALLS_START: u8 = 0x80;
-pub const MAZE_WALLS: [u8; 15 * 12] = [
+// comments on each line prevent rustfmt from changing this layout
+pub const MAZE_WALLS: [u8; 15 * CHAR_CELL_HEIGHT] = [
     // across
-    0b_00000000, // comments on each line keep rustfmt from changing this layout
+    0b_00000000, //
     0b_00000000, //
     0b_00000000, //
     0b_00000000, //
