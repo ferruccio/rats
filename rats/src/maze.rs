@@ -1,4 +1,4 @@
-use knossos::maze::{HuntAndKill, OrthogonalMaze, OrthogonalMazeBuilder};
+use knossos::maze::{HuntAndKill, OrthogonalMazeBuilder};
 use video::{
     Buffer, Chars, ATTR_DIM, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM,
     MAZE_BOTTOM_LEFT, MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T, MAZE_CROSS, MAZE_DOWN,
@@ -51,17 +51,17 @@ impl Maze {
             && !is_wall_char(self.buffer.get_char(row + 1, col + 1))
     }
 
-    pub fn generate(&mut self, legend: bool) {
-        let mut gen = MazeGenerator::new(self.cell_rows, self.cell_cols);
+    pub fn generate(&mut self) {
+        let maze_grid = create_maze_grid(self.cell_rows, self.cell_cols);
         for cell_row in 0..self.cell_rows {
             let row = cell_row * (MAZE_CELL_ROWS + 1);
             for cell_col in 0..self.cell_cols {
                 let col = cell_col * (MAZE_CELL_COLS + 1);
-                let walls = gen.walls(cell_row, cell_col);
+                let walls = maze_grid.get(cell_row, cell_col);
                 self.buffer.set_chattr(
                     row,
                     col,
-                    gen.joiner(cell_row, cell_col),
+                    maze_grid.joiner(cell_row, cell_col),
                     ATTR_NONE,
                 );
                 if walls.top {
@@ -82,38 +82,7 @@ impl Maze {
                             MAZE_DOWN,
                             ATTR_NONE,
                         );
-                        if legend {
-                            self.buffer.print(
-                                row + row_index,
-                                col + 1,
-                                ATTR_DIM,
-                                format!("{row_index:X}"),
-                            );
-                        }
                     }
-                }
-                if legend {
-                    self.buffer.print(
-                        row + 4,
-                        col + 6,
-                        ATTR_DIM,
-                        format!("r: {cell_row}"),
-                    );
-                    self.buffer.print(
-                        row + 5,
-                        col + 6,
-                        ATTR_DIM,
-                        format!("c: {cell_col}"),
-                    );
-                    self.buffer.print(
-                        row + 6,
-                        col + 6,
-                        ATTR_DIM,
-                        format!(
-                            "b: {bits:04b}",
-                            bits = gen.bits(row, col) & 0xf
-                        ),
-                    );
                 }
             }
         }
@@ -149,67 +118,74 @@ impl Maze {
     }
 }
 
-struct MazeGenerator {
-    rows: usize,
-    cols: usize,
-    maze: OrthogonalMaze,
-}
-
-impl std::fmt::Debug for MazeGenerator {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("MazeGenerator")
-            .field("rows", &self.rows)
-            .field("cols", &self.cols)
-            .finish()
-    }
-}
-
-struct Walls {
+#[derive(Clone)]
+pub struct Walls {
     top: bool,
     left: bool,
 }
 
-impl MazeGenerator {
-    fn new(rows: usize, cols: usize) -> MazeGenerator {
-        let maze = OrthogonalMazeBuilder::new()
-            .algorithm(Box::new(HuntAndKill::new()))
-            .height(rows)
-            .width(cols)
-            .build();
-        MazeGenerator { rows, cols, maze }
-    }
+pub struct MazeGrid {
+    rows: usize,
+    cols: usize,
+    grid: Vec<Walls>,
+}
 
-    fn walls(&mut self, row: usize, col: usize) -> Walls {
-        const TOP: u8 = 0b0001;
-        const LEFT: u8 = 0b1000;
-        let bits = self.bits(row, col);
-        Walls {
-            top: bits & TOP == 0,
-            left: bits & LEFT == 0,
+impl MazeGrid {
+    pub fn new(rows: usize, cols: usize) -> MazeGrid {
+        MazeGrid {
+            rows,
+            cols,
+            grid: vec![
+                Walls {
+                    top: false,
+                    left: false
+                };
+                rows * cols
+            ],
         }
     }
 
-    fn bits(&mut self, row: usize, col: usize) -> u8 {
-        self.maze
-            .get_grid_mut()
-            .get_cell((col % self.cols, row % self.rows))
-            .bits()
+    pub fn get(&self, row: usize, col: usize) -> Walls {
+        if row < self.rows && col < self.cols {
+            self.grid[row * self.cols + col].clone()
+        } else {
+            Walls {
+                top: false,
+                left: false,
+            }
+        }
     }
 
-    fn joiner(&mut self, row: usize, col: usize) -> u8 {
+    pub fn set(&mut self, row: usize, col: usize, walls: Walls) {
+        if row < self.rows && col < self.cols {
+            self.grid[row * self.cols + col] = walls;
+        }
+    }
+
+    #[allow(unused)]
+    pub fn clear(&mut self, row: usize, col: usize) {
+        if row < self.rows && col < self.cols {
+            self.grid[row * self.cols + col] = Walls {
+                top: false,
+                left: false,
+            };
+        }
+    }
+
+    fn joiner(&self, row: usize, col: usize) -> u8 {
         let row_1 = if row == 0 { self.rows - 1 } else { row - 1 };
         let col_1 = if col == 0 { self.cols - 1 } else { col - 1 };
         let mut wall_index = 0;
-        if self.walls(row_1, col).left {
+        if self.get(row_1, col).left {
             wall_index |= 0b_1000;
         }
-        if self.walls(row, col).top {
+        if self.get(row, col).top {
             wall_index |= 0b_0100;
         }
-        if self.walls(row, col).left {
+        if self.get(row, col).left {
             wall_index |= 0b_0010;
         }
-        if self.walls(row, col_1).top {
+        if self.get(row, col_1).top {
             wall_index |= 0b_0001;
         }
         let wall_chars: [u8; 16] = [
@@ -232,6 +208,32 @@ impl MazeGenerator {
         ];
         wall_chars[wall_index]
     }
+}
+
+fn create_maze_grid(rows: usize, cols: usize) -> MazeGrid {
+    let mut maze = OrthogonalMazeBuilder::new()
+        .algorithm(Box::new(HuntAndKill::new()))
+        .height(rows)
+        .width(cols)
+        .build();
+    let grid = maze.get_grid_mut();
+    let mut maze_grid = MazeGrid::new(rows, cols);
+    const TOP: u8 = 0b0001;
+    const LEFT: u8 = 0b1000;
+    for row in 0..rows {
+        for col in 0..cols {
+            let bits = grid.get_cell((col, row)).bits();
+            maze_grid.set(
+                row,
+                col,
+                Walls {
+                    top: bits & TOP == 0,
+                    left: bits & LEFT == 0,
+                },
+            )
+        }
+    }
+    maze_grid
 }
 
 fn is_wall_char(ch: u8) -> bool {

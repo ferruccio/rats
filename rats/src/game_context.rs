@@ -31,7 +31,7 @@ impl GameContext {
         let cell_rows = max((video.rows() - 2) / MAZE_CELL_ROWS, maze_height);
         let cell_cols = max(video.cols() / MAZE_CELL_COLS, maze_width);
         let mut the_maze = Maze::new(cell_rows, cell_cols);
-        the_maze.generate(false);
+        the_maze.generate();
         let mut player = Player::new(&the_maze);
         for _ in 0..MAZE_CELL_COLS / 2 {
             player.advance(DIR_RIGHT);
