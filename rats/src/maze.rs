@@ -1,7 +1,7 @@
 use knossos::maze::{HuntAndKill, OrthogonalMazeBuilder};
 use rand::{distributions::Uniform, thread_rng, Rng};
 use video::{
-    Buffer, Chars, ATTR_DIM, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM,
+    Buffer, Chars, Wrapping, ATTR_DIM, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM,
     MAZE_BOTTOM_LEFT, MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T, MAZE_CROSS, MAZE_DOWN,
     MAZE_LEFT, MAZE_LEFT_T, MAZE_NONE, MAZE_RIGHT, MAZE_RIGHT_T, MAZE_TOP,
     MAZE_TOP_LEFT, MAZE_TOP_RIGHT, MAZE_TOP_T, MAZE_WALLS_END,
@@ -47,12 +47,15 @@ impl Maze {
 
     pub fn empty(&self, row: Chars, col: Chars) -> bool {
         !is_wall_char(self.buffer.get_char(row, col))
-            && !is_wall_char(self.buffer.get_char(row, (col + 1) % self.cols))
-            && !is_wall_char(self.buffer.get_char((row + 1) % self.rows, col))
+            && !is_wall_char(self.buffer.get_char(row, col.inc(self.cols)))
+            && !is_wall_char(self.buffer.get_char(row.inc(self.rows), col))
             && !is_wall_char(
-                self.buffer
-                    .get_char((row + 1) % self.rows, (col + 1) % self.cols),
+                self.buffer.get_char(row.inc(self.rows), col.inc(self.cols)),
             )
+    }
+
+    pub fn empty1(&self, row: Chars, col: Chars) -> bool {
+        !is_wall_char(self.buffer.get_char(row, col))
     }
 
     pub fn generate(&mut self, density: usize) {

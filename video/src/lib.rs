@@ -95,3 +95,26 @@ impl Video {
         Ok(())
     }
 }
+
+pub trait Wrapping {
+    fn inc(self, count: usize) -> Self;
+    fn dec(self, count: usize) -> Self;
+}
+
+impl Wrapping for usize {
+    fn inc(self, count: usize) -> Self {
+        if self < count - 1 {
+            self + 1
+        } else {
+            0
+        }
+    }
+
+    fn dec(self, count: usize) -> Self {
+        if self > 0 {
+            self - 1
+        } else {
+            count - 1
+        }
+    }
+}

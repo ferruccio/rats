@@ -77,17 +77,15 @@ fn main() {
 
         frames += 1;
         let seconds = start.elapsed().as_secs();
-        let mut fps = frames / if seconds == 0 { 1 } else { seconds };
-        let mut pos = 5;
-        while fps != 0 {
-            video.buffer.set_char(0, pos - 1, (fps % 10) as u8 + b'0');
-            fps /= 10;
-            pos -= 1;
-        }
-        while pos > 0 {
-            video.buffer.set_char(0, pos - 1, b' ');
-            pos -= 1;
-        }
+        video.buffer.print(
+            0,
+            0,
+            ATTR_REVERSE | ATTR_DIM,
+            format!(
+                "FPS: {fps}",
+                fps = frames / if seconds == 0 { 1 } else { seconds }
+            ),
+        );
 
         _ = video.render_buffer(&textures);
 

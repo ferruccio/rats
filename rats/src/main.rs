@@ -88,10 +88,15 @@ fn play(opts: CommandLineParams) -> Result<()> {
     let mut maze = Maze::new(cell_rows, cell_cols);
     let mut event_pump = context.video.sdl.event_pump().map_err(sdl_error)?;
     // player moves every 1/10th of a second
-    let motion_time = Duration::new(0, 1_000_000_000 / 10);
+    let player_motion_time = Duration::new(0, 1_000_000_000 / 10);
+    // bullets move every 1/20th of a second
+    let bullet_motion_time = Duration::new(0, 1_000_000_000 / 20);
+    // player can fire every 1/4 of a second
+    let bullet_firing_time = Duration::new(0, 1_000_000_000 / 4);
     let mut motion_cycle: u8 = 0;
     while context.running {
         context.maze.buffer.copy_to(&mut maze.buffer);
+        context.render_bullets(&mut maze);
         let offset = if context.direction == DIR_NONE {
             0
         } else {
@@ -112,10 +117,20 @@ fn play(opts: CommandLineParams) -> Result<()> {
                 _ => {}
             }
         }
-        if context.motion_start.elapsed() >= motion_time {
+        if context.player_motion_start.elapsed() >= player_motion_time {
             context.player.advance_all(&maze, context.direction);
-            context.motion_start = Instant::now();
+            context.player_motion_start = Instant::now();
             motion_cycle = (motion_cycle + 1) & 3;
+        }
+        if context.bullet_motion_start.elapsed() >= bullet_motion_time {
+            context.advance_bullets();
+            context.bullet_motion_start = Instant::now();
+        }
+        if context.firing
+            && context.bullet_fire_start.elapsed() >= bullet_firing_time
+        {
+            context.fire();
+            context.bullet_fire_start = Instant::now();
         }
 
         let nanos_elapsed = frame_time.elapsed().as_nanos() as u32;
@@ -135,6 +150,13 @@ fn key_down(context: &mut GameContext, keycode: Keycode) {
         Keycode::Down => context.start(DIR_DOWN),
         Keycode::Left => context.start(DIR_LEFT),
         Keycode::Right => context.start(DIR_RIGHT),
+        Keycode::Space => {
+            if !context.firing {
+                context.fire();
+                context.bullet_fire_start = Instant::now();
+            }
+            context.firing = true;
+        }
         _ => {}
     }
 }
@@ -145,6 +167,7 @@ fn key_up(context: &mut GameContext, keycode: Keycode) {
         Keycode::Down => context.stop(DIR_DOWN),
         Keycode::Left => context.stop(DIR_LEFT),
         Keycode::Right => context.stop(DIR_RIGHT),
+        Keycode::Space => context.firing = false,
         _ => {}
     }
 }

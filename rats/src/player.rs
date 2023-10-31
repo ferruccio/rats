@@ -1,5 +1,6 @@
 use video::{
-    Chars, ATTR_NONE, PLAYER_DOWN, PLAYER_LEFT, PLAYER_RIGHT, PLAYER_UP,
+    Chars, Wrapping, ATTR_NONE, PLAYER_DOWN, PLAYER_LEFT, PLAYER_RIGHT,
+    PLAYER_UP,
 };
 
 use crate::maze::Maze;
@@ -81,27 +82,17 @@ impl Player {
     pub fn can_advance(&self, maze: &Maze, direction: Direction) -> bool {
         let row = self.position.row;
         let col = self.position.col;
-        let row_plus_1 = (row + 1) % self.position.maze_rows;
-        let row_minus_1 = if row > 0 {
-            row - 1
-        } else {
-            self.position.maze_rows
-        };
-        let col_plus_1 = (col + 1) % self.position.maze_cols;
-        let col_minus_1 = if col > 0 {
-            col - 1
-        } else {
-            self.position.maze_cols
-        };
+        let rows = self.position.maze_rows;
+        let cols = self.position.maze_cols;
         match direction {
-            DIR_DOWN => maze.empty(row_plus_1, col),
-            DIR_DOWN_LEFT => maze.empty(row_plus_1, col_minus_1),
-            DIR_DOWN_RIGHT => maze.empty(row_plus_1, col_plus_1),
-            DIR_UP => maze.empty(row_minus_1, col),
-            DIR_UP_LEFT => maze.empty(row_minus_1, col_minus_1),
-            DIR_UP_RIGHT => maze.empty(row_minus_1, col_plus_1),
-            DIR_LEFT => maze.empty(row, col_minus_1),
-            DIR_RIGHT => maze.empty(row, col_plus_1),
+            DIR_DOWN => maze.empty(row.inc(rows), col),
+            DIR_DOWN_LEFT => maze.empty(row.inc(rows), col.dec(cols)),
+            DIR_DOWN_RIGHT => maze.empty(row.inc(rows), col.inc(rows)),
+            DIR_UP => maze.empty(row.dec(cols), col),
+            DIR_UP_LEFT => maze.empty(row.dec(rows), col.dec(rows)),
+            DIR_UP_RIGHT => maze.empty(row.dec(rows), col.inc(cols)),
+            DIR_LEFT => maze.empty(row, col.dec(cols)),
+            DIR_RIGHT => maze.empty(row, col.dec(cols)),
             _ => false,
         }
     }
@@ -109,8 +100,8 @@ impl Player {
     pub fn render(&self, maze: &mut Maze, direction: Direction, offset: u8) {
         let row1 = self.position.row;
         let col1 = self.position.col;
-        let row2 = (self.position.row + 1) % self.position.maze_rows;
-        let col2 = (self.position.col + 1) % self.position.maze_cols;
+        let row2 = row1.inc(self.position.maze_rows);
+        let col2 = col1.inc(self.position.maze_cols);
         let ch = match direction {
             DIR_DOWN => PLAYER_DOWN,
             DIR_DOWN_LEFT => PLAYER_LEFT,
@@ -132,36 +123,28 @@ impl Player {
 impl Position {
     pub fn move_left(&mut self, mut steps: usize) {
         while steps > 0 {
-            self.col = if self.col == 0 {
-                self.maze_cols - 1
-            } else {
-                self.col - 1
-            };
+            self.col = self.col.dec(self.maze_cols);
             steps -= 1;
         }
     }
 
     pub fn move_right(&mut self, mut steps: usize) {
         while steps > 0 {
-            self.col = (self.col + 1) % self.maze_cols;
+            self.col = self.col.inc(self.maze_cols);
             steps -= 1;
         }
     }
 
     pub fn move_up(&mut self, mut steps: usize) {
         while steps > 0 {
-            self.row = if self.row == 0 {
-                self.maze_rows - 1
-            } else {
-                self.row - 1
-            };
+            self.row = self.row.dec(self.maze_rows);
             steps -= 1;
         }
     }
 
     pub fn move_down(&mut self, mut steps: usize) {
         while steps > 0 {
-            self.row = (self.row + 1) % self.maze_rows;
+            self.row = self.row.inc(self.maze_rows);
             steps -= 1;
         }
     }

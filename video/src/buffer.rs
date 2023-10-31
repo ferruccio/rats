@@ -1,4 +1,4 @@
-use crate::Chars;
+use crate::{Chars, Wrapping};
 
 pub struct Buffer {
     pub rows: Chars,
@@ -115,9 +115,9 @@ impl Buffer {
             for dst_col in 0..dst.cols {
                 dst.set_char(dst_row, dst_col, self.get_char(src_row, col));
                 dst.set_attr(dst_row, dst_col, self.get_attr(src_row, col));
-                col = (col + 1) % self.cols;
+                col = col.inc(self.cols);
             }
-            src_row = (src_row + 1) % self.rows;
+            src_row = src_row.inc(self.rows);
         }
     }
 
