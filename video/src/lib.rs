@@ -70,24 +70,21 @@ impl Video {
     }
 
     pub fn render_buffer(&mut self, textures: &[Texture]) -> Result<()> {
-        self.canvas
-            .set_scale(self.scale as f32, self.scale as f32)
-            .map_err(sdl_error)?;
         for row in 0..self.buffer.rows {
             for col in 0..self.buffer.cols {
                 let ch = self.buffer.get_char(row, col);
                 let attr = self.buffer.get_attr(row, col);
                 let src = Rect::new(
                     0,
-                    (ch as usize * CHAR_CELL_HEIGHT) as i32,
-                    CHAR_CELL_WIDTH as u32,
-                    CHAR_CELL_HEIGHT as u32,
+                    (ch as usize * CHAR_CELL_HEIGHT * self.scale) as i32,
+                    (CHAR_CELL_WIDTH * self.scale) as u32,
+                    (CHAR_CELL_HEIGHT * self.scale) as u32,
                 );
                 let dst = Rect::new(
-                    (col * CHAR_CELL_WIDTH) as i32,
-                    (row * CHAR_CELL_HEIGHT) as i32,
-                    CHAR_CELL_WIDTH as u32,
-                    CHAR_CELL_HEIGHT as u32,
+                    (col * CHAR_CELL_WIDTH * self.scale) as i32,
+                    (row * CHAR_CELL_HEIGHT * self.scale) as i32,
+                    (CHAR_CELL_WIDTH * self.scale) as u32,
+                    (CHAR_CELL_HEIGHT * self.scale) as u32,
                 );
                 self.canvas
                     .copy(&textures[(attr & ATTR_MASK) as usize], src, dst)

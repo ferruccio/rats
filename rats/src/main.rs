@@ -40,8 +40,8 @@ struct CommandLineParams {
     maze_width: Option<usize>,
 
     /// Scale factor (1 to 4)
-    #[clap(short = 's', long = "scale")]
-    scale: Option<usize>,
+    #[clap(short = 's', long = "scale", default_value_t = 2)]
+    scale: usize,
 
     /// Maze density
     #[clap(short = 'm', long = "maze-density", default_value_t = 85)]
@@ -57,6 +57,7 @@ fn main() {
 fn play(opts: CommandLineParams) -> Result<()> {
     let cell_rows = opts.maze_height.unwrap_or(15);
     let cell_cols = opts.maze_width.unwrap_or(15);
+    let scale = opts.scale.clamp(1, 4);
     let mut context = GameContext::create(
         InitOptions::new()
             .display_index(opts.display)
@@ -73,12 +74,12 @@ fn play(opts: CommandLineParams) -> Result<()> {
     for _ in 0..ATTR_COMBOS {
         let texture = texture_creator.create_texture_streaming(
             PixelFormatEnum::RGB24,
-            CHAR_CELL_WIDTH as u32,
-            (FONT_SIZE * CHAR_CELL_HEIGHT) as u32,
+            (CHAR_CELL_WIDTH * scale) as u32,
+            (FONT_SIZE * CHAR_CELL_HEIGHT * scale) as u32,
         )?;
         textures.push(texture);
     }
-    context.video.init_charmap_textures(&mut textures)?;
+    context.video.init_charmap_textures(&mut textures, scale)?;
 
     const FPS_LIMIT: u32 = 60;
     const NANOS_PER_FRAME: u32 = 1_000_000_000 / FPS_LIMIT;
