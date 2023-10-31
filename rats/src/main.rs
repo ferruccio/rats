@@ -42,6 +42,10 @@ struct CommandLineParams {
     /// Scale factor (1 to 4)
     #[clap(short = 's', long = "scale")]
     scale: Option<usize>,
+
+    /// Maze density
+    #[clap(short = 'm', long = "maze-density", default_value_t = 85)]
+    density: usize,
 }
 
 fn main() {
@@ -61,6 +65,7 @@ fn play(opts: CommandLineParams) -> Result<()> {
             .scale(opts.scale),
         cell_rows,
         cell_cols,
+        opts.density,
     )?;
 
     let texture_creator = context.video.canvas.texture_creator();

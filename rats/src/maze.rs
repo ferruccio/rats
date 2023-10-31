@@ -1,4 +1,5 @@
 use knossos::maze::{HuntAndKill, OrthogonalMazeBuilder};
+use rand::{distributions::Uniform, thread_rng, Rng};
 use video::{
     Buffer, Chars, ATTR_DIM, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM,
     MAZE_BOTTOM_LEFT, MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T, MAZE_CROSS, MAZE_DOWN,
@@ -51,8 +52,17 @@ impl Maze {
             && !is_wall_char(self.buffer.get_char(row + 1, col + 1))
     }
 
-    pub fn generate(&mut self) {
-        let maze_grid = create_maze_grid(self.cell_rows, self.cell_cols);
+    pub fn generate(&mut self, density: usize) {
+        let mut maze_grid = create_maze_grid(self.cell_rows, self.cell_cols);
+        let mut rng = thread_rng();
+        let distribution = Uniform::new_inclusive(1, 100);
+        for cell_row in 0..self.cell_rows {
+            for cell_col in 0..self.cell_cols {
+                if density == 0 || rng.sample(distribution) > density {
+                    maze_grid.clear(cell_row, cell_col);
+                }
+            }
+        }
         for cell_row in 0..self.cell_rows {
             let row = cell_row * (MAZE_CELL_ROWS + 1);
             for cell_col in 0..self.cell_cols {
@@ -162,7 +172,6 @@ impl MazeGrid {
         }
     }
 
-    #[allow(unused)]
     pub fn clear(&mut self, row: usize, col: usize) {
         if row < self.rows && col < self.cols {
             self.grid[row * self.cols + col] = Walls {
