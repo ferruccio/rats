@@ -81,13 +81,27 @@ fn set_pixels(pixels: &mut [u8], bitmap: &[u8], first: u8, attrs: u8) {
     );
     let mut offset: usize =
         first as usize * BYTES_PER_PIXEL * CHAR_CELL_WIDTH * CHAR_CELL_HEIGHT;
-    let intensity = if attrs & ATTR_DIM == 0 { 0xff } else { 0x80 };
+    const BACKGROUND: u32 = 0x252919;
+    const FOREGROUND_NORMAL: u32 = 0x5bffff;
+    const FOREGROUND_DIM: u32 = 0x2d8080;
+    let (fg, bg) = match (attrs & ATTR_REVERSE != 0, attrs & ATTR_DIM != 0) {
+        (true, true) => (BACKGROUND, FOREGROUND_DIM),
+        (true, false) => (BACKGROUND, FOREGROUND_NORMAL),
+        (false, true) => (FOREGROUND_DIM, BACKGROUND),
+        (false, false) => (FOREGROUND_NORMAL, BACKGROUND),
+    };
     for byte in bitmap {
         let mut mask = 0x80;
         while mask != 0 {
-            pixels[offset] = 0;
-            pixels[offset + 1] = green(*byte, mask, attrs, intensity);
-            pixels[offset + 2] = 0;
+            if byte & mask != 0 {
+                pixels[offset] = ((fg >> 16) & 0xff) as u8;
+                pixels[offset + 1] = ((fg >> 8) & 0xff) as u8;
+                pixels[offset + 2] = (fg & 0xff) as u8;
+            } else {
+                pixels[offset] = ((bg >> 16) & 0xff) as u8;
+                pixels[offset + 1] = ((bg >> 8) & 0xff) as u8;
+                pixels[offset + 2] = (bg & 0xff) as u8;
+            }
             offset += BYTES_PER_PIXEL;
             mask >>= 1;
         }
@@ -151,20 +165,6 @@ fn set_pixels_wide(
         set_pixels(pixels, &bitmap2, first, attrs);
         bitmap = &bitmap[CHAR_CELL_HEIGHT * 2..];
         first += 4;
-    }
-}
-
-fn green(byte: u8, mask: u8, attrs: u8, intensity: u8) -> u8 {
-    if attrs & ATTR_REVERSE != 0 {
-        if byte & mask == 0 {
-            intensity
-        } else {
-            0
-        }
-    } else if byte & mask != 0 {
-        intensity
-    } else {
-        0
     }
 }
 
