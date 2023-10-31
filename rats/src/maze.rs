@@ -47,9 +47,12 @@ impl Maze {
 
     pub fn empty(&self, row: Chars, col: Chars) -> bool {
         !is_wall_char(self.buffer.get_char(row, col))
-            && !is_wall_char(self.buffer.get_char(row, col + 1))
-            && !is_wall_char(self.buffer.get_char(row + 1, col))
-            && !is_wall_char(self.buffer.get_char(row + 1, col + 1))
+            && !is_wall_char(self.buffer.get_char(row, (col + 1) % self.cols))
+            && !is_wall_char(self.buffer.get_char((row + 1) % self.rows, col))
+            && !is_wall_char(
+                self.buffer
+                    .get_char((row + 1) % self.rows, (col + 1) % self.cols),
+            )
     }
 
     pub fn generate(&mut self, density: usize) {

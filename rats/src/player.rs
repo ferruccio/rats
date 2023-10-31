@@ -79,16 +79,29 @@ impl Player {
     }
 
     pub fn can_advance(&self, maze: &Maze, direction: Direction) -> bool {
-        let pos = &self.position;
+        let row = self.position.row;
+        let col = self.position.col;
+        let row_plus_1 = (row + 1) % self.position.maze_rows;
+        let row_minus_1 = if row > 0 {
+            row - 1
+        } else {
+            self.position.maze_rows
+        };
+        let col_plus_1 = (col + 1) % self.position.maze_cols;
+        let col_minus_1 = if col > 0 {
+            col - 1
+        } else {
+            self.position.maze_cols
+        };
         match direction {
-            DIR_DOWN => maze.empty(pos.row + 1, pos.col),
-            DIR_DOWN_LEFT => maze.empty(pos.row + 1, pos.col - 1),
-            DIR_DOWN_RIGHT => maze.empty(pos.row + 1, pos.col + 1),
-            DIR_UP => maze.empty(pos.row - 1, pos.col),
-            DIR_UP_LEFT => maze.empty(pos.row - 1, pos.col - 1),
-            DIR_UP_RIGHT => maze.empty(pos.row - 1, pos.col + 1),
-            DIR_LEFT => maze.empty(pos.row, pos.col - 1),
-            DIR_RIGHT => maze.empty(pos.row, pos.col + 1),
+            DIR_DOWN => maze.empty(row_plus_1, col),
+            DIR_DOWN_LEFT => maze.empty(row_plus_1, col_minus_1),
+            DIR_DOWN_RIGHT => maze.empty(row_plus_1, col_plus_1),
+            DIR_UP => maze.empty(row_minus_1, col),
+            DIR_UP_LEFT => maze.empty(row_minus_1, col_minus_1),
+            DIR_UP_RIGHT => maze.empty(row_minus_1, col_plus_1),
+            DIR_LEFT => maze.empty(row, col_minus_1),
+            DIR_RIGHT => maze.empty(row, col_plus_1),
             _ => false,
         }
     }
