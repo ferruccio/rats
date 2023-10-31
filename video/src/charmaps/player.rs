@@ -13,7 +13,7 @@ pub const PLAYER_RIGHT: u8 = PLAYER_START + 36;
 pub const PLAYER_RIGHT_M1: u8 = PLAYER_START + 40;
 pub const PLAYER_RIGHT_M2: u8 = PLAYER_START + 44;
 
-pub const PLAYER_START: u8 = 0x90;
+pub const PLAYER_START: u8 = 0xa0;
 // comments on each line prevent rustfmt from changing this layout
 pub const PLAYER: [u16; 12 * CHAR_CELL_HEIGHT * 2] = [
     // down

@@ -2,8 +2,9 @@ use crate::{
     buffer::{ATTR_DIM, ATTR_NONE, ATTR_REVERSE},
     charmaps::{ASCII, ASCII_START, MAZE_WALLS, MAZE_WALLS_START},
     errors::sdl_error,
-    Result, Video, ATTR_COMBOS, BYTES_PER_PIXEL, CHAR_CELL_HEIGHT,
-    CHAR_CELL_WIDTH, EMPTY_CHAR_CELL, FONT_SIZE, PLAYER, PLAYER_START,
+    Result, Video, ATTR_COMBOS, BULLETS, BULLETS_START, BYTES_PER_PIXEL,
+    CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, EMPTY_CHAR_CELL, FONT_SIZE, PLAYER,
+    PLAYER_START,
 };
 use sdl2::render::Texture;
 
@@ -17,6 +18,7 @@ impl Video {
         clear_charmap_textures(textures, scale)?;
         load_charmap_textures(textures, scale, &ASCII, ASCII_START)?;
         load_charmap_textures(textures, scale, &MAZE_WALLS, MAZE_WALLS_START)?;
+        load_charmap_textures(textures, scale, &BULLETS, BULLETS_START)?;
         load_charmap_textures_wide(textures, scale, &PLAYER, PLAYER_START)?;
         Ok(())
     }
