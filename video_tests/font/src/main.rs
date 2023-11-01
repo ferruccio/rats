@@ -42,7 +42,7 @@ fn main() {
             .create_texture_streaming(
                 PixelFormatEnum::RGB24,
                 (CHAR_CELL_WIDTH * scale) as u32,
-                (FONT_SIZE * CHAR_CELL_HEIGHT * scale) as u32,
+                (FONT_SIZE as usize * CHAR_CELL_HEIGHT * scale) as u32,
             )
             .unwrap();
         textures.push(texture);

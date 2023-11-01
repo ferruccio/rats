@@ -1,8 +1,8 @@
-use crate::{Chars, Wrapping};
+use crate::{Size, SizeWrapping};
 
 pub struct Buffer {
-    pub rows: Chars,
-    pub cols: Chars,
+    pub rows: Size,
+    pub cols: Size,
     pub characters: Vec<u8>,
     pub attributes: Vec<u8>,
 }
@@ -24,12 +24,12 @@ pub const ATTR_MASK: u8 = 0x03;
 pub const ATTR_COMBOS: usize = 4;
 
 impl Buffer {
-    pub fn new(rows: Chars, cols: Chars) -> Buffer {
+    pub fn new(rows: Size, cols: Size) -> Buffer {
         let mut buffer = Buffer {
             rows,
             cols,
-            characters: vec![0; rows * cols],
-            attributes: vec![0; rows * cols],
+            characters: vec![0; (rows * cols) as usize],
+            attributes: vec![0; (rows * cols) as usize],
         };
         buffer.clear();
         buffer
@@ -40,46 +40,61 @@ impl Buffer {
         self.attributes.fill(ATTR_NONE);
     }
 
-    pub fn set_char(&mut self, row: Chars, col: Chars, ch: u8) {
+    pub fn set_char(&mut self, row: Size, col: Size, ch: u8) {
         if row < self.rows && col < self.cols {
-            self.characters[row * self.cols + col] = ch;
+            self.characters[(row * self.cols + col) as usize] = ch;
         }
     }
 
-    pub fn get_char(&self, row: Chars, col: Chars) -> u8 {
+    pub fn get_char(&self, row: Size, col: Size) -> u8 {
         if row < self.rows && col < self.cols {
-            self.characters[row * self.cols + col]
+            self.characters[(row * self.cols + col) as usize]
         } else {
             0
         }
     }
 
-    pub fn set_attr(&mut self, row: Chars, col: Chars, ch: u8) {
+    pub fn set_attr(&mut self, row: Size, col: Size, ch: u8) {
         if row < self.rows && col < self.cols {
-            self.attributes[row * self.cols + col] = ch & ATTR_MASK;
+            self.attributes[(row * self.cols + col) as usize] = ch & ATTR_MASK;
         }
     }
 
-    pub fn get_attr(&self, row: Chars, col: Chars) -> u8 {
+    pub fn get_attr(&self, row: Size, col: Size) -> u8 {
         if row < self.rows && col < self.cols {
-            self.attributes[row * self.cols + col]
+            self.attributes[(row * self.cols + col) as usize]
         } else {
             0
         }
     }
 
-    pub fn set_chattr(&mut self, row: Chars, col: Chars, ch: u8, attr: u8) {
+    pub fn set_chattr(&mut self, row: Size, col: Size, ch: u8, attr: u8) {
         if row < self.rows && col < self.cols {
-            self.characters[row * self.cols + col] = ch;
-            self.attributes[row * self.cols + col] = attr;
+            self.set_ca(row, col, ch, attr);
         }
     }
 
-    pub fn get_chattr(&self, row: Chars, col: Chars) -> (u8, u8) {
+    pub fn set_quad(&mut self, row1: Size, col1: Size, ch: u8, attr: u8) {
+        if row1 < self.rows && col1 < self.cols {
+            let row2 = row1.inc(self.rows);
+            let col2 = col1.inc(self.cols);
+            self.set_ca(row1, col1, ch, attr);
+            self.set_ca(row1, col2, ch + 1, attr);
+            self.set_ca(row2, col1, ch + 2, attr);
+            self.set_ca(row2, col2, ch + 3, attr);
+        }
+    }
+
+    fn set_ca(&mut self, row: Size, col: Size, ch: u8, attr: u8) {
+        self.characters[(row * self.cols + col) as usize] = ch;
+        self.attributes[(row * self.cols + col) as usize] = attr;
+    }
+
+    pub fn get_chattr(&self, row: Size, col: Size) -> (u8, u8) {
         if row < self.rows && col < self.cols {
             (
-                self.characters[row * self.cols + col],
-                self.attributes[row * self.cols + col],
+                self.characters[(row * self.cols + col) as usize],
+                self.attributes[(row * self.cols + col) as usize],
             )
         } else {
             (0, 0)
@@ -91,7 +106,7 @@ impl Buffer {
         self.attributes.swap_with_slice(&mut other.attributes);
     }
 
-    pub fn print<S>(&mut self, row: Chars, mut col: Chars, attr: u8, s: S)
+    pub fn print<S>(&mut self, row: Size, mut col: Size, attr: u8, s: S)
     where
         S: AsRef<str>,
     {
@@ -105,10 +120,10 @@ impl Buffer {
 
     pub fn copy_buffer(
         &self,
-        mut src_row: Chars, // starting row in source buffer
-        src_col: Chars,     // starting column in source buffer
-        dst: &mut Buffer,   // destination buffer
-        dst_row: Chars,     // first row in destination buffer
+        mut src_row: Size, // starting row in source buffer
+        src_col: Size,     // starting column in source buffer
+        dst: &mut Buffer,  // destination buffer
+        dst_row: Size,     // first row in destination buffer
     ) {
         for dst_row in dst_row..dst.rows {
             let mut col = src_col;

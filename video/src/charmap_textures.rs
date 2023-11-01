@@ -90,7 +90,7 @@ fn set_pixels(
     assert_eq!(bitmap.len() % CHAR_CELL_HEIGHT, 0);
     assert_eq!(
         pixels.len(),
-        FONT_SIZE
+        FONT_SIZE as usize
             * BYTES_PER_PIXEL
             * (CHAR_CELL_WIDTH * scale)
             * (CHAR_CELL_HEIGHT * scale)
@@ -303,7 +303,7 @@ fn set_pixels_wide(
 fn set_pixels_empty(pixels: &mut [u8], scale: usize) {
     assert_eq!(
         pixels.len(),
-        FONT_SIZE
+        FONT_SIZE as usize
             * BYTES_PER_PIXEL
             * (CHAR_CELL_WIDTH * scale)
             * (CHAR_CELL_HEIGHT * scale)

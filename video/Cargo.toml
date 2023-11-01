@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+num = "0.4.1"
 sdl2 = { workspace = true, features = ["bundled"] }
 thiserror = "1.0.50"

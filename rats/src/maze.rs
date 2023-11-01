@@ -1,7 +1,8 @@
+use crate::entities::Dimensions;
 use knossos::maze::{HuntAndKill, OrthogonalMazeBuilder};
 use rand::{distributions::Uniform, thread_rng, Rng};
 use video::{
-    Buffer, Chars, Wrapping, ATTR_DIM, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM,
+    Buffer, Pos, Size, SizeWrapping, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM,
     MAZE_BOTTOM_LEFT, MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T, MAZE_CROSS, MAZE_DOWN,
     MAZE_LEFT, MAZE_LEFT_T, MAZE_NONE, MAZE_RIGHT, MAZE_RIGHT_T, MAZE_TOP,
     MAZE_TOP_LEFT, MAZE_TOP_RIGHT, MAZE_TOP_T, MAZE_WALLS_END,
@@ -11,51 +12,50 @@ use video::{
 #[derive(Debug)]
 pub struct Maze {
     // size in maze cells
-    cell_rows: usize,
-    cell_cols: usize,
+    cell_rows: Size,
+    cell_cols: Size,
     // size in characters
-    rows: Chars,
-    cols: Chars,
+    pub dimensions: Dimensions,
     pub buffer: Buffer,
 }
 
 // maze cell dimensions
-pub const MAZE_CELL_ROWS: Chars = 10;
-pub const MAZE_CELL_COLS: Chars = 20;
+pub const MAZE_CELL_ROWS: Size = 10;
+pub const MAZE_CELL_COLS: Size = 20;
 
 impl Maze {
-    pub fn new(cell_rows: usize, cell_cols: usize) -> Maze {
+    pub fn new(cell_rows: Size, cell_cols: Size) -> Maze {
         assert!(cell_cols >= 2 && cell_rows >= 2, "invalid maze dimensions");
-        let rows: Chars = (MAZE_CELL_ROWS + 1) * cell_rows;
-        let cols: Chars = (MAZE_CELL_COLS + 1) * cell_cols;
+        let rows: Size = (MAZE_CELL_ROWS + 1) * cell_rows as Size;
+        let cols: Size = (MAZE_CELL_COLS + 1) * cell_cols as Size;
         Maze {
             cell_rows,
             cell_cols,
-            rows,
-            cols,
+            dimensions: Dimensions { rows, cols },
             buffer: Buffer::new(rows, cols),
         }
     }
 
-    pub fn rows(&self) -> Chars {
-        self.rows
+    pub fn rows(&self) -> Size {
+        self.dimensions.rows
     }
 
-    pub fn cols(&self) -> Chars {
-        self.cols
+    pub fn cols(&self) -> Size {
+        self.dimensions.cols
     }
 
-    pub fn empty(&self, row: Chars, col: Chars) -> bool {
-        !is_wall_char(self.buffer.get_char(row, col))
-            && !is_wall_char(self.buffer.get_char(row, col.inc(self.cols)))
-            && !is_wall_char(self.buffer.get_char(row.inc(self.rows), col))
-            && !is_wall_char(
-                self.buffer.get_char(row.inc(self.rows), col.inc(self.cols)),
-            )
+    pub fn is_wall(&self, row: Pos, col: Pos) -> bool {
+        let ch = self.buffer.get_char(row, col);
+        ch >= MAZE_WALLS_START && ch <= MAZE_WALLS_END
     }
 
-    pub fn empty1(&self, row: Chars, col: Chars) -> bool {
-        !is_wall_char(self.buffer.get_char(row, col))
+    pub fn is_wall_quad(&self, row1: Pos, col1: Pos) -> bool {
+        let row2 = row1.inc(self.rows());
+        let col2 = col1.inc(self.cols());
+        self.is_wall(row1, col1)
+            || self.is_wall(row1, col2)
+            || self.is_wall(row2, col1)
+            || self.is_wall(row2, col2)
     }
 
     pub fn generate(&mut self, density: usize) {
@@ -103,35 +103,6 @@ impl Maze {
             }
         }
     }
-
-    #[allow(unused)]
-    pub fn test_pattern(&mut self) {
-        for cell_row in 0..self.cell_rows {
-            let row = cell_row * (MAZE_CELL_ROWS + 1);
-            for cell_col in 0..self.cell_cols {
-                let col = cell_col * (MAZE_CELL_COLS + 1);
-                self.buffer.set_char(row, col, MAZE_CROSS);
-                for col_index in 1..=MAZE_CELL_COLS {
-                    self.buffer.set_char(row, col + col_index, MAZE_ACROSS);
-                }
-                for row_index in 1..=MAZE_CELL_ROWS {
-                    self.buffer.set_char(row + row_index, col, MAZE_DOWN)
-                }
-                self.buffer.print(
-                    row + 4,
-                    col + 4,
-                    ATTR_DIM,
-                    format!("r: {cell_row}"),
-                );
-                self.buffer.print(
-                    row + 5,
-                    col + 4,
-                    ATTR_DIM,
-                    format!("c: {cell_col}"),
-                );
-            }
-        }
-    }
 }
 
 #[derive(Clone)]
@@ -141,13 +112,13 @@ pub struct Walls {
 }
 
 pub struct MazeGrid {
-    rows: usize,
-    cols: usize,
+    rows: Size,
+    cols: Size,
     grid: Vec<Walls>,
 }
 
 impl MazeGrid {
-    pub fn new(rows: usize, cols: usize) -> MazeGrid {
+    pub fn new(rows: Size, cols: Size) -> MazeGrid {
         MazeGrid {
             rows,
             cols,
@@ -156,14 +127,14 @@ impl MazeGrid {
                     top: false,
                     left: false
                 };
-                rows * cols
+                (rows * cols) as usize
             ],
         }
     }
 
-    pub fn get(&self, row: usize, col: usize) -> Walls {
+    pub fn get(&self, row: Pos, col: Pos) -> Walls {
         if row < self.rows && col < self.cols {
-            self.grid[row * self.cols + col].clone()
+            self.grid[(row * self.cols + col) as usize].clone()
         } else {
             Walls {
                 top: false,
@@ -172,22 +143,22 @@ impl MazeGrid {
         }
     }
 
-    pub fn set(&mut self, row: usize, col: usize, walls: Walls) {
+    pub fn set(&mut self, row: Pos, col: Pos, walls: Walls) {
         if row < self.rows && col < self.cols {
-            self.grid[row * self.cols + col] = walls;
+            self.grid[(row * self.cols + col) as usize] = walls;
         }
     }
 
-    pub fn clear(&mut self, row: usize, col: usize) {
+    pub fn clear(&mut self, row: Pos, col: Pos) {
         if row < self.rows && col < self.cols {
-            self.grid[row * self.cols + col] = Walls {
+            self.grid[(row * self.cols + col) as usize] = Walls {
                 top: false,
                 left: false,
             };
         }
     }
 
-    fn joiner(&self, row: usize, col: usize) -> u8 {
+    fn joiner(&self, row: Pos, col: Pos) -> u8 {
         let row_1 = if row == 0 { self.rows - 1 } else { row - 1 };
         let col_1 = if col == 0 { self.cols - 1 } else { col - 1 };
         let mut wall_index = 0;
@@ -225,11 +196,11 @@ impl MazeGrid {
     }
 }
 
-fn create_maze_grid(rows: usize, cols: usize) -> MazeGrid {
+fn create_maze_grid(rows: Size, cols: Size) -> MazeGrid {
     let mut maze = OrthogonalMazeBuilder::new()
         .algorithm(Box::new(HuntAndKill::new()))
-        .height(rows)
-        .width(cols)
+        .height(rows as usize)
+        .width(cols as usize)
         .build();
     let grid = maze.get_grid_mut();
     let mut maze_grid = MazeGrid::new(rows, cols);
@@ -237,7 +208,7 @@ fn create_maze_grid(rows: usize, cols: usize) -> MazeGrid {
     const LEFT: u8 = 0b1000;
     for row in 0..rows {
         for col in 0..cols {
-            let bits = grid.get_cell((col, row)).bits();
+            let bits = grid.get_cell((col as usize, row as usize)).bits();
             maze_grid.set(
                 row,
                 col,
@@ -249,8 +220,4 @@ fn create_maze_grid(rows: usize, cols: usize) -> MazeGrid {
         }
     }
     maze_grid
-}
-
-fn is_wall_char(ch: u8) -> bool {
-    ch >= MAZE_WALLS_START && ch <= MAZE_WALLS_END
 }

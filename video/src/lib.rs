@@ -1,4 +1,5 @@
 use buffer::ATTR_MASK;
+use num::{traits::Unsigned, One, Zero};
 use sdl2::{
     pixels::Color,
     rect::Rect,
@@ -24,20 +25,22 @@ pub use sdl2::pixels::PixelFormatEnum;
 
 // use Pixels for bitmap dimensions
 pub type Pixels = usize;
-// use Chars for character map dimensions & positions
-pub type Chars = usize;
+// use Pos for character map positions
+pub type Pos = u16;
+// use Size for character map dimensions
+pub type Size = u16;
 
 pub struct Video {
     pub sdl: Sdl,
     bounds: Rect,
     scale: usize,
-    rows: Chars,
-    cols: Chars,
+    rows: Size,
+    cols: Size,
     pub canvas: Canvas<Window>,
     pub buffer: Buffer,
 }
 
-pub const FONT_SIZE: Chars = 256;
+pub const FONT_SIZE: Size = 256;
 pub const BYTES_PER_PIXEL: usize = 3;
 pub const CHAR_CELL_WIDTH: Pixels = 8;
 pub const CHAR_CELL_HEIGHT: Pixels = 12;
@@ -61,11 +64,11 @@ impl Video {
         self.bounds.width() as Pixels
     }
 
-    pub fn rows(&self) -> Chars {
+    pub fn rows(&self) -> Size {
         self.rows
     }
 
-    pub fn cols(&self) -> Chars {
+    pub fn cols(&self) -> Size {
         self.cols
     }
 
@@ -81,8 +84,8 @@ impl Video {
                     (CHAR_CELL_HEIGHT * self.scale) as u32,
                 );
                 let dst = Rect::new(
-                    (col * CHAR_CELL_WIDTH * self.scale) as i32,
-                    (row * CHAR_CELL_HEIGHT * self.scale) as i32,
+                    (col as usize * CHAR_CELL_WIDTH * self.scale) as i32,
+                    (row as usize * CHAR_CELL_HEIGHT * self.scale) as i32,
                     (CHAR_CELL_WIDTH * self.scale) as u32,
                     (CHAR_CELL_HEIGHT * self.scale) as u32,
                 );
@@ -96,25 +99,31 @@ impl Video {
     }
 }
 
-pub trait Wrapping {
-    fn inc(self, count: usize) -> Self;
-    fn dec(self, count: usize) -> Self;
+pub trait SizeWrapping<T>
+where
+    T: Unsigned + PartialOrd + Zero + One,
+{
+    fn inc(self, size: T) -> Self;
+    fn dec(self, size: T) -> Self;
 }
 
-impl Wrapping for usize {
-    fn inc(self, count: usize) -> Self {
-        if self < count - 1 {
-            self + 1
+impl<T> SizeWrapping<T> for T
+where
+    T: Unsigned + PartialOrd + Zero + One,
+{
+    fn inc(self, size: T) -> Self {
+        if self < size - T::one() {
+            self + T::one()
         } else {
-            0
+            T::zero()
         }
     }
 
-    fn dec(self, count: usize) -> Self {
-        if self > 0 {
-            self - 1
+    fn dec(self, size: T) -> Self {
+        if self > T::zero() {
+            self - T::one()
         } else {
-            count - 1
+            size - T::one()
         }
     }
 }

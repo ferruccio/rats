@@ -1,6 +1,6 @@
 use crate::{
-    buffer::Buffer, errors::sdl_error, Pixels, Result, Video, CHAR_CELL_HEIGHT,
-    CHAR_CELL_WIDTH,
+    buffer::Buffer, errors::sdl_error, Pixels, Result, Size, Video,
+    CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
 };
 use sdl2::rect::Rect;
 
@@ -65,8 +65,8 @@ pub fn init(opts: InitOptions) -> Result<Video> {
         opts.window_height.unwrap_or(bounds.height() as usize) as u32,
     );
     let scale = opts.scale.clamp(1, 4);
-    let rows = (bounds.height() as usize / CHAR_CELL_HEIGHT / scale) as usize;
-    let cols = (bounds.width() as usize / CHAR_CELL_WIDTH / scale) as usize;
+    let rows = (bounds.height() as usize / CHAR_CELL_HEIGHT / scale) as Size;
+    let cols = (bounds.width() as usize / CHAR_CELL_WIDTH / scale) as Size;
     let window = video
         .window("", bounds.width(), bounds.height())
         .fullscreen()
