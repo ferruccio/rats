@@ -89,10 +89,10 @@ impl Player {
             DIR_DOWN_LEFT => maze.empty(row.inc(rows), col.dec(cols)),
             DIR_DOWN_RIGHT => maze.empty(row.inc(rows), col.inc(rows)),
             DIR_UP => maze.empty(row.dec(cols), col),
-            DIR_UP_LEFT => maze.empty(row.dec(rows), col.dec(rows)),
+            DIR_UP_LEFT => maze.empty(row.dec(rows), col.dec(cols)),
             DIR_UP_RIGHT => maze.empty(row.dec(rows), col.inc(cols)),
             DIR_LEFT => maze.empty(row, col.dec(cols)),
-            DIR_RIGHT => maze.empty(row, col.dec(cols)),
+            DIR_RIGHT => maze.empty(row, col.inc(cols)),
             _ => false,
         }
     }
