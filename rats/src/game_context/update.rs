@@ -1,5 +1,8 @@
 use crate::{
-    entities::{update_bullet, update_factory, update_player, Entity},
+    entities::{
+        update_brat, update_bullet, update_factory, update_player, update_rat,
+        Entity,
+    },
     game_context::GameContext,
 };
 
@@ -7,6 +10,7 @@ pub enum Action {
     Nothing,
     Delete,
     Update(Entity),
+    New(Entity),
 }
 
 impl GameContext {
@@ -17,10 +21,14 @@ impl GameContext {
                 Entity::Player(player) => {
                     update_player(&player, &self.pristine_maze, self.frames)
                 }
-                Entity::_Rat(_) => Action::Nothing,
-                Entity::_BabyRat(_) => Action::Nothing,
+                Entity::Rat(rat) => {
+                    update_rat(&rat, &self.pristine_maze, self.frames)
+                }
+                Entity::Brat(brat) => {
+                    update_brat(&brat, &self.pristine_maze, self.frames)
+                }
                 Entity::Factory(factory) => {
-                    update_factory(&factory, self.frames)
+                    update_factory(&factory, self.frames, self.new_rats != 0)
                 }
                 Entity::Bullet(bullet) => {
                     update_bullet(&bullet, &self.pristine_maze, self.frames)
@@ -38,6 +46,21 @@ impl GameContext {
                 }
                 Action::Update(entity) => {
                     self.entities[index] = entity;
+                }
+                Action::New(entity) => {
+                    match entity {
+                        Entity::Player(_) => {}
+                        Entity::Rat(_) => {
+                            self.live_rats += 1;
+                            if self.new_rats > 0 {
+                                self.new_rats -= 1;
+                            }
+                        }
+                        Entity::Brat(_) => self.live_brats += 1,
+                        Entity::Factory(_) => self.live_factories += 1,
+                        Entity::Bullet(_) => {}
+                    }
+                    self.entities.push(entity);
                 }
             };
         }

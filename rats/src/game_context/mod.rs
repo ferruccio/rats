@@ -1,8 +1,12 @@
 use crate::{
     entities::{
-        dir, Bullet, Direction, Entity, EntityList, Player, Position, State,
+        dir, state, Bullet, Direction, Entity, EntityList, Player, Position,
     },
     maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS},
+};
+use rand::{
+    distributions::{uniform::SampleUniform, Uniform},
+    thread_rng, Rng,
 };
 use std::{cmp::max, time::Instant};
 use video::{InitOptions, Pos, Result, Size, SizeWrapping, Video};
@@ -21,13 +25,16 @@ pub struct GameContext {
     pub frames: u32,
     pub pristine_maze: Maze,
     pub maze: Maze,
-    pub running: bool,
     pub firing: bool,
-    pub sticky_mode: bool,
-    pub player_motion_start: Instant,
-    pub bullet_motion_start: Instant,
     pub bullet_fire_start: Instant,
     pub entities: EntityList,
+    pub live_factories: usize,
+    pub dead_factories: usize,
+    pub live_rats: usize,
+    pub dead_rats: usize,
+    pub live_brats: usize,
+    pub dead_brats: usize,
+    pub new_rats: usize,
 }
 
 impl GameContext {
@@ -49,13 +56,16 @@ impl GameContext {
             frames: 0,
             pristine_maze: pristine_maze.clone(),
             maze: Maze::new(maze_rows, maze_cols),
-            running: true,
             firing: false,
-            sticky_mode: false,
-            player_motion_start: Instant::now(),
-            bullet_motion_start: Instant::now(),
             bullet_fire_start: Instant::now(),
             entities: EntityList::new(),
+            live_factories: 0,
+            dead_factories: 0,
+            live_rats: 0,
+            dead_rats: 0,
+            live_brats: 0,
+            dead_brats: 0,
+            new_rats: 0,
         };
         context.entities.push(Entity::Player(Player {
             updated: context.frames,
@@ -65,7 +75,7 @@ impl GameContext {
             },
             dir: dir::NONE,
             stop_dir: dir::DOWN,
-            state: State::Alive,
+            state: state::ALIVE,
             cycle: 0,
         }));
         context.generate_factories(factories.clamp(1, 100), &pristine_maze);
@@ -137,9 +147,24 @@ impl GameContext {
                     updated: self.frames,
                     pos: Position { row, col },
                     dir,
-                    state: State::Alive,
+                    state: state::ALIVE,
                 }));
             }
         }
+    }
+}
+
+pub fn random<T: SampleUniform>(low: T, high: T) -> T {
+    let mut rng = thread_rng();
+    let distribution = Uniform::new_inclusive(low, high);
+    rng.sample(distribution)
+}
+
+pub fn random_direction() -> Direction {
+    match random(0, 3) {
+        0 => dir::UP,
+        1 => dir::DOWN,
+        2 => dir::LEFT,
+        _ => dir::RIGHT,
     }
 }

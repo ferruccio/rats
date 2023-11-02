@@ -20,19 +20,18 @@ struct Options {
     height: Option<usize>,
 
     /// Scale factor (1 to 4)
-    #[clap(short = 's', long = "scale", default_value_t = 1)]
-    scale: usize,
+    #[clap(short = 's', long = "scale")]
+    scale: Option<usize>,
 }
 
 fn main() {
     let opts = Options::parse();
-    let scale = opts.scale.clamp(1, 4);
     let mut video = init(
         InitOptions::new()
             .display_index(opts.display)
             .window_height(opts.height)
             .window_width(opts.width)
-            .scale(scale),
+            .scale(opts.scale),
     )
     .unwrap();
     let texture_creator = video.canvas.texture_creator();
@@ -41,13 +40,13 @@ fn main() {
         let texture = texture_creator
             .create_texture_streaming(
                 PixelFormatEnum::RGB24,
-                (CHAR_CELL_WIDTH * scale) as u32,
-                (FONT_SIZE as usize * CHAR_CELL_HEIGHT * scale) as u32,
+                (CHAR_CELL_WIDTH * video.scale) as u32,
+                (FONT_SIZE as usize * CHAR_CELL_HEIGHT * video.scale) as u32,
             )
             .unwrap();
         textures.push(texture);
     }
-    _ = video.init_charmap_textures(&mut textures, scale);
+    _ = video.init_charmap_textures(&mut textures, video.scale);
     let mut event_pump = video.sdl.event_pump().unwrap();
 
     let mut running = true;

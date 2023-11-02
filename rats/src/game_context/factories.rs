@@ -1,6 +1,6 @@
 use super::GameContext;
 use crate::{
-    entities::{Dimensions, Entity, Factory, Position, State},
+    entities::{state, Dimensions, Entity, Factory, Position},
     maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS},
 };
 use rand::{distributions::Uniform, thread_rng, Rng};
@@ -12,13 +12,16 @@ impl GameContext {
         let mut rng = thread_rng();
         let row_distribution = Uniform::new_inclusive(0, maze.rows() - 1);
         let col_distribution = Uniform::new_inclusive(0, maze.cols() - 1);
+        let cycle_distribution = Uniform::new_inclusive(0, 1);
         let mut generated = 0;
         let mut positions = vec![];
+        // we know where the player starts
         let player_pos = Position {
             row: MAZE_CELL_ROWS / 2,
             col: MAZE_CELL_COLS / 2,
         };
         let time = Instant::now();
+        // don't spend more than a second on this
         'again: while generated < count && time.elapsed().as_millis() < 1000 {
             let row1 = rng.sample(row_distribution);
             let col1 = rng.sample(col_distribution);
@@ -35,9 +38,11 @@ impl GameContext {
                 row: row1,
                 col: col1,
             };
-            if distance_squared(pos, player_pos, maze.dimensions) < 250 {
+            // factories must be at least 15 characters away from the player
+            if distance_squared(pos, player_pos, maze.dimensions) < 225 {
                 continue 'again;
             }
+            // factories must be at least 5 characters away from other factories
             for p in positions.iter() {
                 if distance_squared(pos, *p, maze.dimensions) < 25 {
                     continue 'again;
@@ -47,11 +52,12 @@ impl GameContext {
             self.entities.push(Entity::Factory(Factory {
                 updated: self.frames,
                 pos,
-                state: State::Alive,
-                cycle: 0,
+                state: state::ALIVE,
+                cycle: rng.sample(cycle_distribution),
             }));
             generated = generated + 1;
         }
+        self.live_factories = generated;
     }
 }
 

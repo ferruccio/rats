@@ -27,3 +27,32 @@ pub const EMPTY_CHAR_CELL: [u8; CHAR_CELL_HEIGHT] = [
     0b_00000000, // 10
     0b_00000000, // 11
 ];
+
+// temporary until I create character bitmaps
+pub const RATS_START: u8 = b'A';
+pub const RATS_UP_A1: u8 = RATS_START;
+pub const RATS_UP_A2: u8 = RATS_START + 4;
+pub const RATS_DOWN_A1: u8 = RATS_START + 8;
+pub const RATS_DOWN_A2: u8 = RATS_START + 12;
+pub const RATS_LEFT_A1: u8 = RATS_START + 16;
+pub const RATS_LEFT_A2: u8 = RATS_START + 20;
+pub const RATS_RIGHT_A1: u8 = RATS_START + 24;
+pub const RATS_RIGHT_A2: u8 = RATS_START + 28;
+
+pub const BRATS_START: u8 = b'a';
+pub const BRATS_UP_A1: u8 = BRATS_START;
+pub const BRATS_UP_A2: u8 = BRATS_START + 1;
+pub const BRATS_DOWN_A1: u8 = BRATS_START + 2;
+pub const BRATS_DOWN_A2: u8 = BRATS_START + 3;
+pub const BRATS_LEFT_A1: u8 = BRATS_START + 4;
+pub const BRATS_LEFT_A2: u8 = BRATS_START + 5;
+pub const BRATS_RIGHT_A1: u8 = BRATS_START + 6;
+pub const BRATS_RIGHT_A2: u8 = BRATS_START + 7;
+
+pub const BIG_BOOM_START: u8 = b'A';
+pub const BIG_BOOM_A1: u8 = BIG_BOOM_START;
+pub const BIG_BOOM_A2: u8 = BIG_BOOM_START + 4;
+
+pub const LIL_BOOM_START: u8 = b'a';
+pub const LIL_BOOM_A1: u8 = LIL_BOOM_START;
+pub const LIL_BOOM_A2: u8 = LIL_BOOM_START + 1;

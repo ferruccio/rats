@@ -1,13 +1,13 @@
 use video::Size;
 
-mod baby_rat;
+mod brat;
 mod bullet;
 mod factory;
 mod player;
 mod position;
 mod rat;
 
-pub use baby_rat::*;
+pub use brat::*;
 pub use bullet::*;
 pub use factory::*;
 pub use player::*;
@@ -17,8 +17,8 @@ pub use rat::*;
 #[derive(Debug, Clone)]
 pub enum Entity {
     Player(Player),
-    _Rat(Rat),
-    _BabyRat(BabyRat),
+    Rat(Rat),
+    Brat(Brat),
     Factory(Factory),
     Bullet(Bullet),
 }
@@ -54,9 +54,11 @@ pub mod dir {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum State {
-    Alive,
-    _Exploding,
-    _Dead,
+pub type State = u8;
+pub mod state {
+    pub const ALIVE: u8 = 0;
+    pub const EXPLODING1: u8 = 1;
+    pub const EXPLODING2: u8 = 2;
+    pub const EXPLODING3: u8 = 3;
+    pub const DEAD: u8 = 4;
 }

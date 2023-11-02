@@ -9,7 +9,7 @@ pub struct InitOptions {
     display_index: Option<usize>,
     window_width: Option<usize>,
     window_height: Option<usize>,
-    scale: usize,
+    scale: Option<usize>,
 }
 
 impl InitOptions {
@@ -46,7 +46,7 @@ impl InitOptions {
         self
     }
 
-    pub fn scale(mut self, scale: usize) -> Self {
+    pub fn scale(mut self, scale: Option<usize>) -> Self {
         self.scale = scale;
         self
     }
@@ -64,7 +64,17 @@ pub fn init(opts: InitOptions) -> Result<Video> {
         opts.window_width.unwrap_or(bounds.width() as usize) as u32,
         opts.window_height.unwrap_or(bounds.height() as usize) as u32,
     );
-    let scale = opts.scale.clamp(1, 4);
+    let scale =
+        opts.scale
+            .map(|scale| scale.clamp(1, 4))
+            .unwrap_or_else(|| {
+                for scale in 1..=4 {
+                    if bounds.width() / scale / 8 <= 80 {
+                        return scale as usize;
+                    }
+                }
+                4
+            });
     let rows = (bounds.height() as usize / CHAR_CELL_HEIGHT / scale) as Size;
     let cols = (bounds.width() as usize / CHAR_CELL_WIDTH / scale) as Size;
     let window = video

@@ -15,7 +15,7 @@ mod game_context;
 mod maze;
 
 #[derive(Parser)]
-struct CommandLineParams {
+struct CommandLineOpts {
     /// Display index
     #[clap(short = 'd', long = "display")]
     display: Option<usize>,
@@ -45,20 +45,22 @@ struct CommandLineParams {
     window_width: Option<Pixels>,
 
     /// Scale factor (1 to 4)
-    #[clap(short = 's', long = "scale", default_value_t = 2)]
-    scale: usize,
+    #[clap(short = 's', long = "scale")]
+    scale: Option<usize>,
 }
 
 fn main() {
-    if let Err(error) = play(CommandLineParams::parse()) {
+    if let Err(error) = play(CommandLineOpts::parse()) {
         println!("{error}");
     }
 }
 
-fn play(opts: CommandLineParams) -> Result<()> {
+const FPS_LIMIT: u32 = 60;
+const RAT_SPAWN_SECONDS: u64 = 15;
+
+fn play(opts: CommandLineOpts) -> Result<()> {
     let cell_rows = opts.maze_height.unwrap_or(15);
     let cell_cols = opts.maze_width.unwrap_or(15);
-    let scale = opts.scale.clamp(1, 4);
     let mut context = GameContext::create(
         InitOptions::new()
             .display_index(opts.display)
@@ -76,34 +78,33 @@ fn play(opts: CommandLineParams) -> Result<()> {
     for _ in 0..ATTR_COMBOS {
         let texture = texture_creator.create_texture_streaming(
             PixelFormatEnum::RGB24,
-            (CHAR_CELL_WIDTH * scale) as u32,
-            (FONT_SIZE as usize * CHAR_CELL_HEIGHT * scale) as u32,
+            (CHAR_CELL_WIDTH * context.video.scale) as u32,
+            (FONT_SIZE as usize * CHAR_CELL_HEIGHT * context.video.scale)
+                as u32,
         )?;
         textures.push(texture);
     }
-    context.video.init_charmap_textures(&mut textures, scale)?;
+    context
+        .video
+        .init_charmap_textures(&mut textures, context.video.scale)?;
 
-    const FPS_LIMIT: u32 = 60;
     const NANOS_PER_FRAME: u32 = 1_000_000_000 / FPS_LIMIT;
     let mut frame_time = Instant::now();
-
     let mut event_pump = context.video.sdl.event_pump().map_err(sdl_error)?;
-    // // player moves every 1/10th of a second
-    // let player_motion_time = Duration::new(0, 1_000_000_000 / 10);
-    // // bullets move every 1/20th of a second
-    let bullet_motion_time = Duration::new(0, 1_000_000_000 / 20);
-    // // player can fire every 1/4 of a second
+    // player can fire 4 bullets/second
     let bullet_firing_time = Duration::new(0, 1_000_000_000 / 4);
-    // let mut motion_cycle: u8 = 0;
-    while context.running {
+    let mut rat_spawn_time =
+        Instant::now() - Duration::new(RAT_SPAWN_SECONDS, 0);
+    let mut running = true;
+    while running {
         context.render_frame(&textures)?;
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. } => context.running = false,
+                Event::Quit { .. } => running = false,
                 Event::KeyDown {
                     keycode: Some(keycode),
                     ..
-                } => key_down(&mut context, keycode),
+                } => running = key_down(&mut context, keycode),
                 Event::KeyUp {
                     keycode: Some(keycode),
                     ..
@@ -112,25 +113,22 @@ fn play(opts: CommandLineParams) -> Result<()> {
             }
         }
         context.update();
-
-        /*
-        if context.player_motion_start.elapsed() >= player_motion_time {
-            context.player.advance_all(&maze, context.direction);
-            context.player_motion_start = Instant::now();
-            motion_cycle = (motion_cycle + 1) & 3;
-        }
-        */
-        if context.bullet_motion_start.elapsed() >= bullet_motion_time {
-            // context.advance_bullets();
-            context.bullet_motion_start = Instant::now();
-        }
         if context.firing
             && context.bullet_fire_start.elapsed() >= bullet_firing_time
         {
             context.fire();
             context.bullet_fire_start = Instant::now();
         }
+        if rat_spawn_time.elapsed().as_secs() >= RAT_SPAWN_SECONDS {
+            // New rats will always be generated at the same rate regardless of
+            // how many factories are left. This means that as factories are
+            // destroyed, remaining factories will pick up the pace to
+            // compensate for the loss of our rat making comrades.
+            context.new_rats = opts.factories;
+            rat_spawn_time = Instant::now();
+        }
 
+        // don't hog the CPU
         let nanos_elapsed = frame_time.elapsed().as_nanos() as u32;
         if nanos_elapsed < NANOS_PER_FRAME {
             sleep(Duration::new(0, NANOS_PER_FRAME - nanos_elapsed));
@@ -141,16 +139,10 @@ fn play(opts: CommandLineParams) -> Result<()> {
     Ok(())
 }
 
-fn key_down(context: &mut GameContext, keycode: Keycode) {
+// return true to keep game running
+fn key_down(context: &mut GameContext, keycode: Keycode) -> bool {
     match keycode {
-        Keycode::Escape | Keycode::Q => context.running = false,
-        Keycode::S => {
-            context.sticky_mode = !context.sticky_mode;
-            if !context.sticky_mode {
-                context.firing = false;
-                context.stop(dir::NONE);
-            }
-        }
+        Keycode::Escape | Keycode::Q => return false,
         Keycode::Up => context.start(dir::UP),
         Keycode::Down => context.start(dir::DOWN),
         Keycode::Left => context.start(dir::LEFT),
@@ -164,17 +156,16 @@ fn key_down(context: &mut GameContext, keycode: Keycode) {
         }
         _ => {}
     }
+    true
 }
 
 fn key_up(context: &mut GameContext, keycode: Keycode) {
-    if !context.sticky_mode {
-        match keycode {
-            Keycode::Up => context.stop(dir::UP),
-            Keycode::Down => context.stop(dir::DOWN),
-            Keycode::Left => context.stop(dir::LEFT),
-            Keycode::Right => context.stop(dir::RIGHT),
-            Keycode::Space => context.firing = false,
-            _ => {}
-        }
+    match keycode {
+        Keycode::Up => context.stop(dir::UP),
+        Keycode::Down => context.stop(dir::DOWN),
+        Keycode::Left => context.stop(dir::LEFT),
+        Keycode::Right => context.stop(dir::RIGHT),
+        Keycode::Space => context.firing = false,
+        _ => {}
     }
 }

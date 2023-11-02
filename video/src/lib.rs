@@ -33,7 +33,7 @@ pub type Size = u16;
 pub struct Video {
     pub sdl: Sdl,
     bounds: Rect,
-    scale: usize,
+    pub scale: usize,
     rows: Size,
     cols: Size,
     pub canvas: Canvas<Window>,
