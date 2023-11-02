@@ -114,26 +114,27 @@ impl GameContext {
         let (row, col) = (player.pos.row, player.pos.col);
         let (rows, cols) = (self.maze.rows(), self.maze.cols());
 
-        let (row, col) = match dir {
-            dir::DOWN => (row.inc(rows).inc(rows), col),
-            dir::DOWN_LEFT => (row.inc(rows), col.dec(cols)),
+        if let Some((row, col)) = match dir {
+            dir::DOWN => Some((row.inc(rows).inc(rows), col)),
+            dir::DOWN_LEFT => Some((row.inc(rows), col.dec(cols))),
             dir::DOWN_RIGHT => {
-                (row.inc(rows).inc(rows), col.inc(cols).inc(cols))
+                Some((row.inc(rows).inc(rows), col.inc(cols).inc(cols)))
             }
-            dir::UP => (row.dec(rows), col.inc(cols)),
-            dir::UP_LEFT => (row.dec(rows), col.dec(cols)),
-            dir::UP_RIGHT => (row.dec(rows), col.inc(cols)),
-            dir::LEFT => (row, col.dec(cols)),
-            dir::RIGHT => (row, col.inc(cols).inc(cols)),
-            _ => (row, col),
-        };
-        if !self.maze.is_wall(row, col) {
-            self.entities.push(Entity::Bullet(Bullet {
-                updated: self.frames,
-                pos: Position { row, col },
-                dir,
-                state: State::Alive,
-            }));
+            dir::UP => Some((row.dec(rows), col.inc(cols))),
+            dir::UP_LEFT => Some((row.dec(rows), col.dec(cols))),
+            dir::UP_RIGHT => Some((row.dec(rows), col.inc(cols))),
+            dir::LEFT => Some((row, col.dec(cols))),
+            dir::RIGHT => Some((row, col.inc(cols).inc(cols))),
+            _ => None,
+        } {
+            if !self.maze.is_wall(row, col) {
+                self.entities.push(Entity::Bullet(Bullet {
+                    updated: self.frames,
+                    pos: Position { row, col },
+                    dir,
+                    state: State::Alive,
+                }));
+            }
         }
     }
 }

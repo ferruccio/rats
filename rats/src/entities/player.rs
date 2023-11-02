@@ -34,6 +34,17 @@ impl Player {
             _ => false,
         }
     }
+
+    pub fn effective_dir(&self) -> Direction {
+        let mut dir = self.dir;
+        if (dir & dir::UP) != 0 && (dir & dir::DOWN) != 0 {
+            dir &= !(dir::UP | dir::DOWN);
+        }
+        if (dir & dir::LEFT) != 0 && (dir & dir::RIGHT) != 0 {
+            dir &= !(dir::LEFT | dir::RIGHT);
+        }
+        dir
+    }
 }
 
 pub fn render_player(player: &Player, maze: &mut Maze) {
@@ -42,7 +53,7 @@ pub fn render_player(player: &Player, maze: &mut Maze) {
     } else {
         (player.cycle >> 1) + 1
     };
-    let ch = match player.dir {
+    let ch = match player.effective_dir() {
         dir::DOWN => PLAYER_DOWN,
         dir::DOWN_LEFT => PLAYER_LEFT,
         dir::DOWN_RIGHT => PLAYER_RIGHT,

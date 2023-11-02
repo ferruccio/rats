@@ -23,7 +23,7 @@ pub fn render_bullet(bullet: &Bullet, maze: &mut Maze) {
         dir::UP_RIGHT => BULLET_UP_RIGHT,
         dir::LEFT => BULLET_LEFT,
         dir::RIGHT => BULLET_RIGHT,
-        _ => BULLET_DOWN,
+        _ => b'?',
     };
     let ch = var_name;
     maze.buffer
@@ -48,7 +48,7 @@ pub fn update_bullet(bullet: &Bullet, maze: &Maze, frames: u32) -> Action {
         dir::UP_RIGHT => (row.dec(rows), col.inc(cols)),
         dir::LEFT => (row, col.dec(cols)),
         dir::RIGHT => (row, col.inc(cols)),
-        _ => (row.inc(rows), col),
+        _ => (row, col),
     };
     if maze.is_wall(row, col) {
         Action::Delete
