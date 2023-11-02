@@ -43,6 +43,15 @@ pub mod dir {
     pub const UP_RIGHT: Direction = UP | RIGHT;
     pub const DOWN_LEFT: Direction = DOWN | LEFT;
     pub const DOWN_RIGHT: Direction = DOWN | RIGHT;
+
+    pub fn stop_dir(dir: Direction) -> Direction {
+        match dir {
+            UP | DOWN | LEFT | RIGHT => dir,
+            UP_LEFT | DOWN_LEFT => LEFT,
+            UP_RIGHT | DOWN_RIGHT => RIGHT,
+            _ => UP,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]

@@ -91,12 +91,7 @@ impl GameContext {
     pub fn start(&mut self, dir: Direction) {
         let player = self.get_player_mut();
         player.dir |= dir;
-        player.stop_dir = match dir {
-            dir::UP | dir::DOWN | dir::LEFT | dir::RIGHT => dir,
-            dir::UP_LEFT | dir::DOWN_LEFT => dir::LEFT,
-            dir::UP_RIGHT | dir::DOWN_RIGHT => dir::RIGHT,
-            _ => dir::UP,
-        };
+        player.stop_dir = dir::stop_dir(dir);
     }
 
     pub fn stop(&mut self, dir: Direction) {

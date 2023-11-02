@@ -48,12 +48,16 @@ impl Player {
 }
 
 pub fn render_player(player: &Player, maze: &mut Maze) {
-    let offset = if player.dir == dir::NONE {
+    let dir = match player.effective_dir() {
+        dir::NONE => player.stop_dir,
+        dir => dir,
+    };
+    let offset = if player.effective_dir() == dir::NONE {
         0
     } else {
         (player.cycle >> 1) + 1
     };
-    let ch = match player.effective_dir() {
+    let ch = match dir {
         dir::DOWN => PLAYER_DOWN,
         dir::DOWN_LEFT => PLAYER_LEFT,
         dir::DOWN_RIGHT => PLAYER_RIGHT,
