@@ -113,6 +113,22 @@ impl Position {
             steps -= 1;
         }
     }
+
+    pub fn advance(mut self, dir: Direction, dims: Dimensions) -> Self {
+        if dir & DIR_UP != 0 {
+            self.move_up(1, dims);
+        }
+        if dir & DIR_DOWN != 0 {
+            self.move_down(1, dims);
+        }
+        if dir & DIR_LEFT != 0 {
+            self.move_left(1, dims);
+        }
+        if dir & DIR_RIGHT != 0 {
+            self.move_right(1, dims);
+        }
+        self
+    }
 }
 
 impl Display for Position {

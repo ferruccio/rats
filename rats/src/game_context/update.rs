@@ -25,13 +25,13 @@ impl GameContext {
         for (index, entity) in self.entities.iter().enumerate() {
             let action = match entity {
                 Entity::Player(player) => {
-                    update_player(&player, &self.maze, self.frames)
+                    update_player(&player, &self.pristine_maze, self.frames)
                 }
                 Entity::Rat(_) => Action::Nothing,
                 Entity::BabyRat(_) => Action::Nothing,
                 Entity::RatFactory(_) => Action::Nothing,
                 Entity::Bullet(bullet) => {
-                    update_bullet(&bullet, &self.maze, self.frames)
+                    update_bullet(&bullet, &self.pristine_maze, self.frames)
                 }
             };
             actions.push((index, action));
@@ -53,19 +53,8 @@ impl GameContext {
 }
 
 impl Player {
-    pub fn advance(&mut self, direction: Direction, dims: Dimensions) {
-        if self.dir & DIR_UP != 0 {
-            self.pos.move_up(1, dims);
-        }
-        if direction & DIR_DOWN != 0 {
-            self.pos.move_down(1, dims);
-        }
-        if direction & DIR_LEFT != 0 {
-            self.pos.move_left(1, dims);
-        }
-        if direction & DIR_RIGHT != 0 {
-            self.pos.move_right(1, dims);
-        }
+    pub fn advance(&mut self, dir: Direction, dims: Dimensions) {
+        self.pos = self.pos.advance(dir, dims);
     }
 
     pub fn can_advance(&self, maze: &Maze, direction: Direction) -> bool {
