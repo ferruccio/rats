@@ -1,5 +1,5 @@
 use clap::Parser;
-use entities::{DIR_DOWN, DIR_LEFT, DIR_RIGHT, DIR_UP};
+use entities::dir;
 use game_context::GameContext;
 use std::{
     thread::sleep,
@@ -139,10 +139,10 @@ fn play(opts: CommandLineParams) -> Result<()> {
 fn key_down(context: &mut GameContext, keycode: Keycode) {
     match keycode {
         Keycode::Escape | Keycode::Q => context.running = false,
-        Keycode::Up => context.start(DIR_UP),
-        Keycode::Down => context.start(DIR_DOWN),
-        Keycode::Left => context.start(DIR_LEFT),
-        Keycode::Right => context.start(DIR_RIGHT),
+        Keycode::Up => context.start(dir::UP),
+        Keycode::Down => context.start(dir::DOWN),
+        Keycode::Left => context.start(dir::LEFT),
+        Keycode::Right => context.start(dir::RIGHT),
         Keycode::Space => {
             if !context.firing {
                 context.fire();
@@ -156,10 +156,10 @@ fn key_down(context: &mut GameContext, keycode: Keycode) {
 
 fn key_up(context: &mut GameContext, keycode: Keycode) {
     match keycode {
-        Keycode::Up => context.stop(DIR_UP),
-        Keycode::Down => context.stop(DIR_DOWN),
-        Keycode::Left => context.stop(DIR_LEFT),
-        Keycode::Right => context.stop(DIR_RIGHT),
+        Keycode::Up => context.stop(dir::UP),
+        Keycode::Down => context.stop(dir::DOWN),
+        Keycode::Left => context.stop(dir::LEFT),
+        Keycode::Right => context.stop(dir::RIGHT),
         Keycode::Space => context.firing = false,
         _ => {}
     }

@@ -1,8 +1,6 @@
 use crate::{
     entities::{
-        Bullet, Direction, Entity, EntityList, Player, Position, State,
-        DIR_DOWN, DIR_DOWN_LEFT, DIR_DOWN_RIGHT, DIR_LEFT, DIR_NONE, DIR_RIGHT,
-        DIR_UP, DIR_UP_LEFT, DIR_UP_RIGHT,
+        dir, Bullet, Direction, Entity, EntityList, Player, Position, State,
     },
     maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS},
 };
@@ -60,8 +58,8 @@ impl GameContext {
                 row: (MAZE_CELL_ROWS / 2) as Pos,
                 col: (MAZE_CELL_COLS / 2) as Pos,
             },
-            dir: DIR_NONE,
-            stop_dir: DIR_DOWN,
+            dir: dir::NONE,
+            stop_dir: dir::DOWN,
             state: State::Alive,
             cycle: 0,
         }));
@@ -94,10 +92,10 @@ impl GameContext {
         let player = self.get_player_mut();
         player.dir |= dir;
         player.stop_dir = match dir {
-            DIR_UP | DIR_DOWN | DIR_LEFT | DIR_RIGHT => dir,
-            DIR_UP_LEFT | DIR_DOWN_LEFT => DIR_LEFT,
-            DIR_UP_RIGHT | DIR_DOWN_RIGHT => DIR_RIGHT,
-            _ => DIR_UP,
+            dir::UP | dir::DOWN | dir::LEFT | dir::RIGHT => dir,
+            dir::UP_LEFT | dir::DOWN_LEFT => dir::LEFT,
+            dir::UP_RIGHT | dir::DOWN_RIGHT => dir::RIGHT,
+            _ => dir::UP,
         };
     }
 
@@ -108,7 +106,7 @@ impl GameContext {
 
     pub fn fire(&mut self) {
         let player = self.get_player();
-        let dir = if player.dir == DIR_NONE {
+        let dir = if player.dir == dir::NONE {
             player.stop_dir
         } else {
             player.dir
@@ -117,16 +115,16 @@ impl GameContext {
         let (rows, cols) = (self.maze.rows(), self.maze.cols());
 
         let (row, col) = match dir {
-            DIR_DOWN => (row.inc(rows).inc(rows), col),
-            DIR_DOWN_LEFT => (row.inc(rows), col.dec(cols)),
-            DIR_DOWN_RIGHT => {
+            dir::DOWN => (row.inc(rows).inc(rows), col),
+            dir::DOWN_LEFT => (row.inc(rows), col.dec(cols)),
+            dir::DOWN_RIGHT => {
                 (row.inc(rows).inc(rows), col.inc(cols).inc(cols))
             }
-            DIR_UP => (row.dec(rows), col.inc(cols)),
-            DIR_UP_LEFT => (row.dec(rows), col.dec(cols)),
-            DIR_UP_RIGHT => (row.dec(rows), col.inc(cols)),
-            DIR_LEFT => (row, col.dec(cols)),
-            DIR_RIGHT => (row, col.inc(cols).inc(cols)),
+            dir::UP => (row.dec(rows), col.inc(cols)),
+            dir::UP_LEFT => (row.dec(rows), col.dec(cols)),
+            dir::UP_RIGHT => (row.dec(rows), col.inc(cols)),
+            dir::LEFT => (row, col.dec(cols)),
+            dir::RIGHT => (row, col.inc(cols).inc(cols)),
             _ => (row, col),
         };
         if !self.maze.is_wall(row, col) {
