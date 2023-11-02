@@ -35,24 +35,17 @@ impl GameContext {
         let seconds = self.start.elapsed().as_secs_f32();
         let fps =
             self.frames as f32 / if seconds == 0.0 { 1.0 } else { seconds };
-        self.video.buffer.print(
-            0,
-            0,
-            ATTR_REVERSE | ATTR_DIM,
-            format!("FPS: {fps:.0} start: {start_pos}"),
-        );
-        self.video.buffer.print(
-            1,
-            0,
-            ATTR_REVERSE | ATTR_DIM,
-            format!(
-                "maze: {rows}x{cols} player: {player}",
-                rows = self.maze.rows(),
-                cols = self.maze.cols(),
-                player = self.player_position()
-            ),
-        );
-
+        let player_pos = self.player_position();
+        let maze_rows = self.maze.rows();
+        let maze_cols = self.maze.cols();
+        let entities = self.entities.len();
+        let vbuf = &mut self.video.buffer;
+        const RD: u8 = ATTR_REVERSE | ATTR_DIM;
+        vbuf.print(5, 0, RD, format!("   FPS: {fps:.0}"));
+        vbuf.print(6, 0, RD, format!("  maze: {maze_rows} x {maze_cols}",));
+        vbuf.print(7, 0, RD, format!("player: {player_pos}"));
+        vbuf.print(8, 0, RD, format!(" start: {start_pos}"));
+        vbuf.print(9, 0, RD, format!("  ents: {entities}"));
         // blast the video buffer onto the screen
         self.video.render_buffer(textures)
     }
