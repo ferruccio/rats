@@ -7,9 +7,11 @@ use crate::{
 use std::{cmp::max, time::Instant};
 use video::{InitOptions, Pos, Result, Size, SizeWrapping, Video};
 
+mod factories;
 mod render;
 mod update;
 
+pub use factories::*;
 pub use render::*;
 pub use update::*;
 
@@ -34,6 +36,7 @@ impl GameContext {
         maze_height: Size,
         maze_width: Size,
         density: usize,
+        factories: usize,
     ) -> Result<GameContext> {
         let video = video::init(opts)?;
         let maze_rows = max((video.rows() - 2) / MAZE_CELL_ROWS, maze_height);
@@ -44,7 +47,7 @@ impl GameContext {
             video,
             start: Instant::now(),
             frames: 0,
-            pristine_maze,
+            pristine_maze: pristine_maze.clone(),
             maze: Maze::new(maze_rows, maze_cols),
             running: true,
             firing: false,
@@ -65,6 +68,7 @@ impl GameContext {
             state: State::Alive,
             cycle: 0,
         }));
+        context.generate_factories(factories.clamp(1, 100), &pristine_maze);
         Ok(context)
     }
 

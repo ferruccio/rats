@@ -2,24 +2,24 @@ use video::Size;
 
 mod baby_rat;
 mod bullet;
+mod factory;
 mod player;
 mod position;
 mod rat;
-mod rat_factory;
 
 pub use baby_rat::*;
 pub use bullet::*;
+pub use factory::*;
 pub use player::*;
 pub use position::*;
 pub use rat::*;
-pub use rat_factory::*;
 
 #[derive(Debug, Clone)]
 pub enum Entity {
     Player(Player),
     _Rat(Rat),
     _BabyRat(BabyRat),
-    _RatFactory(RatFactory),
+    Factory(Factory),
     Bullet(Bullet),
 }
 

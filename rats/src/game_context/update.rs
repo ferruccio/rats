@@ -1,5 +1,5 @@
 use crate::{
-    entities::{update_bullet, update_player, Entity},
+    entities::{update_bullet, update_factory, update_player, Entity},
     game_context::GameContext,
 };
 
@@ -19,7 +19,9 @@ impl GameContext {
                 }
                 Entity::_Rat(_) => Action::Nothing,
                 Entity::_BabyRat(_) => Action::Nothing,
-                Entity::_RatFactory(_) => Action::Nothing,
+                Entity::Factory(factory) => {
+                    update_factory(&factory, self.frames)
+                }
                 Entity::Bullet(bullet) => {
                     update_bullet(&bullet, &self.pristine_maze, self.frames)
                 }

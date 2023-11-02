@@ -20,6 +20,10 @@ struct CommandLineParams {
     #[clap(short = 'd', long = "display")]
     display: Option<usize>,
 
+    /// Number of rat factories
+    #[clap(short = 'f', long = "rat-factories", default_value_t = 5)]
+    factories: usize,
+
     /// Maze height (maze cells)
     #[clap(short = 'H', long = "maze-height", alias = "mh")]
     maze_height: Option<usize>,
@@ -64,6 +68,7 @@ fn play(opts: CommandLineParams) -> Result<()> {
         cell_rows as Size,
         cell_cols as Size,
         opts.density,
+        opts.factories,
     )?;
 
     let texture_creator = context.video.canvas.texture_creator();

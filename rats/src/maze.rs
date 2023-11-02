@@ -8,7 +8,7 @@ use video::{
     MAZE_TOP_RIGHT, MAZE_TOP_T, MAZE_WALLS_END, MAZE_WALLS_START,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Maze {
     // size in maze cells
     cell_rows: Size,

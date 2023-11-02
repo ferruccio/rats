@@ -2,11 +2,13 @@ use crate::CHAR_CELL_HEIGHT;
 
 mod ascii;
 mod bullets;
+mod factories;
 mod maze_walls;
 mod player;
 
 pub use ascii::*;
 pub use bullets::*;
+pub use factories::*;
 pub use maze_walls::*;
 pub use player::*;
 

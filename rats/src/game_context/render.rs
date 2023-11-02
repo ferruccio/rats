@@ -1,5 +1,5 @@
 use crate::{
-    entities::{render_bullet, render_player, Entity},
+    entities::{render_bullet, render_factory, render_player, Entity},
     game_context::GameContext,
     maze::Maze,
     Result,
@@ -58,7 +58,7 @@ fn render_entity(entity: &Entity, maze: &mut Maze) {
         Entity::Player(player) => render_player(player, maze),
         Entity::_Rat(_rat) => todo!(),
         Entity::_BabyRat(_baby_rat) => todo!(),
-        Entity::_RatFactory(_rat_factory) => todo!(),
+        Entity::Factory(factory) => render_factory(factory, maze),
         Entity::Bullet(bullet) => render_bullet(bullet, maze),
     }
 }

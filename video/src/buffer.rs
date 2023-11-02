@@ -1,5 +1,6 @@
 use crate::{Size, SizeWrapping};
 
+#[derive(Clone)]
 pub struct Buffer {
     pub rows: Size,
     pub cols: Size,
