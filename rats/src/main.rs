@@ -139,6 +139,13 @@ fn play(opts: CommandLineParams) -> Result<()> {
 fn key_down(context: &mut GameContext, keycode: Keycode) {
     match keycode {
         Keycode::Escape | Keycode::Q => context.running = false,
+        Keycode::S => {
+            context.sticky_mode = !context.sticky_mode;
+            if !context.sticky_mode {
+                context.firing = false;
+                context.stop(dir::NONE);
+            }
+        }
         Keycode::Up => context.start(dir::UP),
         Keycode::Down => context.start(dir::DOWN),
         Keycode::Left => context.start(dir::LEFT),
@@ -155,12 +162,14 @@ fn key_down(context: &mut GameContext, keycode: Keycode) {
 }
 
 fn key_up(context: &mut GameContext, keycode: Keycode) {
-    match keycode {
-        Keycode::Up => context.stop(dir::UP),
-        Keycode::Down => context.stop(dir::DOWN),
-        Keycode::Left => context.stop(dir::LEFT),
-        Keycode::Right => context.stop(dir::RIGHT),
-        Keycode::Space => context.firing = false,
-        _ => {}
+    if !context.sticky_mode {
+        match keycode {
+            Keycode::Up => context.stop(dir::UP),
+            Keycode::Down => context.stop(dir::DOWN),
+            Keycode::Left => context.stop(dir::LEFT),
+            Keycode::Right => context.stop(dir::RIGHT),
+            Keycode::Space => context.firing = false,
+            _ => {}
+        }
     }
 }

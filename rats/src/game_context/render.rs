@@ -41,11 +41,12 @@ impl GameContext {
         let entities = self.entities.len();
         let vbuf = &mut self.video.buffer;
         const RD: u8 = ATTR_REVERSE | ATTR_DIM;
-        vbuf.print(5, 0, RD, format!("   FPS: {fps:.0}"));
-        vbuf.print(6, 0, RD, format!("  maze: {maze_rows} x {maze_cols}",));
-        vbuf.print(7, 0, RD, format!("player: {player_pos}"));
-        vbuf.print(8, 0, RD, format!(" start: {start_pos}"));
-        vbuf.print(9, 0, RD, format!("  ents: {entities}"));
+        vbuf.print(2, 0, RD, format!("   FPS: {fps:.0}"));
+        vbuf.print(3, 0, RD, format!("  maze: {maze_rows} x {maze_cols}",));
+        vbuf.print(4, 0, RD, format!("player: {player_pos}"));
+        vbuf.print(5, 0, RD, format!(" start: {start_pos}"));
+        vbuf.print(6, 0, RD, format!("  ents: {entities}"));
+        vbuf.print(7, 0, RD, format!("sticky: {}", self.sticky_mode));
         // blast the video buffer onto the screen
         self.video.render_buffer(textures)
     }

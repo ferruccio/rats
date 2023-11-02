@@ -21,6 +21,7 @@ pub struct GameContext {
     pub maze: Maze,
     pub running: bool,
     pub firing: bool,
+    pub sticky_mode: bool,
     pub player_motion_start: Instant,
     pub bullet_motion_start: Instant,
     pub bullet_fire_start: Instant,
@@ -47,6 +48,7 @@ impl GameContext {
             maze: Maze::new(maze_rows, maze_cols),
             running: true,
             firing: false,
+            sticky_mode: false,
             player_motion_start: Instant::now(),
             bullet_motion_start: Instant::now(),
             bullet_fire_start: Instant::now(),
@@ -96,7 +98,11 @@ impl GameContext {
 
     pub fn stop(&mut self, dir: Direction) {
         let player = self.get_player_mut();
-        player.dir = player.dir & !dir;
+        player.dir = if dir == dir::NONE {
+            dir
+        } else {
+            player.dir & !dir
+        };
     }
 
     pub fn fire(&mut self) {
