@@ -13,8 +13,9 @@ impl GameContext {
         self.video.buffer.clear();
         self.pristine_maze.buffer.copy_to(&mut self.maze.buffer);
 
-        // render all entities onto our current maze
-        for entity in self.entities.iter_mut() {
+        // render all entities in reverse order so that player
+        // and rat factories are rendered last
+        for entity in self.entities.iter_mut().rev() {
             render_entity(entity, &mut self.maze);
         }
 
