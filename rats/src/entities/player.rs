@@ -19,20 +19,20 @@ impl Player {
         self.pos = self.pos.advance(dir, dims);
     }
 
-    pub fn can_advance(&self, maze: &Maze, direction: Direction) -> bool {
-        let (row, col) = (self.pos.row, self.pos.col);
-        let (rows, cols) = (maze.rows(), maze.cols());
-        match direction {
-            dir::DOWN => !maze.is_wall_quad(row.inc(rows), col),
-            dir::DOWN_LEFT => !maze.is_wall_quad(row.inc(rows), col.dec(cols)),
-            dir::DOWN_RIGHT => !maze.is_wall_quad(row.inc(rows), col.inc(cols)),
-            dir::UP => !maze.is_wall_quad(row.dec(rows), col),
-            dir::UP_LEFT => !maze.is_wall_quad(row.dec(rows), col.dec(cols)),
-            dir::UP_RIGHT => !maze.is_wall_quad(row.dec(rows), col.inc(cols)),
-            dir::LEFT => !maze.is_wall_quad(row, col.dec(cols)),
-            dir::RIGHT => !maze.is_wall_quad(row, col.inc(cols)),
-            _ => false,
-        }
+    pub fn can_advance(&self, maze: &Maze, dir: Direction) -> bool {
+        let mut player = *self;
+        player.advance(dir, maze.dimensions);
+        let (row1, col1) = (player.pos.row, player.pos.col);
+        let row2 = player.pos.row.inc(maze.dimensions.rows);
+        let col2 = player.pos.col.inc(maze.dimensions.cols);
+        !(((dir & dir::UP) != 0
+            && (maze.is_wall(row1, col1) || maze.is_wall(row1, col2)))
+            || ((dir & dir::DOWN) != 0
+                && (maze.is_wall(row2, col1) || maze.is_wall(row2, col2)))
+            || ((dir & dir::LEFT) != 0
+                && (maze.is_wall(row1, col1) || maze.is_wall(row2, col1)))
+            || ((dir & dir::RIGHT) != 0
+                && (maze.is_wall(row1, col2) || maze.is_wall(row2, col2))))
     }
 
     pub fn effective_dir(&self) -> Direction {

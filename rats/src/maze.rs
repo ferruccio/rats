@@ -2,11 +2,10 @@ use crate::entities::Dimensions;
 use knossos::maze::{HuntAndKill, OrthogonalMazeBuilder};
 use rand::{distributions::Uniform, thread_rng, Rng};
 use video::{
-    Buffer, Pos, Size, SizeWrapping, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM,
-    MAZE_BOTTOM_LEFT, MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T, MAZE_CROSS, MAZE_DOWN,
-    MAZE_LEFT, MAZE_LEFT_T, MAZE_NONE, MAZE_RIGHT, MAZE_RIGHT_T, MAZE_TOP,
-    MAZE_TOP_LEFT, MAZE_TOP_RIGHT, MAZE_TOP_T, MAZE_WALLS_END,
-    MAZE_WALLS_START,
+    Buffer, Pos, Size, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM, MAZE_BOTTOM_LEFT,
+    MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T, MAZE_CROSS, MAZE_DOWN, MAZE_LEFT,
+    MAZE_LEFT_T, MAZE_NONE, MAZE_RIGHT, MAZE_RIGHT_T, MAZE_TOP, MAZE_TOP_LEFT,
+    MAZE_TOP_RIGHT, MAZE_TOP_T, MAZE_WALLS_END, MAZE_WALLS_START,
 };
 
 #[derive(Debug)]
@@ -47,15 +46,6 @@ impl Maze {
     pub fn is_wall(&self, row: Pos, col: Pos) -> bool {
         let ch = self.buffer.get_char(row, col);
         ch >= MAZE_WALLS_START && ch <= MAZE_WALLS_END
-    }
-
-    pub fn is_wall_quad(&self, row1: Pos, col1: Pos) -> bool {
-        let row2 = row1.inc(self.rows());
-        let col2 = col1.inc(self.cols());
-        self.is_wall(row1, col1)
-            || self.is_wall(row1, col2)
-            || self.is_wall(row2, col1)
-            || self.is_wall(row2, col2)
     }
 
     pub fn generate(&mut self, density: usize) {
