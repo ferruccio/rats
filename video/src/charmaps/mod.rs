@@ -5,12 +5,14 @@ mod bullets;
 mod factories;
 mod maze_walls;
 mod player;
+mod rats;
 
 pub use ascii::*;
 pub use bullets::*;
 pub use factories::*;
 pub use maze_walls::*;
 pub use player::*;
+pub use rats::*;
 
 // comments on each line prevent rustfmt from changing this layout
 pub const EMPTY_CHAR_CELL: [u8; CHAR_CELL_HEIGHT] = [
@@ -27,17 +29,6 @@ pub const EMPTY_CHAR_CELL: [u8; CHAR_CELL_HEIGHT] = [
     0b_00000000, // 10
     0b_00000000, // 11
 ];
-
-// temporary until I create character bitmaps
-pub const RATS_START: u8 = b'A';
-pub const RATS_UP_A1: u8 = RATS_START;
-pub const RATS_UP_A2: u8 = RATS_START + 4;
-pub const RATS_DOWN_A1: u8 = RATS_START + 8;
-pub const RATS_DOWN_A2: u8 = RATS_START + 12;
-pub const RATS_LEFT_A1: u8 = RATS_START + 16;
-pub const RATS_LEFT_A2: u8 = RATS_START + 20;
-pub const RATS_RIGHT_A1: u8 = RATS_START + 24;
-pub const RATS_RIGHT_A2: u8 = RATS_START + 28;
 
 pub const BRATS_START: u8 = b'a';
 pub const BRATS_UP_A1: u8 = BRATS_START;

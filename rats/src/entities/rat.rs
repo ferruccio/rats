@@ -57,7 +57,7 @@ pub fn render_rat(rat: &Rat, maze: &mut Maze) {
 }
 
 // frames per unit of brat animation
-const RAT_FRAMES: u32 = 15;
+const RAT_FRAMES: u32 = 8;
 
 pub fn update_rat(rat: &Rat, maze: &Maze, frames: u32) -> Action {
     if frames < rat.updated + RAT_FRAMES {

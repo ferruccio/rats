@@ -37,7 +37,7 @@ struct CommandLineOpts {
     density: usize,
 
     /// Window height (pixels)
-    #[clap(long = "window_height", alias = "wh")]
+    #[clap(long = "window-height", alias = "wh")]
     window_height: Option<Pixels>,
 
     /// Window width (pixels)
