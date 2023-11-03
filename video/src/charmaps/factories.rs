@@ -6,7 +6,7 @@ pub const FACTORY_A2: u8 = FACTORIES_START + 4;
 
 // comments on each line prevent rustfmt from changing this layout
 pub const FACTORIES: [u16; 2 * CHAR_CELL_HEIGHT * 2] = [
-    //
+    // 1
     // 0123456789ABCDEF
     0b_0000001000000000, // 00
     0b_0000011100000000, // 01
@@ -32,7 +32,7 @@ pub const FACTORIES: [u16; 2 * CHAR_CELL_HEIGHT * 2] = [
     0b_1000011100001000, // 21
     0b_1000000000001000, // 22
     0b_1111111111111000, // 24
-    //
+    // 2
     // 0123456789ABCDEF
     0b_0000001000000000, // 00
     0b_0000011100000000, // 01

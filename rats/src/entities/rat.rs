@@ -1,9 +1,13 @@
 use video::{
-    Size, SizeWrapping, ATTR_NONE, RATS_DOWN_A1, RATS_DOWN_A2, RATS_LEFT_A1,
-    RATS_LEFT_A2, RATS_RIGHT_A1, RATS_RIGHT_A2, RATS_UP_A1, RATS_UP_A2,
+    Size, SizeWrapping, ATTR_NONE, BIG_BOOM_A1, BIG_BOOM_A2, RATS_DOWN_A1,
+    RATS_DOWN_A2, RATS_LEFT_A1, RATS_LEFT_A2, RATS_RIGHT_A1, RATS_RIGHT_A2,
+    RATS_UP_A1, RATS_UP_A2,
 };
 
-use super::{dir, state, Brat, Dimensions, Direction, Entity, Position, State};
+use super::{
+    dir, state, Brat, Dimensions, Direction, Entity, EntityAction, Position,
+    State,
+};
 use crate::{
     game_context::{flip_a_coin, random, random_direction, Action},
     maze::Maze,
@@ -41,16 +45,49 @@ impl Rat {
     }
 }
 
+impl EntityAction for Rat {
+    fn hit(&self, pos: Position, dims: Dimensions) -> bool {
+        if pos == self.pos {
+            return true;
+        }
+        let row_1 = self.pos.row.inc(dims.rows);
+        let col_1 = self.pos.col.inc(dims.cols);
+        pos == Position {
+            row: pos.row,
+            col: col_1,
+        } || pos
+            == Position {
+                row: row_1,
+                col: pos.col,
+            }
+            || pos
+                == Position {
+                    row: row_1,
+                    col: col_1,
+                }
+    }
+
+    fn explode(&mut self) {
+        self.state = state::EXPLODING1;
+    }
+}
+
 pub fn render_rat(rat: &Rat, maze: &mut Maze) {
-    let ch = match (rat.dir, (rat.cycle) & 0x1 != 0) {
-        (dir::UP, false) => RATS_UP_A1,
-        (dir::UP, true) => RATS_UP_A2,
-        (dir::DOWN, false) => RATS_DOWN_A1,
-        (dir::DOWN, true) => RATS_DOWN_A2,
-        (dir::LEFT, false) => RATS_LEFT_A1,
-        (dir::LEFT, true) => RATS_LEFT_A2,
-        (_, false) => RATS_RIGHT_A1,
-        (_, true) => RATS_RIGHT_A2,
+    let ch = match rat.state {
+        state::ALIVE => match (rat.dir, (rat.cycle) & 0x1 != 0) {
+            (dir::UP, false) => RATS_UP_A1,
+            (dir::UP, true) => RATS_UP_A2,
+            (dir::DOWN, false) => RATS_DOWN_A1,
+            (dir::DOWN, true) => RATS_DOWN_A2,
+            (dir::LEFT, false) => RATS_LEFT_A1,
+            (dir::LEFT, true) => RATS_LEFT_A2,
+            (_, false) => RATS_RIGHT_A1,
+            (_, true) => RATS_RIGHT_A2,
+        },
+        state::EXPLODING1 => BIG_BOOM_A1,
+        state::EXPLODING2 => BIG_BOOM_A2,
+        state::EXPLODING3 => BIG_BOOM_A1,
+        state::DEAD | _ => 0,
     };
     maze.buffer
         .set_quad(rat.pos.row, rat.pos.col, ch, ATTR_NONE);
@@ -64,26 +101,46 @@ pub fn update_rat(rat: &Rat, maze: &Maze, frames: u32, spawn: bool) -> Action {
         return Action::Nothing;
     }
     let mut rat = *rat;
-    if spawn && flip_a_coin() {
-        return Action::New(Entity::Brat(Brat {
-            updated: frames,
-            distance: 10 + random(10, 20),
-            pos: rat.pos,
-            dir: random_direction(),
-            state: state::ALIVE,
-            cycle: 0,
-        }));
+    match rat.state {
+        state::ALIVE => {
+            if spawn && flip_a_coin() {
+                return Action::New(Entity::Brat(Brat {
+                    updated: frames,
+                    distance: 10 + random(10, 20),
+                    pos: rat.pos,
+                    dir: random_direction(),
+                    state: state::ALIVE,
+                    cycle: 0,
+                }));
+            }
+            if rat.distance == 0 || !rat.can_advance(maze, rat.dir) {
+                rat.dir = random_direction();
+                rat.distance = random(5, 15);
+            } else {
+                rat.advance(rat.dir, maze.dimensions);
+                rat.distance -= 1;
+            }
+            Action::Update(Entity::Rat(Rat {
+                updated: frames + RAT_FRAMES,
+                cycle: (rat.cycle + 1) & 0x3,
+                ..rat
+            }))
+        }
+        state::EXPLODING1 => Action::Update(Entity::Rat(Rat {
+            updated: frames + RAT_FRAMES / 2,
+            state: state::EXPLODING2,
+            ..rat
+        })),
+        state::EXPLODING2 => Action::Update(Entity::Rat(Rat {
+            updated: frames + RAT_FRAMES / 2,
+            state: state::EXPLODING3,
+            ..rat
+        })),
+        state::EXPLODING3 => Action::Update(Entity::Rat(Rat {
+            updated: frames + RAT_FRAMES / 2,
+            state: state::DEAD,
+            ..rat
+        })),
+        state::DEAD | _ => Action::Delete,
     }
-    if rat.distance == 0 || !rat.can_advance(maze, rat.dir) {
-        rat.dir = random_direction();
-        rat.distance = random(5, 15);
-    } else {
-        rat.advance(rat.dir, maze.dimensions);
-        rat.distance -= 1;
-    }
-    Action::Update(Entity::Rat(Rat {
-        updated: frames + RAT_FRAMES,
-        cycle: (rat.cycle + 1) & 0x3,
-        ..rat
-    }))
 }

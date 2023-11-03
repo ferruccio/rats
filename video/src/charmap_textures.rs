@@ -2,10 +2,10 @@ use crate::{
     buffer::{ATTR_DIM, ATTR_NONE, ATTR_REVERSE},
     charmaps::{ASCII, ASCII_START, MAZE_WALLS, MAZE_WALLS_START},
     errors::sdl_error,
-    Result, Video, ATTR_COMBOS, BRATS, BRATS_START, BULLETS, BULLETS_START,
-    BYTES_PER_PIXEL, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, EMPTY_CHAR_CELL,
-    FACTORIES, FACTORIES_START, FONT_SIZE, PLAYER, PLAYER_START, RATS,
-    RATS_START,
+    Result, Video, ATTR_COMBOS, BIG_BOOMS, BIG_BOOM_START, BRATS, BRATS_START,
+    BULLETS, BULLETS_START, BYTES_PER_PIXEL, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
+    EMPTY_CHAR_CELL, FACTORIES, FACTORIES_START, FONT_SIZE, LIL_BOOMS,
+    LIL_BOOM_START, PLAYER, PLAYER_START, RATS, RATS_START,
 };
 use sdl2::render::Texture;
 
@@ -21,9 +21,11 @@ impl Video {
         charmap_textures(textures, scale, &MAZE_WALLS, MAZE_WALLS_START)?;
         charmap_textures(textures, scale, &BULLETS, BULLETS_START)?;
         charmap_textures(textures, scale, &BRATS, BRATS_START)?;
+        charmap_textures(textures, scale, &LIL_BOOMS, LIL_BOOM_START)?;
         wide_charmap_textures(textures, scale, &FACTORIES, FACTORIES_START)?;
         wide_charmap_textures(textures, scale, &PLAYER, PLAYER_START)?;
         wide_charmap_textures(textures, scale, &RATS, RATS_START)?;
+        wide_charmap_textures(textures, scale, &BIG_BOOMS, BIG_BOOM_START)?;
         Ok(())
     }
 }

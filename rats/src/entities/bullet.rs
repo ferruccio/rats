@@ -1,8 +1,9 @@
-use super::{dir, Direction, Entity, Position, State};
+use super::{dir, state, Direction, Entity, EntityAction, Position, State};
 use crate::{game_context::Action, maze::Maze};
 use video::{
     SizeWrapping, ATTR_NONE, BULLET_DOWN, BULLET_DOWN_LEFT, BULLET_DOWN_RIGHT,
     BULLET_LEFT, BULLET_RIGHT, BULLET_UP, BULLET_UP_LEFT, BULLET_UP_RIGHT,
+    LIL_BOOM_A1, LIL_BOOM_A2,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -13,19 +14,34 @@ pub struct Bullet {
     pub state: State,
 }
 
+impl EntityAction for Bullet {
+    fn hit(&self, pos: Position, _dims: super::Dimensions) -> bool {
+        self.pos == pos
+    }
+
+    fn explode(&mut self) {
+        self.state = state::EXPLODING1;
+    }
+}
+
 pub fn render_bullet(bullet: &Bullet, maze: &mut Maze) {
-    let var_name = match bullet.dir {
-        dir::DOWN => BULLET_DOWN,
-        dir::DOWN_LEFT => BULLET_DOWN_LEFT,
-        dir::DOWN_RIGHT => BULLET_DOWN_RIGHT,
-        dir::UP => BULLET_UP,
-        dir::UP_LEFT => BULLET_UP_LEFT,
-        dir::UP_RIGHT => BULLET_UP_RIGHT,
-        dir::LEFT => BULLET_LEFT,
-        dir::RIGHT => BULLET_RIGHT,
-        _ => b'?',
+    let ch = match bullet.state {
+        state::ALIVE => match bullet.dir {
+            dir::DOWN => BULLET_DOWN,
+            dir::DOWN_LEFT => BULLET_DOWN_LEFT,
+            dir::DOWN_RIGHT => BULLET_DOWN_RIGHT,
+            dir::UP => BULLET_UP,
+            dir::UP_LEFT => BULLET_UP_LEFT,
+            dir::UP_RIGHT => BULLET_UP_RIGHT,
+            dir::LEFT => BULLET_LEFT,
+            dir::RIGHT => BULLET_RIGHT,
+            _ => b'?',
+        },
+        state::EXPLODING1 => LIL_BOOM_A1,
+        state::EXPLODING2 => LIL_BOOM_A2,
+        state::EXPLODING3 => LIL_BOOM_A1,
+        state::DEAD | _ => b'*',
     };
-    let ch = var_name;
     maze.buffer
         .set_chattr(bullet.pos.row, bullet.pos.col, ch, ATTR_NONE);
 }

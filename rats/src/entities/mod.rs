@@ -14,6 +14,11 @@ pub use player::*;
 pub use position::*;
 pub use rat::*;
 
+pub trait EntityAction {
+    fn hit(&self, pos: Position, dims: Dimensions) -> bool;
+    fn explode(&mut self);
+}
+
 #[derive(Debug, Clone)]
 pub enum Entity {
     Player(Player),
@@ -21,6 +26,27 @@ pub enum Entity {
     Brat(Brat),
     Factory(Factory),
     Bullet(Bullet),
+}
+
+impl EntityAction for Entity {
+    fn hit(&self, pos: Position, dims: Dimensions) -> bool {
+        match self {
+            Entity::Player(player) => player.hit(pos, dims),
+            Entity::Rat(rat) => rat.hit(pos, dims),
+            Entity::Brat(brat) => brat.hit(pos, dims),
+            Entity::Factory(factory) => factory.hit(pos, dims),
+            Entity::Bullet(bullet) => bullet.hit(pos, dims),
+        }
+    }
+    fn explode(&mut self) {
+        match self {
+            Entity::Player(player) => player.explode(),
+            Entity::Rat(rat) => rat.explode(),
+            Entity::Brat(brat) => brat.explode(),
+            Entity::Factory(factory) => factory.explode(),
+            Entity::Bullet(bullet) => bullet.explode(),
+        }
+    }
 }
 
 pub type EntityList = Vec<Entity>;

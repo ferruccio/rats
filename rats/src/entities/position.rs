@@ -1,7 +1,7 @@
 use super::{dir, Dimensions, Direction};
 use video::{Pos, Size};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Position {
     pub row: Pos,
     pub col: Pos,

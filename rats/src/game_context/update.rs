@@ -1,7 +1,7 @@
 use crate::{
     entities::{
-        update_brat, update_bullet, update_factory, update_player, update_rat,
-        Entity,
+        state, update_brat, update_bullet, update_factory, update_player,
+        update_rat, Entity, EntityAction,
     },
     game_context::GameContext,
 };
@@ -15,6 +15,12 @@ pub enum Action {
 
 impl GameContext {
     pub fn update(&mut self) {
+        let actions = self.update_actions();
+        self.apply_actions(actions);
+        self.bullet_hit_tests();
+    }
+
+    fn update_actions(&self) -> Vec<(usize, Action)> {
         let mut actions: Vec<(usize, Action)> = vec![];
         for (index, entity) in self.entities.iter().enumerate() {
             let action = match entity {
@@ -39,6 +45,10 @@ impl GameContext {
             };
             actions.push((index, action));
         }
+        actions
+    }
+
+    fn apply_actions(&mut self, actions: Vec<(usize, Action)>) {
         for (index, action) in actions.into_iter().rev() {
             match action {
                 Action::Nothing => {}
@@ -71,6 +81,40 @@ impl GameContext {
                     self.entities.push(entity);
                 }
             };
+        }
+    }
+
+    fn bullet_hit_tests(&mut self) {
+        let live_bullets: Vec<_> = self
+            .entities
+            .iter()
+            .enumerate()
+            .filter_map(|(index, entity)| match entity {
+                Entity::Bullet(bullet) if bullet.state == state::ALIVE => {
+                    Some((index, bullet.pos))
+                }
+                _ => None,
+            })
+            .collect();
+        let mut marks = vec![false; self.entities.len()];
+        for (bullet_index, pos) in live_bullets.into_iter().rev() {
+            for (entity_index, entity) in self.entities.iter_mut().enumerate() {
+                if entity.hit(pos, self.maze.dimensions) {
+                    if bullet_index != entity_index {
+                        entity.explode();
+                        marks[bullet_index] = true;
+                    }
+                }
+            }
+        }
+        for (index, marked) in marks.into_iter().enumerate().rev() {
+            if marked {
+                let last = self.entities.len() - 1;
+                if index != last {
+                    self.entities.swap(index, last);
+                }
+                self.entities.truncate(last);
+            }
         }
     }
 }
