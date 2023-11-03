@@ -10,6 +10,8 @@ use video::{
     Size, ATTR_COMBOS, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, FONT_SIZE,
 };
 
+use crate::game_context::random;
+
 mod entities;
 mod game_context;
 mod maze;
@@ -57,6 +59,7 @@ fn main() {
 
 const FPS_LIMIT: u32 = 60;
 const RAT_SPAWN_SECONDS: u64 = 15;
+const BRAT_SPAWN_SECONDS: u64 = 30;
 
 fn play(opts: CommandLineOpts) -> Result<()> {
     let cell_rows = opts.maze_height.unwrap_or(15);
@@ -95,6 +98,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
     let bullet_firing_time = Duration::new(0, 1_000_000_000 / 4);
     let mut rat_spawn_time =
         Instant::now() - Duration::new(RAT_SPAWN_SECONDS, 0);
+    let mut brat_spawn_time = Instant::now();
     let mut running = true;
     while running {
         context.render_frame(&textures)?;
@@ -126,6 +130,11 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             // compensate for the loss of our rat making comrades.
             context.new_rats = opts.factories;
             rat_spawn_time = Instant::now();
+        }
+        if brat_spawn_time.elapsed().as_secs() >= BRAT_SPAWN_SECONDS {
+            // Breed you little bastards!
+            context.new_brats = context.live_rats / 8 + random(2, 10);
+            brat_spawn_time = Instant::now();
         }
 
         // don't hog the CPU

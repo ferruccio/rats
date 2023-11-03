@@ -21,9 +21,12 @@ impl GameContext {
                 Entity::Player(player) => {
                     update_player(&player, &self.pristine_maze, self.frames)
                 }
-                Entity::Rat(rat) => {
-                    update_rat(&rat, &self.pristine_maze, self.frames)
-                }
+                Entity::Rat(rat) => update_rat(
+                    &rat,
+                    &self.pristine_maze,
+                    self.frames,
+                    self.new_brats != 0,
+                ),
                 Entity::Brat(brat) => {
                     update_brat(&brat, &self.pristine_maze, self.frames)
                 }
@@ -56,7 +59,12 @@ impl GameContext {
                                 self.new_rats -= 1;
                             }
                         }
-                        Entity::Brat(_) => self.live_brats += 1,
+                        Entity::Brat(_) => {
+                            self.live_brats += 1;
+                            if self.new_brats > 0 {
+                                self.new_brats -= 1;
+                            }
+                        }
                         Entity::Factory(_) => self.live_factories += 1,
                         Entity::Bullet(_) => {}
                     }

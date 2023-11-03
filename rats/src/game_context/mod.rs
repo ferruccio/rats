@@ -35,6 +35,7 @@ pub struct GameContext {
     pub live_brats: usize,
     pub dead_brats: usize,
     pub new_rats: usize,
+    pub new_brats: usize,
 }
 
 impl GameContext {
@@ -66,6 +67,7 @@ impl GameContext {
             live_brats: 0,
             dead_brats: 0,
             new_rats: 0,
+            new_brats: 0,
         };
         context.entities.push(Entity::Player(Player {
             updated: context.frames,
@@ -167,4 +169,8 @@ pub fn random_direction() -> Direction {
         2 => dir::LEFT,
         _ => dir::RIGHT,
     }
+}
+
+pub fn flip_a_coin() -> bool {
+    random(0, 99) > 50
 }

@@ -1,11 +1,11 @@
 use video::{
     Size, SizeWrapping, ATTR_NONE, RATS_DOWN_A1, RATS_DOWN_A2, RATS_LEFT_A1,
-    RATS_RIGHT_A1, RATS_RIGHT_A2, RATS_UP_A1, RATS_UP_A2,
+    RATS_LEFT_A2, RATS_RIGHT_A1, RATS_RIGHT_A2, RATS_UP_A1, RATS_UP_A2,
 };
 
-use super::{dir, Dimensions, Direction, Entity, Position, State};
+use super::{dir, state, Brat, Dimensions, Direction, Entity, Position, State};
 use crate::{
-    game_context::{random, random_direction, Action},
+    game_context::{flip_a_coin, random, random_direction, Action},
     maze::Maze,
 };
 
@@ -48,7 +48,7 @@ pub fn render_rat(rat: &Rat, maze: &mut Maze) {
         (dir::DOWN, false) => RATS_DOWN_A1,
         (dir::DOWN, true) => RATS_DOWN_A2,
         (dir::LEFT, false) => RATS_LEFT_A1,
-        (dir::LEFT, true) => RATS_LEFT_A1,
+        (dir::LEFT, true) => RATS_LEFT_A2,
         (_, false) => RATS_RIGHT_A1,
         (_, true) => RATS_RIGHT_A2,
     };
@@ -59,11 +59,21 @@ pub fn render_rat(rat: &Rat, maze: &mut Maze) {
 // frames per unit of brat animation
 const RAT_FRAMES: u32 = 8;
 
-pub fn update_rat(rat: &Rat, maze: &Maze, frames: u32) -> Action {
+pub fn update_rat(rat: &Rat, maze: &Maze, frames: u32, spawn: bool) -> Action {
     if frames < rat.updated + RAT_FRAMES {
         return Action::Nothing;
     }
     let mut rat = *rat;
+    if spawn && flip_a_coin() {
+        return Action::New(Entity::Brat(Brat {
+            updated: frames,
+            distance: 10 + random(10, 20),
+            pos: rat.pos,
+            dir: random_direction(),
+            state: state::ALIVE,
+            cycle: 0,
+        }));
+    }
     if rat.distance == 0 || !rat.can_advance(maze, rat.dir) {
         rat.dir = random_direction();
         rat.distance = random(5, 15);

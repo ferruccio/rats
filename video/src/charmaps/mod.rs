@@ -1,6 +1,7 @@
 use crate::CHAR_CELL_HEIGHT;
 
 mod ascii;
+mod brats;
 mod bullets;
 mod factories;
 mod maze_walls;
@@ -8,6 +9,7 @@ mod player;
 mod rats;
 
 pub use ascii::*;
+pub use brats::*;
 pub use bullets::*;
 pub use factories::*;
 pub use maze_walls::*;
@@ -29,16 +31,6 @@ pub const EMPTY_CHAR_CELL: [u8; CHAR_CELL_HEIGHT] = [
     0b_00000000, // 10
     0b_00000000, // 11
 ];
-
-pub const BRATS_START: u8 = b'a';
-pub const BRATS_UP_A1: u8 = BRATS_START;
-pub const BRATS_UP_A2: u8 = BRATS_START + 1;
-pub const BRATS_DOWN_A1: u8 = BRATS_START + 2;
-pub const BRATS_DOWN_A2: u8 = BRATS_START + 3;
-pub const BRATS_LEFT_A1: u8 = BRATS_START + 4;
-pub const BRATS_LEFT_A2: u8 = BRATS_START + 5;
-pub const BRATS_RIGHT_A1: u8 = BRATS_START + 6;
-pub const BRATS_RIGHT_A2: u8 = BRATS_START + 7;
 
 pub const BIG_BOOM_START: u8 = b'A';
 pub const BIG_BOOM_A1: u8 = BIG_BOOM_START;
