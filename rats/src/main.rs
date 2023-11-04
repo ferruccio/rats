@@ -50,10 +50,6 @@ struct CommandLineOpts {
     #[clap(short = 's', long = "scale")]
     scale: Option<usize>,
 
-    /// Show diagnostic stats
-    #[clap(long = "stats", action, hide = true)]
-    stats: bool,
-
     /// Limit FPS (0 = no limit)
     #[clap(long = "fps", default_value_t = 60, hide = true)]
     fps: usize,
@@ -112,7 +108,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
     let mut brat_spawn_time = Instant::now();
     let mut running = true;
     while running {
-        context.render_frame(&textures, opts.stats)?;
+        context.render_frame(&textures)?;
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => running = false,
@@ -165,6 +161,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
 fn key_down(context: &mut GameContext, keycode: Keycode) -> bool {
     match keycode {
         Keycode::Escape | Keycode::Q => return false,
+        Keycode::F12 => context.diagnostics = !context.diagnostics,
         Keycode::Up => context.start(dir::UP),
         Keycode::Down => context.start(dir::DOWN),
         Keycode::Left => context.start(dir::LEFT),

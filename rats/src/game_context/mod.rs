@@ -20,6 +20,7 @@ pub use render::*;
 pub use update::*;
 
 pub struct GameContext {
+    pub diagnostics: bool,
     pub video: Video,
     pub start: Instant,
     pub frames: u32,
@@ -52,6 +53,7 @@ impl GameContext {
         let mut pristine_maze = Maze::new(maze_rows, maze_cols);
         pristine_maze.generate(density);
         let mut context = GameContext {
+            diagnostics: false,
             video,
             start: Instant::now(),
             frames: 0,

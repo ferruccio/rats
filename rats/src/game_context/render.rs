@@ -11,11 +11,7 @@ use sdl2::render::Texture;
 use video::{ATTR_NONE, BRATS_UP_A1, FACTORY_A2, PLAYER_DOWN, RATS_UP_A1};
 
 impl GameContext {
-    pub fn render_frame(
-        &mut self,
-        textures: &[Texture],
-        stats: bool,
-    ) -> Result<()> {
+    pub fn render_frame(&mut self, textures: &[Texture]) -> Result<()> {
         // start with a clear video buffer and pristine maze
         self.video.buffer.clear();
         self.pristine_maze.buffer.copy_to(&mut self.maze.buffer);
@@ -47,7 +43,7 @@ impl GameContext {
         let maze_cols = self.maze.cols();
         let entities = self.entities.len();
         let vbuf = &mut self.video.buffer;
-        if stats {
+        if self.diagnostics {
             let mut players = 0;
             let mut brats = 0;
             let mut bullets = 0;
