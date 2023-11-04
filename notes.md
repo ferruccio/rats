@@ -1,4 +1,4 @@
-38-oct-2023 - week 1
+28-Oct-2023 - week 1
 
 - Decided to use SDL2 to simulate a text-mode UI.
 - Characters will be stored in an 8x12 pixel bitmap directly in the source code.
@@ -16,11 +16,38 @@
 - Create wall characters.
 - Generate and render maze.
 
-This came together pretty quickly. The only real issues seemed to always involve getting the arithmetic right. There was a lot
-of headscratching while getting the character bitmaps to render correctly; and some more getting the relationship between the
-maze and the screen buffer right.
+This came together pretty quickly. The only real issues seemed to always involve
+getting the arithmetic right. There was a lot of headscratching while getting
+the character bitmaps to render correctly; and some more getting the
+relationship between the maze and the screen buffer right.
 
-At first I was using both height/width and rows/cols terminology to represent the dimensions of the maze and the screen buffer.
-I also used `u32`, `usize`, `i32` and `isize` as I saw fit in the moment. I created a `Pixels` type alias (`usize`)to represent window
-and surface bitmap dimensions (expressed as height/width) and a `Chars` type alias (`usize`) to represent maze and screen buffer dimensions
-(in rows/cols). Adopting this convention flushed out some of the existing problems.
+At first I was using both height/width and rows/cols terminology to represent
+the dimensions of the maze and the screen buffer. I also used `u32`, `usize`,
+`i32` and `isize` as I saw fit in the moment. I created a `Pixels` type alias
+(`usize`)to represent window and surface bitmap dimensions (expressed as
+height/width) and a `Chars` type alias (`usize`) to represent maze and screen
+buffer dimensions (in rows/cols). Adopting this convention flushed out some of
+the existing problems.
+
+04-Nov-2023 - week 2
+
+- Limited frame rate to 60 FPS
+- Created a GameContext object to contain game details.
+- Generate and render the maze.
+- Player can move & shoot.
+- Generate factories, rats & brats. Rodents wander around aimlessly.
+- Animated everything.
+- Bullets actually kill things now.
+
+I turned double buffering on and off several times. Decided to take it out
+completely. It had some rendering issues and it just didn't seem to be worth the
+effort in this case.
+
+I replaced `Chars` with `Size` and `Pos`. `Size` (`{rows, cols}`) is for buffer
+sizing and `Pos` (`{row, col}`) for positioning within a buffer. This uncovered
+a few issues and made the code a bit clearer.
+
+I rewrote render/update logic a couple of times. To avoid multiple mutable
+borrows of the entity list I use two passes. The first pass generates a list of
+updates and the second pass applies those updates. This feels horribly
+inefficient to me but has not had any noticeable impact on performance.
