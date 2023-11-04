@@ -48,12 +48,31 @@ impl GameContext {
         let entities = self.entities.len();
         let vbuf = &mut self.video.buffer;
         if stats {
+            let mut players = 0;
+            let mut brats = 0;
+            let mut bullets = 0;
+            let mut factories = 0;
+            let mut rats = 0;
+            for entity in self.entities.iter() {
+                match entity {
+                    Entity::Player(_) => players += 1,
+                    Entity::Rat(_) => rats += 1,
+                    Entity::Brat(_) => brats += 1,
+                    Entity::Factory(_) => factories += 1,
+                    Entity::Bullet(_) => bullets += 1,
+                }
+            }
             const RD: u8 = video::ATTR_REVERSE | video::ATTR_DIM;
             vbuf.print(2, 0, RD, format!("   FPS: {fps:.0}"));
             vbuf.print(3, 0, RD, format!("  maze: {maze_rows} x {maze_cols}",));
             vbuf.print(4, 0, RD, format!("player: {player_pos}"));
             vbuf.print(5, 0, RD, format!(" start: {start_pos}"));
-            vbuf.print(6, 0, RD, format!("  ents: {entities}"));
+            vbuf.print(7, 0, RD, format!(" entities: {entities:4}"));
+            vbuf.print(8, 0, RD, format!("  players: {players:4}"));
+            vbuf.print(9, 0, RD, format!("     rats: {rats:4}"));
+            vbuf.print(10, 0, RD, format!("    brats: {brats:4}"));
+            vbuf.print(11, 0, RD, format!("factories: {factories:4}"));
+            vbuf.print(12, 0, RD, format!("  bullets: {bullets:4}"));
         }
         let time = self.start.elapsed().as_secs();
 
