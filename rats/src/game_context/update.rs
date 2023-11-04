@@ -54,6 +54,22 @@ impl GameContext {
             match action {
                 Action::Nothing => {}
                 Action::Delete => {
+                    match self.entities[index] {
+                        Entity::Player(_) => {}
+                        Entity::Rat(_) => {
+                            self.live_rats -= 1;
+                            self.dead_rats += 1;
+                        }
+                        Entity::Brat(_) => {
+                            self.live_brats -= 1;
+                            self.dead_brats += 1;
+                        }
+                        Entity::Factory(_) => {
+                            self.live_factories -= 1;
+                            self.dead_factories += 1;
+                        }
+                        Entity::Bullet(_) => {}
+                    }
                     let last = self.entities.len() - 1;
                     self.entities.swap(index, last);
                     self.entities.truncate(last);
