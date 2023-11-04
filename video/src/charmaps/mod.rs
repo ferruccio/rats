@@ -33,3 +33,6 @@ pub const EMPTY_CHAR_CELL: [u8; CHAR_CELL_HEIGHT] = [
     0b_00000000, // 10
     0b_00000000, // 11
 ];
+
+pub const BIG_BLANK_START: u8 = 0x18;
+pub const BIG_BLANK: [u16; CHAR_CELL_HEIGHT * 2] = [0; CHAR_CELL_HEIGHT * 2];

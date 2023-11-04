@@ -1,7 +1,7 @@
 use video::{
-    Size, SizeWrapping, ATTR_NONE, BIG_BOOM_A1, BIG_BOOM_A2, RATS_DOWN_A1,
-    RATS_DOWN_A2, RATS_LEFT_A1, RATS_LEFT_A2, RATS_RIGHT_A1, RATS_RIGHT_A2,
-    RATS_UP_A1, RATS_UP_A2,
+    Size, SizeWrapping, ATTR_NONE, BIG_BLANK_START, BIG_BOOM_A1, BIG_BOOM_A2,
+    RATS_DOWN_A1, RATS_DOWN_A2, RATS_LEFT_A1, RATS_LEFT_A2, RATS_RIGHT_A1,
+    RATS_RIGHT_A2, RATS_UP_A1, RATS_UP_A2,
 };
 
 use super::{
@@ -87,7 +87,7 @@ pub fn render_rat(rat: &Rat, maze: &mut Maze) {
         state::EXPLODING1 => BIG_BOOM_A1,
         state::EXPLODING2 => BIG_BOOM_A2,
         state::EXPLODING3 => BIG_BOOM_A1,
-        state::DEAD | _ => 0,
+        state::DEAD | _ => BIG_BLANK_START,
     };
     maze.buffer
         .set_quad(rat.pos.row, rat.pos.col, ch, ATTR_NONE);

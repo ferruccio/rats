@@ -3,8 +3,8 @@ use super::{
 };
 use crate::{game_context::Action, maze::Maze};
 use video::{
-    SizeWrapping, ATTR_NONE, BIG_BOOM_A1, BIG_BOOM_A2, PLAYER_DOWN,
-    PLAYER_LEFT, PLAYER_RIGHT, PLAYER_UP,
+    SizeWrapping, ATTR_NONE, BIG_BLANK_START, BIG_BOOM_A1, BIG_BOOM_A2,
+    PLAYER_DOWN, PLAYER_LEFT, PLAYER_RIGHT, PLAYER_UP,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -104,7 +104,7 @@ pub fn render_player(player: &Player, maze: &mut Maze) {
         state::EXPLODING1 => BIG_BOOM_A1,
         state::EXPLODING2 => BIG_BOOM_A2,
         state::EXPLODING3 => BIG_BOOM_A1,
-        state::DEAD | _ => PLAYER_DOWN,
+        state::DEAD | _ => BIG_BLANK_START,
     };
     maze.buffer
         .set_quad(player.pos.row, player.pos.col, ch, ATTR_NONE);
