@@ -13,7 +13,11 @@ use video::{
 };
 
 impl GameContext {
-    pub fn render_frame(&mut self, textures: &[Texture]) -> Result<()> {
+    pub fn render_frame(
+        &mut self,
+        textures: &[Texture],
+        no_strobe: bool,
+    ) -> Result<()> {
         // start with a clear video buffer and pristine maze
         self.video.buffer.clear();
         self.pristine_maze.buffer.copy_to(&mut self.maze.buffer);
@@ -98,15 +102,17 @@ impl GameContext {
         vbuf.print(1, 60, ATTR_NONE, format!("Maze: {:5}", 32768));
 
         // if any factory is exploding light up the screen
-        if self.super_boom > 0 {
-            if self.frames % 12 < 6 {
-                for row in 2..self.maze.rows() {
-                    for col in 0..self.maze.cols() {
-                        vbuf.set_attr(row, col, ATTR_REVERSE);
+        if !no_strobe {
+            if self.super_boom > 0 {
+                if self.frames % 12 < 6 {
+                    for row in 2..self.maze.rows() {
+                        for col in 0..self.maze.cols() {
+                            vbuf.set_attr(row, col, ATTR_REVERSE);
+                        }
                     }
                 }
+                self.super_boom -= 1;
             }
-            self.super_boom -= 1;
         }
 
         // blast the video buffer onto the screen

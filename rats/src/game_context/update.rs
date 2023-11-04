@@ -120,7 +120,7 @@ impl GameContext {
                     && bullet_index != entity_index
                 {
                     if let Entity::Factory(_) = entity {
-                        self.super_boom += 60
+                        self.super_boom = 60
                     }
                     entity.explode();
                     marks[bullet_index] = true;

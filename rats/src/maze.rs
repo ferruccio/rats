@@ -19,8 +19,8 @@ pub struct Maze {
 }
 
 // maze cell dimensions
-pub const MAZE_CELL_ROWS: Size = 10;
-pub const MAZE_CELL_COLS: Size = 20;
+pub const MAZE_CELL_ROWS: Size = 9;
+pub const MAZE_CELL_COLS: Size = 16;
 
 impl Maze {
     pub fn new(cell_rows: Size, cell_cols: Size) -> Maze {

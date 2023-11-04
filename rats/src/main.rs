@@ -50,6 +50,10 @@ struct CommandLineOpts {
     #[clap(short = 's', long = "scale")]
     scale: Option<usize>,
 
+    /// Turn off strobe effects whem a factory blows up
+    #[clap(long = "no-strobe", action)]
+    no_strobe: bool,
+
     /// Limit FPS (0 = no limit)
     #[clap(long = "fps", default_value_t = 60, hide = true)]
     fps: usize,
@@ -108,7 +112,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
     let mut brat_spawn_time = Instant::now();
     let mut running = true;
     while running {
-        context.render_frame(&textures)?;
+        context.render_frame(&textures, opts.no_strobe)?;
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => running = false,
