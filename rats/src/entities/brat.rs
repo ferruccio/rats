@@ -38,7 +38,7 @@ impl Brat {
 
 impl EntityAction for Brat {
     fn hit(&self, pos: Position, _dims: Dimensions) -> bool {
-        self.pos == pos
+        self.state == state::ALIVE && self.pos == pos
     }
 
     fn explode(&mut self) {

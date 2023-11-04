@@ -21,6 +21,9 @@ pub struct Factory {
 
 impl EntityAction for Factory {
     fn hit(&self, pos: Position, dims: Dimensions) -> bool {
+        if self.state != state::ALIVE {
+            return false;
+        }
         if pos == self.pos {
             return true;
         }

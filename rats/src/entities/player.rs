@@ -53,6 +53,9 @@ impl Player {
 
 impl EntityAction for Player {
     fn hit(&self, pos: Position, dims: Dimensions) -> bool {
+        if self.state != state::ALIVE {
+            return false;
+        }
         if pos == self.pos {
             return true;
         }

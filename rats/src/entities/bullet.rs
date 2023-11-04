@@ -19,7 +19,7 @@ pub struct Bullet {
 
 impl EntityAction for Bullet {
     fn hit(&self, pos: Position, _dims: super::Dimensions) -> bool {
-        self.pos == pos
+        self.state == state::ALIVE && self.pos == pos
     }
 
     fn explode(&mut self) {
