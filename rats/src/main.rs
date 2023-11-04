@@ -49,6 +49,14 @@ struct CommandLineOpts {
     /// Scale factor (1 to 4)
     #[clap(short = 's', long = "scale")]
     scale: Option<usize>,
+
+    /// Show diagnostic stats
+    #[clap(long = "stats", action, hide = true)]
+    stats: bool,
+
+    /// Limit FPS (0 = no limit)
+    #[clap(long = "fps", default_value_t = 60, hide = true)]
+    fps: usize,
 }
 
 fn main() {
@@ -57,7 +65,6 @@ fn main() {
     }
 }
 
-const FPS_LIMIT: u32 = 60;
 const RAT_SPAWN_SECONDS: u64 = 15;
 const BRAT_SPAWN_SECONDS: u64 = 30;
 
@@ -91,7 +98,11 @@ fn play(opts: CommandLineOpts) -> Result<()> {
         .video
         .init_charmap_textures(&mut textures, context.video.scale)?;
 
-    const NANOS_PER_FRAME: u32 = 1_000_000_000 / FPS_LIMIT;
+    let nanos_per_frame = if opts.fps > 0 {
+        (1_000_000_000 / opts.fps) as u32
+    } else {
+        0
+    };
     let mut frame_time = Instant::now();
     let mut event_pump = context.video.sdl.event_pump().map_err(sdl_error)?;
     // player can fire 4 bullets/second
@@ -101,7 +112,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
     let mut brat_spawn_time = Instant::now();
     let mut running = true;
     while running {
-        context.render_frame(&textures)?;
+        context.render_frame(&textures, opts.stats)?;
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => running = false,
@@ -137,10 +148,12 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             brat_spawn_time = Instant::now();
         }
 
-        // don't hog the CPU
-        let nanos_elapsed = frame_time.elapsed().as_nanos() as u32;
-        if nanos_elapsed < NANOS_PER_FRAME {
-            sleep(Duration::new(0, NANOS_PER_FRAME - nanos_elapsed));
+        if nanos_per_frame > 0 {
+            // don't hog the CPU
+            let nanos_elapsed = frame_time.elapsed().as_nanos() as u32;
+            if nanos_elapsed < nanos_per_frame {
+                sleep(Duration::new(0, nanos_per_frame - nanos_elapsed));
+            }
         }
         frame_time = Instant::now();
     }

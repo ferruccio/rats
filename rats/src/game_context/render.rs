@@ -11,7 +11,11 @@ use sdl2::render::Texture;
 use video::{ATTR_NONE, BRATS_UP_A1, FACTORY_A2, PLAYER_DOWN, RATS_UP_A1};
 
 impl GameContext {
-    pub fn render_frame(&mut self, textures: &[Texture]) -> Result<()> {
+    pub fn render_frame(
+        &mut self,
+        textures: &[Texture],
+        stats: bool,
+    ) -> Result<()> {
         // start with a clear video buffer and pristine maze
         self.video.buffer.clear();
         self.pristine_maze.buffer.copy_to(&mut self.maze.buffer);
@@ -35,8 +39,6 @@ impl GameContext {
         );
         self.frames += 1;
 
-        // uncomment code to render diagnostics
-        /*
         let seconds = self.start.elapsed().as_secs_f32();
         let fps =
             self.frames as f32 / if seconds == 0.0 { 1.0 } else { seconds };
@@ -44,16 +46,15 @@ impl GameContext {
         let maze_rows = self.maze.rows();
         let maze_cols = self.maze.cols();
         let entities = self.entities.len();
-        */
         let vbuf = &mut self.video.buffer;
-        /*
-        const RD: u8 = video::ATTR_REVERSE | video::ATTR_DIM;
-        vbuf.print(2, 0, RD, format!("   FPS: {fps:.0}"));
-        vbuf.print(3, 0, RD, format!("  maze: {maze_rows} x {maze_cols}",));
-        vbuf.print(4, 0, RD, format!("player: {player_pos}"));
-        vbuf.print(5, 0, RD, format!(" start: {start_pos}"));
-        vbuf.print(6, 0, RD, format!("  ents: {entities}"));
-        */
+        if stats {
+            const RD: u8 = video::ATTR_REVERSE | video::ATTR_DIM;
+            vbuf.print(2, 0, RD, format!("   FPS: {fps:.0}"));
+            vbuf.print(3, 0, RD, format!("  maze: {maze_rows} x {maze_cols}",));
+            vbuf.print(4, 0, RD, format!("player: {player_pos}"));
+            vbuf.print(5, 0, RD, format!(" start: {start_pos}"));
+            vbuf.print(6, 0, RD, format!("  ents: {entities}"));
+        }
         let time = self.start.elapsed().as_secs();
 
         // rat stats
