@@ -37,6 +37,7 @@ pub struct GameContext {
     pub dead_brats: usize,
     pub new_rats: usize,
     pub new_brats: usize,
+    pub super_boom: usize,
 }
 
 impl GameContext {
@@ -70,6 +71,7 @@ impl GameContext {
             dead_brats: 0,
             new_rats: 0,
             new_brats: 0,
+            super_boom: 0,
         };
         context.entities.push(Entity::Player(Player {
             update: context.frames,

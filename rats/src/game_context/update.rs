@@ -118,6 +118,10 @@ impl GameContext {
             for (entity_index, entity) in self.entities.iter_mut().enumerate() {
                 if entity.hit(pos, self.maze.dimensions) {
                     if bullet_index != entity_index {
+                        match entity {
+                            Entity::Factory(_) => self.super_boom += 60,
+                            _ => {}
+                        }
                         entity.explode();
                         marks[bullet_index] = true;
                     }

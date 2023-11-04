@@ -55,9 +55,10 @@ impl Buffer {
         }
     }
 
-    pub fn set_attr(&mut self, row: Size, col: Size, ch: u8) {
+    pub fn set_attr(&mut self, row: Size, col: Size, attr: u8) {
         if row < self.rows && col < self.cols {
-            self.attributes[(row * self.cols + col) as usize] = ch & ATTR_MASK;
+            self.attributes[(row * self.cols + col) as usize] =
+                attr & ATTR_MASK;
         }
     }
 

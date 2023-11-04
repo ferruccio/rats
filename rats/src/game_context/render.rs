@@ -8,7 +8,9 @@ use crate::{
     Result,
 };
 use sdl2::render::Texture;
-use video::{ATTR_NONE, BRATS_UP_A1, FACTORY_A2, PLAYER_DOWN, RATS_UP_A1};
+use video::{
+    ATTR_NONE, ATTR_REVERSE, BRATS_UP_A1, FACTORY_A2, PLAYER_DOWN, RATS_UP_A1,
+};
 
 impl GameContext {
     pub fn render_frame(&mut self, textures: &[Texture]) -> Result<()> {
@@ -69,6 +71,7 @@ impl GameContext {
             vbuf.print(10, 0, RD, format!("    brats: {brats:4}"));
             vbuf.print(11, 0, RD, format!("factories: {factories:4}"));
             vbuf.print(12, 0, RD, format!("  bullets: {bullets:4}"));
+            vbuf.print(13, 0, RD, format!("superboom: {:4}", self.super_boom));
         }
         let time = self.start.elapsed().as_secs();
 
@@ -93,6 +96,18 @@ impl GameContext {
         vbuf.print(1, 47, ATTR_NONE, "High:     0");
         vbuf.print(0, 60, ATTR_NONE, format!("Time:  {:4}", time));
         vbuf.print(1, 60, ATTR_NONE, format!("Maze: {:5}", 32768));
+
+        // if any factory is exploding light up the screen
+        if self.super_boom > 0 {
+            if self.frames % 12 < 6 {
+                for row in 2..self.maze.rows() {
+                    for col in 0..self.maze.cols() {
+                        vbuf.set_attr(row, col, ATTR_REVERSE);
+                    }
+                }
+            }
+            self.super_boom -= 1;
+        }
 
         // blast the video buffer onto the screen
         self.video.render_buffer(textures)

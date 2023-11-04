@@ -29,11 +29,11 @@ pub enum Entity {
 }
 
 // milliseconds between updates
-pub const PLAYER_UPDATE_MS: u32 = 100;
+pub const PLAYER_UPDATE_MS: u32 = 50;
 pub const RAT_UPDATE_MS: u32 = 100;
-pub const BRAT_UPDATE_MS: u32 = 100;
+pub const BRAT_UPDATE_MS: u32 = 75;
 pub const FACTORY_UPDATE_MS: u32 = 250;
-pub const BULLET_UPDATE_MS: u32 = 50;
+pub const BULLET_UPDATE_MS: u32 = 10;
 
 impl EntityAction for Entity {
     fn hit(&self, pos: Position, dims: Dimensions) -> bool {
