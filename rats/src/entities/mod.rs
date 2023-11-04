@@ -28,6 +28,13 @@ pub enum Entity {
     Bullet(Bullet),
 }
 
+// milliseconds between updates
+pub const PLAYER_UPDATE_MS: u32 = 100;
+pub const RAT_UPDATE_MS: u32 = 100;
+pub const BRAT_UPDATE_MS: u32 = 100;
+pub const FACTORY_UPDATE_MS: u32 = 250;
+pub const BULLET_UPDATE_MS: u32 = 50;
+
 impl EntityAction for Entity {
     fn hit(&self, pos: Position, dims: Dimensions) -> bool {
         match self {

@@ -1,4 +1,7 @@
-use super::{dir, state, Direction, Entity, EntityAction, Position, State};
+use super::{
+    dir, state, Direction, Entity, EntityAction, Position, State,
+    BULLET_UPDATE_MS,
+};
 use crate::{game_context::Action, maze::Maze};
 use video::{
     SizeWrapping, ATTR_NONE, BULLET_DOWN, BULLET_DOWN_LEFT, BULLET_DOWN_RIGHT,
@@ -8,7 +11,7 @@ use video::{
 
 #[derive(Debug, Clone, Copy)]
 pub struct Bullet {
-    pub updated: u32,
+    pub update: u32,
     pub pos: Position,
     pub dir: Direction,
     pub state: State,
@@ -46,11 +49,8 @@ pub fn render_bullet(bullet: &Bullet, maze: &mut Maze) {
         .set_chattr(bullet.pos.row, bullet.pos.col, ch, ATTR_NONE);
 }
 
-// frames per unit of bullet motion
-const BULLET_FRAMES: u32 = 3;
-
-pub fn update_bullet(bullet: &Bullet, maze: &Maze, frames: u32) -> Action {
-    if frames < bullet.updated + BULLET_FRAMES {
+pub fn update_bullet(bullet: &Bullet, maze: &Maze, update: u32) -> Action {
+    if update < bullet.update + BULLET_UPDATE_MS {
         return Action::Nothing;
     }
     let (row, col) = (bullet.pos.row, bullet.pos.col);
@@ -70,7 +70,7 @@ pub fn update_bullet(bullet: &Bullet, maze: &Maze, frames: u32) -> Action {
         Action::Delete
     } else {
         Action::Update(Entity::Bullet(Bullet {
-            updated: frames + BULLET_FRAMES,
+            update: update + BULLET_UPDATE_MS,
             pos: Position { row, col },
             ..*bullet
         }))

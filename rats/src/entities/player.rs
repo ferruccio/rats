@@ -1,5 +1,6 @@
 use super::{
     dir, state, Dimensions, Direction, Entity, EntityAction, Position, State,
+    PLAYER_UPDATE_MS,
 };
 use crate::{game_context::Action, maze::Maze};
 use video::{
@@ -9,7 +10,7 @@ use video::{
 
 #[derive(Debug, Clone, Copy)]
 pub struct Player {
-    pub updated: u32,
+    pub update: u32,
     pub pos: Position,
     pub dir: Direction,
     pub stop_dir: Direction,
@@ -110,11 +111,8 @@ pub fn render_player(player: &Player, maze: &mut Maze) {
         .set_quad(player.pos.row, player.pos.col, ch, ATTR_NONE);
 }
 
-// frames per unit of player motion
-const PLAYER_FRAMES: u32 = 5;
-
-pub fn update_player(player: &Player, maze: &Maze, frames: u32) -> Action {
-    if frames < player.updated + PLAYER_FRAMES {
+pub fn update_player(player: &Player, maze: &Maze, update: u32) -> Action {
+    if update < player.update + PLAYER_UPDATE_MS {
         return Action::Nothing;
     }
     let mut player = *player;
@@ -145,28 +143,28 @@ pub fn update_player(player: &Player, maze: &Maze, frames: u32) -> Action {
                 }
             }
             Action::Update(Entity::Player(Player {
-                updated: frames + PLAYER_FRAMES,
+                update: update + PLAYER_UPDATE_MS,
                 cycle: (player.cycle + 1) & 0x3,
                 ..player
             }))
         }
         state::EXPLODING1 => Action::Update(Entity::Player(Player {
-            updated: frames + PLAYER_FRAMES / 2,
+            update: update + PLAYER_UPDATE_MS / 2,
             state: state::EXPLODING2,
             ..player
         })),
         state::EXPLODING2 => Action::Update(Entity::Player(Player {
-            updated: frames + PLAYER_FRAMES / 2,
+            update: update + PLAYER_UPDATE_MS / 2,
             state: state::EXPLODING3,
             ..player
         })),
         state::EXPLODING3 => Action::Update(Entity::Player(Player {
-            updated: frames + PLAYER_FRAMES / 2,
+            update: update + PLAYER_UPDATE_MS / 2,
             state: state::DEAD,
             ..player
         })),
         state::DEAD | _ => Action::Update(Entity::Player(Player {
-            updated: frames + PLAYER_FRAMES * 2,
+            update: update + PLAYER_UPDATE_MS * 2,
             state: state::ALIVE,
             ..player
         })),

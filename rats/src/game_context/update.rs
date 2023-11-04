@@ -21,26 +21,27 @@ impl GameContext {
     }
 
     fn update_actions(&self) -> Vec<(usize, Action)> {
+        let update = self.start.elapsed().as_millis() as u32;
         let mut actions: Vec<(usize, Action)> = vec![];
         for (index, entity) in self.entities.iter().enumerate() {
             let action = match entity {
                 Entity::Player(player) => {
-                    update_player(&player, &self.pristine_maze, self.frames)
+                    update_player(&player, &self.pristine_maze, update)
                 }
                 Entity::Rat(rat) => update_rat(
                     &rat,
                     &self.pristine_maze,
-                    self.frames,
+                    update,
                     self.new_brats != 0,
                 ),
                 Entity::Brat(brat) => {
-                    update_brat(&brat, &self.pristine_maze, self.frames)
+                    update_brat(&brat, &self.pristine_maze, update)
                 }
                 Entity::Factory(factory) => {
-                    update_factory(&factory, self.frames, self.new_rats != 0)
+                    update_factory(&factory, update, self.new_rats != 0)
                 }
                 Entity::Bullet(bullet) => {
-                    update_bullet(&bullet, &self.pristine_maze, self.frames)
+                    update_bullet(&bullet, &self.pristine_maze, update)
                 }
             };
             actions.push((index, action));

@@ -6,6 +6,7 @@ use video::{
 
 use super::{
     dir, state, Dimensions, Direction, Entity, EntityAction, Position, State,
+    BRAT_UPDATE_MS,
 };
 use crate::{
     game_context::{random, random_direction, Action},
@@ -14,7 +15,7 @@ use crate::{
 
 #[derive(Debug, Clone, Copy)]
 pub struct Brat {
-    pub updated: u32,
+    pub update: u32,
     pub distance: Size,
     pub pos: Position,
     pub dir: Direction,
@@ -66,11 +67,8 @@ pub fn render_brat(brat: &Brat, maze: &mut Maze) {
         .set_chattr(brat.pos.row, brat.pos.col, ch, ATTR_NONE);
 }
 
-// frames per unit of brat animation
-const BRAT_FRAMES: u32 = 10;
-
-pub fn update_brat(brat: &Brat, maze: &Maze, frames: u32) -> Action {
-    if frames < brat.updated + BRAT_FRAMES {
+pub fn update_brat(brat: &Brat, maze: &Maze, update: u32) -> Action {
+    if update < brat.update + BRAT_UPDATE_MS {
         return Action::Nothing;
     }
     let mut brat = *brat;
@@ -84,23 +82,23 @@ pub fn update_brat(brat: &Brat, maze: &Maze, frames: u32) -> Action {
                 brat.distance -= 1;
             }
             Action::Update(Entity::Brat(Brat {
-                updated: frames + BRAT_FRAMES,
+                update: update + BRAT_UPDATE_MS,
                 cycle: (brat.cycle + 1) & 0x3,
                 ..brat
             }))
         }
         state::EXPLODING1 => Action::Update(Entity::Brat(Brat {
-            updated: frames + BRAT_FRAMES / 2,
+            update: update + BRAT_UPDATE_MS / 2,
             state: state::EXPLODING2,
             ..brat
         })),
         state::EXPLODING2 => Action::Update(Entity::Brat(Brat {
-            updated: frames + BRAT_FRAMES / 2,
+            update: update + BRAT_UPDATE_MS / 2,
             state: state::EXPLODING3,
             ..brat
         })),
         state::EXPLODING3 => Action::Update(Entity::Brat(Brat {
-            updated: frames + BRAT_FRAMES / 2,
+            update: update + BRAT_UPDATE_MS / 2,
             state: state::DEAD,
             ..brat
         })),

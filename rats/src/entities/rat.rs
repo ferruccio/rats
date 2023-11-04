@@ -6,7 +6,7 @@ use video::{
 
 use super::{
     dir, state, Brat, Dimensions, Direction, Entity, EntityAction, Position,
-    State,
+    State, RAT_UPDATE_MS,
 };
 use crate::{
     game_context::{flip_a_coin, random, random_direction, Action},
@@ -15,7 +15,7 @@ use crate::{
 
 #[derive(Debug, Clone, Copy)]
 pub struct Rat {
-    pub updated: u32,
+    pub update: u32,
     pub distance: Size,
     pub pos: Position,
     pub dir: Direction,
@@ -93,11 +93,8 @@ pub fn render_rat(rat: &Rat, maze: &mut Maze) {
         .set_quad(rat.pos.row, rat.pos.col, ch, ATTR_NONE);
 }
 
-// frames per unit of brat animation
-const RAT_FRAMES: u32 = 8;
-
-pub fn update_rat(rat: &Rat, maze: &Maze, frames: u32, spawn: bool) -> Action {
-    if frames < rat.updated + RAT_FRAMES {
+pub fn update_rat(rat: &Rat, maze: &Maze, update: u32, spawn: bool) -> Action {
+    if update < rat.update + RAT_UPDATE_MS {
         return Action::Nothing;
     }
     let mut rat = *rat;
@@ -105,7 +102,7 @@ pub fn update_rat(rat: &Rat, maze: &Maze, frames: u32, spawn: bool) -> Action {
         state::ALIVE => {
             if spawn && flip_a_coin() {
                 return Action::New(Entity::Brat(Brat {
-                    updated: frames,
+                    update,
                     distance: 10 + random(10, 20),
                     pos: rat.pos,
                     dir: random_direction(),
@@ -121,23 +118,23 @@ pub fn update_rat(rat: &Rat, maze: &Maze, frames: u32, spawn: bool) -> Action {
                 rat.distance -= 1;
             }
             Action::Update(Entity::Rat(Rat {
-                updated: frames + RAT_FRAMES,
+                update: update + RAT_UPDATE_MS,
                 cycle: (rat.cycle + 1) & 0x3,
                 ..rat
             }))
         }
         state::EXPLODING1 => Action::Update(Entity::Rat(Rat {
-            updated: frames + RAT_FRAMES / 2,
+            update: update + RAT_UPDATE_MS / 2,
             state: state::EXPLODING2,
             ..rat
         })),
         state::EXPLODING2 => Action::Update(Entity::Rat(Rat {
-            updated: frames + RAT_FRAMES / 2,
+            update: update + RAT_UPDATE_MS / 2,
             state: state::EXPLODING3,
             ..rat
         })),
         state::EXPLODING3 => Action::Update(Entity::Rat(Rat {
-            updated: frames + RAT_FRAMES / 2,
+            update: update + RAT_UPDATE_MS / 2,
             state: state::DEAD,
             ..rat
         })),

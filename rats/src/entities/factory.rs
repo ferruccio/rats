@@ -1,5 +1,6 @@
 use super::{
     dir, state, Dimensions, Entity, EntityAction, Position, Rat, State,
+    FACTORY_UPDATE_MS,
 };
 use crate::{
     game_context::{random, Action},
@@ -12,7 +13,7 @@ use video::{
 
 #[derive(Debug, Clone, Copy)]
 pub struct Factory {
-    pub updated: u32,
+    pub update: u32,
     pub pos: Position,
     pub state: State,
     pub cycle: u8,
@@ -63,15 +64,12 @@ pub fn render_factory(factory: &Factory, maze: &mut Maze) {
         .set_quad(factory.pos.row, factory.pos.col, ch, ATTR_NONE);
 }
 
-// frames per unit of factory animation
-const FACTORY_FRAMES: u32 = 15;
-
 pub fn update_factory(
     factory: &Factory,
-    frames: u32,
+    update: u32,
     make_rat: bool,
 ) -> Action {
-    if frames < factory.updated + FACTORY_FRAMES {
+    if update < factory.update + FACTORY_UPDATE_MS {
         return Action::Nothing;
     }
     let factory = *factory;
@@ -79,7 +77,7 @@ pub fn update_factory(
         state::ALIVE => {
             if make_rat {
                 Action::New(Entity::Rat(Rat {
-                    updated: frames,
+                    update,
                     distance: random(5, 15),
                     pos: factory.pos,
                     dir: dir::RIGHT,
@@ -88,24 +86,24 @@ pub fn update_factory(
                 }))
             } else {
                 Action::Update(Entity::Factory(Factory {
-                    updated: frames + FACTORY_FRAMES,
+                    update: update + FACTORY_UPDATE_MS,
                     cycle: (factory.cycle + 1) & 0x1,
                     ..factory
                 }))
             }
         }
         state::EXPLODING1 => Action::Update(Entity::Factory(Factory {
-            updated: frames + FACTORY_FRAMES / 2,
+            update: update + FACTORY_UPDATE_MS / 2,
             state: state::EXPLODING2,
             ..factory
         })),
         state::EXPLODING2 => Action::Update(Entity::Factory(Factory {
-            updated: frames + FACTORY_FRAMES / 2,
+            update: update + FACTORY_UPDATE_MS / 2,
             state: state::EXPLODING3,
             ..factory
         })),
         state::EXPLODING3 => Action::Update(Entity::Factory(Factory {
-            updated: frames + FACTORY_FRAMES / 2,
+            update: update + FACTORY_UPDATE_MS / 2,
             state: state::DEAD,
             ..factory
         })),

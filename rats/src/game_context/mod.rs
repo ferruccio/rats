@@ -70,7 +70,7 @@ impl GameContext {
             new_brats: 0,
         };
         context.entities.push(Entity::Player(Player {
-            updated: context.frames,
+            update: context.frames,
             pos: Position {
                 row: (MAZE_CELL_ROWS / 2) as Pos,
                 col: (MAZE_CELL_COLS / 2) as Pos,
@@ -146,7 +146,7 @@ impl GameContext {
         } {
             if !self.maze.is_wall(row, col) {
                 self.entities.push(Entity::Bullet(Bullet {
-                    updated: self.frames,
+                    update: self.frames,
                     pos: Position { row, col },
                     dir,
                     state: state::ALIVE,
