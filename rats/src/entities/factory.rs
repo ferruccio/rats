@@ -61,7 +61,8 @@ pub fn render_factory(factory: &Factory, maze: &mut Maze) {
         state::EXPLODING1 => BIG_BOOM_A1,
         state::EXPLODING2 => BIG_BOOM_A2,
         state::EXPLODING3 => BIG_BOOM_A1,
-        state::DEAD | _ => BIG_BLANK_START,
+        // state::DEAD
+        _ => BIG_BLANK_START,
     };
     maze.buffer
         .set_quad(factory.pos.row, factory.pos.col, ch, ATTR_NONE);
@@ -110,6 +111,7 @@ pub fn update_factory(
             state: state::DEAD,
             ..factory
         })),
-        state::DEAD | _ => Action::Delete,
+        // state::DEAD
+        _ => Action::Delete,
     }
 }

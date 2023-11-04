@@ -43,7 +43,8 @@ pub fn render_bullet(bullet: &Bullet, maze: &mut Maze) {
         state::EXPLODING1 => LIL_BOOM_A1,
         state::EXPLODING2 => LIL_BOOM_A2,
         state::EXPLODING3 => LIL_BOOM_A1,
-        state::DEAD | _ => b'*',
+        // state::DEAD
+        _ => b'*',
     };
     maze.buffer
         .set_chattr(bullet.pos.row, bullet.pos.col, ch, ATTR_NONE);
@@ -94,6 +95,7 @@ pub fn update_bullet(bullet: &Bullet, maze: &Maze, update: u32) -> Action {
             state: state::DEAD,
             ..bullet
         })),
-        state::DEAD | _ => Action::Delete,
+        // state::DEAD
+        _ => Action::Delete,
     }
 }

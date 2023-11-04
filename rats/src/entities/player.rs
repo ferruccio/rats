@@ -93,7 +93,7 @@ pub fn render_player(player: &Player, maze: &mut Maze) {
             } else {
                 (player.cycle >> 1) + 1
             };
-            let ch = match dir {
+            (match dir {
                 dir::DOWN_LEFT => PLAYER_LEFT,
                 dir::DOWN_RIGHT => PLAYER_RIGHT,
                 dir::UP => PLAYER_UP,
@@ -101,14 +101,15 @@ pub fn render_player(player: &Player, maze: &mut Maze) {
                 dir::UP_RIGHT => PLAYER_RIGHT,
                 dir::LEFT => PLAYER_LEFT,
                 dir::RIGHT => PLAYER_RIGHT,
-                dir::DOWN | _ => PLAYER_DOWN,
-            } + offset * 4;
-            ch
+                // dir::DOWN
+                _ => PLAYER_DOWN,
+            } + offset * 4)
         }
         state::EXPLODING1 => BIG_BOOM_A1,
         state::EXPLODING2 => BIG_BOOM_A2,
         state::EXPLODING3 => BIG_BOOM_A1,
-        state::DEAD | _ => BIG_BLANK_START,
+        // state::DEAD
+        _ => BIG_BLANK_START,
     };
     maze.buffer
         .set_quad(player.pos.row, player.pos.col, ch, ATTR_NONE);
@@ -166,7 +167,8 @@ pub fn update_player(player: &Player, maze: &Maze, update: u32) -> Action {
             state: state::DEAD,
             ..player
         })),
-        state::DEAD | _ => Action::Update(Entity::Player(Player {
+        // state::DEAD
+        _ => Action::Update(Entity::Player(Player {
             update: update + PLAYER_UPDATE_MS * 2,
             state: state::ALIVE,
             ..player

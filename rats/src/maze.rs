@@ -45,7 +45,7 @@ impl Maze {
 
     pub fn is_wall(&self, row: Pos, col: Pos) -> bool {
         let ch = self.buffer.get_char(row, col);
-        ch >= MAZE_WALLS_START && ch <= MAZE_WALLS_END
+        (MAZE_WALLS_START..=MAZE_WALLS_END).contains(&ch)
     }
 
     pub fn generate(&mut self, density: usize) {

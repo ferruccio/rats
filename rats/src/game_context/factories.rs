@@ -55,7 +55,7 @@ impl GameContext {
                 state: state::ALIVE,
                 cycle: rng.sample(cycle_distribution),
             }));
-            generated = generated + 1;
+            generated += 1;
         }
         self.live_factories = generated;
     }

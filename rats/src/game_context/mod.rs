@@ -89,12 +89,12 @@ impl GameContext {
     }
 
     pub fn player_position(&self) -> Position {
-        self.get_player().pos.clone()
+        self.get_player().pos
     }
 
     pub fn get_player(&self) -> &Player {
         match self.entities.get(0).expect("get_player: can't get player") {
-            Entity::Player(player) => &player,
+            Entity::Player(player) => player,
             _ => panic!("get_player: player is not a Player"),
         }
     }

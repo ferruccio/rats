@@ -90,7 +90,8 @@ pub fn render_rat(rat: &Rat, maze: &mut Maze) {
         state::EXPLODING1 => BIG_BOOM_A1,
         state::EXPLODING2 => BIG_BOOM_A2,
         state::EXPLODING3 => BIG_BOOM_A1,
-        state::DEAD | _ => BIG_BLANK_START,
+        // state::DEAD
+        _ => BIG_BLANK_START,
     };
     maze.buffer
         .set_quad(rat.pos.row, rat.pos.col, ch, ATTR_NONE);
@@ -141,6 +142,7 @@ pub fn update_rat(rat: &Rat, maze: &Maze, update: u32, spawn: bool) -> Action {
             state: state::DEAD,
             ..rat
         })),
-        state::DEAD | _ => Action::Delete,
+        // state::DEAD
+        _ => Action::Delete,
     }
 }

@@ -61,7 +61,8 @@ pub fn render_brat(brat: &Brat, maze: &mut Maze) {
         state::EXPLODING1 => LIL_BOOM_A1,
         state::EXPLODING2 => LIL_BOOM_A2,
         state::EXPLODING3 => LIL_BOOM_A1,
-        state::DEAD | _ => b' ',
+        // state::DEAD
+        _ => b' ',
     };
     maze.buffer
         .set_chattr(brat.pos.row, brat.pos.col, ch, ATTR_NONE);
@@ -102,6 +103,7 @@ pub fn update_brat(brat: &Brat, maze: &Maze, update: u32) -> Action {
             state: state::DEAD,
             ..brat
         })),
-        state::DEAD | _ => Action::Delete,
+        // state::DEAD
+        _ => Action::Delete,
     }
 }

@@ -283,23 +283,31 @@ fn set_pixels_wide(
     scale: usize,
 ) {
     assert_eq!(bitmap.len() % (CHAR_CELL_HEIGHT * 2), 0);
-    while bitmap.len() > 0 {
+    while !bitmap.is_empty() {
         let mut bitmap2: [u8; CHAR_CELL_HEIGHT * 4] = [0; CHAR_CELL_HEIGHT * 4];
         let mut offset = 0;
-        for i in 0..CHAR_CELL_HEIGHT {
-            bitmap2[offset] = (bitmap[i] >> 8) as u8;
+        for word in bitmap.iter().take(CHAR_CELL_HEIGHT) {
+            bitmap2[offset] = (word >> 8) as u8;
             offset += 1;
         }
-        for i in 0..CHAR_CELL_HEIGHT {
-            bitmap2[offset] = (bitmap[i] & 0xff) as u8;
+        for word in bitmap.iter().take(CHAR_CELL_HEIGHT) {
+            bitmap2[offset] = (word & 0xff) as u8;
             offset += 1;
         }
-        for i in CHAR_CELL_HEIGHT..CHAR_CELL_HEIGHT * 2 {
-            bitmap2[offset] = (bitmap[i] >> 8) as u8;
+        for word in bitmap
+            .iter()
+            .take(CHAR_CELL_HEIGHT * 2)
+            .skip(CHAR_CELL_HEIGHT)
+        {
+            bitmap2[offset] = (word >> 8) as u8;
             offset += 1;
         }
-        for i in CHAR_CELL_HEIGHT..CHAR_CELL_HEIGHT * 2 {
-            bitmap2[offset] = (bitmap[i] & 0xff) as u8;
+        for word in bitmap
+            .iter()
+            .take(CHAR_CELL_HEIGHT * 2)
+            .skip(CHAR_CELL_HEIGHT)
+        {
+            bitmap2[offset] = (word & 0xff) as u8;
             offset += 1;
         }
         set_pixels(pixels, &bitmap2, first, attrs, scale);
