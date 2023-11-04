@@ -71,6 +71,6 @@ impl Position {
 
 impl std::fmt::Display for Position {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}, {}", self.row, self.col)
+        write!(f, "r{},c{}", self.row, self.col)
     }
 }

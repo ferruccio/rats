@@ -62,12 +62,12 @@ impl EntityAction for Player {
         let row_1 = self.pos.row.inc(dims.rows);
         let col_1 = self.pos.col.inc(dims.cols);
         pos == Position {
-            row: pos.row,
+            row: self.pos.row,
             col: col_1,
         } || pos
             == Position {
                 row: row_1,
-                col: pos.col,
+                col: self.pos.col,
             }
             || pos
                 == Position {
