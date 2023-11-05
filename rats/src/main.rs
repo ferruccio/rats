@@ -110,7 +110,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
     let mut rat_spawn_time =
         Instant::now() - Duration::new(RAT_SPAWN_SECONDS, 0);
     let mut brat_spawn_time = Instant::now();
-    while context.game_state.active() {
+    while context.game_state != GameState::QUIT {
         context.render_frame(&textures, opts.no_strobe)?;
         for event in event_pump.poll_iter() {
             match event {
@@ -144,7 +144,8 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             context.new_brats = context.live_rats / 8 + random(2, 10);
             brat_spawn_time = Instant::now();
         }
-        if context.live_factories == 0
+        if context.game_state != GameState::QUIT
+            && context.live_factories == 0
             && context.live_rats == 0
             && context.live_brats == 0
         {

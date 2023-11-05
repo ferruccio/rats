@@ -6,7 +6,7 @@ use rand::{
     distributions::{uniform::SampleUniform, Uniform},
     thread_rng, Rng,
 };
-use std::{cmp::max, time::Instant};
+use std::{cmp::max, fmt::Display, time::Instant};
 use video::{InitOptions, Pos, Result, Size, Video};
 
 mod factories;
@@ -27,9 +27,14 @@ pub enum GameState {
     QUIT,
 }
 
-impl GameState {
-    pub fn active(self) -> bool {
-        self == GameState::RUNNING || self == GameState::PAUSED
+impl Display for GameState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Ok(match self {
+            GameState::RUNNING => write!(f, "RUNNING")?,
+            GameState::PAUSED => write!(f, "PAUSED")?,
+            GameState::FINISHED => write!(f, "FINISHED")?,
+            GameState::QUIT => write!(f, "QUIT")?,
+        })
     }
 }
 

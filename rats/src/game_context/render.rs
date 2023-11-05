@@ -53,6 +53,7 @@ impl GameContext {
         let maze_rows = self.maze.rows();
         let maze_cols = self.maze.cols();
         let entities = self.entities.len();
+        let game_state = self.game_state;
         let vbuf = &mut self.video.buffer;
         if self.diagnostics {
             let mut players = 0;
@@ -77,6 +78,7 @@ impl GameContext {
             vbuf.print(6, 0, RD, format!("   dir: {player_dir:04b}"));
             vbuf.print(7, 0, RD, format!("s. dir: {stop_dir:04b}"));
             vbuf.print(8, 0, RD, format!("f. dir: {firing_dir:04b}"));
+            vbuf.print(9, 0, RD, format!(" state: {game_state}"));
 
             vbuf.print(10, 0, RD, format!(" entities: {entities:4}"));
             vbuf.print(11, 0, RD, format!("  players: {players:4}"));
@@ -116,6 +118,12 @@ impl GameContext {
             vbuf.print(row - 1, col, ATTR_REVERSE, "         ");
             vbuf.print(row, col, ATTR_REVERSE, "  PAUSE  ");
             vbuf.print(row + 1, col, ATTR_REVERSE, "         ");
+        } else if self.game_state == GameState::FINISHED {
+            let row = vbuf.rows / 2 + 2;
+            let col = vbuf.cols / 2 - 2;
+            vbuf.print(row - 1, col, ATTR_REVERSE, "             ");
+            vbuf.print(row, col, ATTR_REVERSE, "  GAME OVER  ");
+            vbuf.print(row + 1, col, ATTR_REVERSE, "             ");
         }
 
         // if any factory is exploding light up the screen
