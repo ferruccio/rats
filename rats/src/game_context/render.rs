@@ -12,6 +12,8 @@ use video::{
     ATTR_NONE, ATTR_REVERSE, BRATS_UP_A1, FACTORY_A2, PLAYER_DOWN, RATS_UP_A1,
 };
 
+use super::GameState;
+
 impl GameContext {
     pub fn render_frame(
         &mut self,
@@ -100,6 +102,14 @@ impl GameContext {
         vbuf.print(1, 47, ATTR_NONE, "High:     0");
         vbuf.print(0, 60, ATTR_NONE, format!("Time:  {:4}", time));
         vbuf.print(1, 60, ATTR_NONE, format!("Maze: {:5}", 32768));
+
+        if self.game_state == GameState::PAUSED {
+            let row = vbuf.rows / 2 + 2;
+            let col = vbuf.cols / 2 - 5;
+            vbuf.print(row - 1, col, ATTR_REVERSE, "         ");
+            vbuf.print(row, col, ATTR_REVERSE, "  PAUSE  ");
+            vbuf.print(row + 1, col, ATTR_REVERSE, "         ");
+        }
 
         // if any factory is exploding light up the screen
         if !no_strobe && self.super_boom > 0 {

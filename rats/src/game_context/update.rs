@@ -1,3 +1,4 @@
+use super::GameState;
 use crate::{
     entities::{
         state, update_brat, update_bullet, update_factory, update_player,
@@ -15,9 +16,11 @@ pub enum Action {
 
 impl GameContext {
     pub fn update(&mut self) {
-        let actions = self.update_actions();
-        self.apply_actions(actions);
-        self.bullet_hit_tests();
+        if self.game_state == GameState::RUNNING {
+            let actions = self.update_actions();
+            self.apply_actions(actions);
+            self.bullet_hit_tests();
+        }
     }
 
     fn update_actions(&self) -> Vec<(usize, Action)> {

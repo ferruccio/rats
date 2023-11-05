@@ -19,7 +19,22 @@ pub use factories::*;
 pub use render::*;
 pub use update::*;
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum GameState {
+    RUNNING,
+    PAUSED,
+    FINISHED,
+    QUIT,
+}
+
+impl GameState {
+    pub fn active(self) -> bool {
+        self == GameState::RUNNING || self == GameState::PAUSED
+    }
+}
+
 pub struct GameContext {
+    pub game_state: GameState,
     pub diagnostics: bool,
     pub video: Video,
     pub start: Instant,
@@ -55,6 +70,7 @@ impl GameContext {
         let mut pristine_maze = Maze::new(maze_rows, maze_cols);
         pristine_maze.generate(density);
         let mut context = GameContext {
+            game_state: GameState::RUNNING,
             diagnostics: false,
             video,
             start: Instant::now(),

@@ -1,6 +1,6 @@
 use clap::Parser;
 use entities::dir;
-use game_context::GameContext;
+use game_context::{GameContext, GameState};
 use std::{
     thread::sleep,
     time::{Duration, Instant},
@@ -110,16 +110,15 @@ fn play(opts: CommandLineOpts) -> Result<()> {
     let mut rat_spawn_time =
         Instant::now() - Duration::new(RAT_SPAWN_SECONDS, 0);
     let mut brat_spawn_time = Instant::now();
-    let mut running = true;
-    while running {
+    while context.game_state.active() {
         context.render_frame(&textures, opts.no_strobe)?;
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. } => running = false,
+                Event::Quit { .. } => context.game_state = GameState::QUIT,
                 Event::KeyDown {
                     keycode: Some(keycode),
                     ..
-                } => running = key_down(&mut context, keycode),
+                } => key_down(&mut context, keycode),
                 Event::KeyUp {
                     keycode: Some(keycode),
                     ..
@@ -149,7 +148,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             && context.live_rats == 0
             && context.live_brats == 0
         {
-            running = false;
+            context.game_state = GameState::FINISHED;
         }
 
         if nanos_per_frame > 0 {
@@ -166,9 +165,14 @@ fn play(opts: CommandLineOpts) -> Result<()> {
 }
 
 // return true to keep game running
-fn key_down(context: &mut GameContext, keycode: Keycode) -> bool {
+fn key_down(context: &mut GameContext, keycode: Keycode) {
     match keycode {
-        Keycode::Escape | Keycode::Q => return false,
+        Keycode::Escape | Keycode::Q => context.game_state = GameState::QUIT,
+        Keycode::P => match context.game_state {
+            GameState::RUNNING => context.game_state = GameState::PAUSED,
+            GameState::PAUSED => context.game_state = GameState::RUNNING,
+            _ => {}
+        },
         Keycode::F12 => context.diagnostics = !context.diagnostics,
         Keycode::Up => context.start(dir::UP),
         Keycode::Down => context.start(dir::DOWN),
@@ -183,7 +187,6 @@ fn key_down(context: &mut GameContext, keycode: Keycode) -> bool {
         }
         _ => {}
     }
-    true
 }
 
 fn key_up(context: &mut GameContext, keycode: Keycode) {
