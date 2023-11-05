@@ -119,10 +119,17 @@ impl GameContext {
                 if entity.hit(pos, self.maze.dimensions)
                     && bullet_index != entity_index
                 {
-                    if let Entity::Factory(_) = entity {
-                        self.super_boom = 60
-                    }
                     entity.explode();
+                    match entity {
+                        Entity::Player(_) => self.super_boom = 60,
+                        Entity::Rat(_) => self.score += 50,
+                        Entity::Brat(_) => self.score += 25,
+                        Entity::Factory(_) => {
+                            self.super_boom = 60;
+                            self.score += 250;
+                        }
+                        Entity::Bullet(_) => {}
+                    }
                     marks[bullet_index] = true;
                 }
             }

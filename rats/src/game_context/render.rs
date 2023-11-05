@@ -96,23 +96,21 @@ impl GameContext {
         vbuf.print(0, 39, ATTR_NONE, format!("{:1} dead", 0));
         vbuf.print(1, 39, ATTR_NONE, format!("{:1} left", 2));
         // game stats
-        vbuf.print(0, 47, ATTR_NONE, format!("Score: {:4}", 0));
+        vbuf.print(0, 47, ATTR_NONE, format!("Score: {:4}", self.score));
         vbuf.print(1, 47, ATTR_NONE, "High:     0");
         vbuf.print(0, 60, ATTR_NONE, format!("Time:  {:4}", time));
         vbuf.print(1, 60, ATTR_NONE, format!("Maze: {:5}", 32768));
 
         // if any factory is exploding light up the screen
-        if !no_strobe {
-            if self.super_boom > 0 {
-                if self.frames % 12 < 6 {
-                    for row in 2..self.maze.rows() {
-                        for col in 0..self.maze.cols() {
-                            vbuf.set_attr(row, col, ATTR_REVERSE);
-                        }
+        if !no_strobe && self.super_boom > 0 {
+            if self.frames % 12 < 6 {
+                for row in 2..self.maze.rows() {
+                    for col in 0..self.maze.cols() {
+                        vbuf.set_attr(row, col, ATTR_REVERSE);
                     }
                 }
-                self.super_boom -= 1;
             }
+            self.super_boom -= 1;
         }
 
         // blast the video buffer onto the screen

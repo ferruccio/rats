@@ -135,17 +135,21 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             context.bullet_fire_start = Instant::now();
         }
         if rat_spawn_time.elapsed().as_secs() >= RAT_SPAWN_SECONDS {
-            // New rats will always be generated at the same rate regardless of
-            // how many factories are left. This means that as factories are
-            // destroyed, remaining factories will pick up the pace to
-            // compensate for the loss of our rat making comrades.
-            context.new_rats = opts.factories;
+            context.new_rats = context.live_factories * 2;
             rat_spawn_time = Instant::now();
         }
-        if brat_spawn_time.elapsed().as_secs() >= BRAT_SPAWN_SECONDS {
+        if context.live_rats > 0
+            && brat_spawn_time.elapsed().as_secs() >= BRAT_SPAWN_SECONDS
+        {
             // Breed you little bastards!
             context.new_brats = context.live_rats / 8 + random(2, 10);
             brat_spawn_time = Instant::now();
+        }
+        if context.live_factories == 0
+            && context.live_rats == 0
+            && context.live_brats == 0
+        {
+            running = false;
         }
 
         if nanos_per_frame > 0 {
