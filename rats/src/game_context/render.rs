@@ -47,6 +47,9 @@ impl GameContext {
         let fps =
             self.frames as f32 / if seconds == 0.0 { 1.0 } else { seconds };
         let player_pos = self.player_position();
+        let player_dir = self.get_player().dir;
+        let stop_dir = self.get_player().stop_dir;
+        let firing_dir = self.firing_dir;
         let maze_rows = self.maze.rows();
         let maze_cols = self.maze.cols();
         let entities = self.entities.len();
@@ -71,13 +74,17 @@ impl GameContext {
             vbuf.print(3, 0, RD, format!("  maze: {maze_rows} x {maze_cols}",));
             vbuf.print(4, 0, RD, format!("player: {player_pos}"));
             vbuf.print(5, 0, RD, format!(" start: {start_pos}"));
-            vbuf.print(7, 0, RD, format!(" entities: {entities:4}"));
-            vbuf.print(8, 0, RD, format!("  players: {players:4}"));
-            vbuf.print(9, 0, RD, format!("     rats: {rats:4}"));
-            vbuf.print(10, 0, RD, format!("    brats: {brats:4}"));
-            vbuf.print(11, 0, RD, format!("factories: {factories:4}"));
-            vbuf.print(12, 0, RD, format!("  bullets: {bullets:4}"));
-            vbuf.print(13, 0, RD, format!("superboom: {:4}", self.super_boom));
+            vbuf.print(6, 0, RD, format!("   dir: {player_dir:04b}"));
+            vbuf.print(7, 0, RD, format!("s. dir: {stop_dir:04b}"));
+            vbuf.print(8, 0, RD, format!("f. dir: {firing_dir:04b}"));
+
+            vbuf.print(10, 0, RD, format!(" entities: {entities:4}"));
+            vbuf.print(11, 0, RD, format!("  players: {players:4}"));
+            vbuf.print(12, 0, RD, format!("     rats: {rats:4}"));
+            vbuf.print(13, 0, RD, format!("    brats: {brats:4}"));
+            vbuf.print(14, 0, RD, format!("factories: {factories:4}"));
+            vbuf.print(15, 0, RD, format!("  bullets: {bullets:4}"));
+            vbuf.print(16, 0, RD, format!("superboom: {:4}", self.super_boom));
         }
         let time = self.start.elapsed().as_secs();
 
@@ -105,7 +112,7 @@ impl GameContext {
 
         if self.game_state == GameState::PAUSED {
             let row = vbuf.rows / 2 + 2;
-            let col = vbuf.cols / 2 - 5;
+            let col = vbuf.cols / 2 - 4;
             vbuf.print(row - 1, col, ATTR_REVERSE, "         ");
             vbuf.print(row, col, ATTR_REVERSE, "  PAUSE  ");
             vbuf.print(row + 1, col, ATTR_REVERSE, "         ");

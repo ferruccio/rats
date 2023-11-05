@@ -1,7 +1,5 @@
 use crate::{
-    entities::{
-        dir, state, Bullet, Direction, Entity, EntityList, Player, Position,
-    },
+    entities::{dir, state, Direction, Entity, EntityList, Player, Position},
     maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS},
 };
 use rand::{
@@ -9,13 +7,15 @@ use rand::{
     thread_rng, Rng,
 };
 use std::{cmp::max, time::Instant};
-use video::{InitOptions, Pos, Result, Size, SizeWrapping, Video};
+use video::{InitOptions, Pos, Result, Size, Video};
 
 mod factories;
+mod firing;
 mod render;
 mod update;
 
 pub use factories::*;
+pub use firing::*;
 pub use render::*;
 pub use update::*;
 
@@ -41,7 +41,7 @@ pub struct GameContext {
     pub frames: u32,
     pub pristine_maze: Maze,
     pub maze: Maze,
-    pub firing: bool,
+    pub firing_dir: Direction,
     pub bullet_fire_start: Instant,
     pub entities: EntityList,
     pub live_factories: usize,
@@ -77,7 +77,7 @@ impl GameContext {
             frames: 0,
             pristine_maze: pristine_maze.clone(),
             maze: Maze::new(maze_rows, maze_cols),
-            firing: false,
+            firing_dir: dir::NONE,
             bullet_fire_start: Instant::now(),
             entities: EntityList::new(),
             live_factories: 0,
@@ -141,40 +141,6 @@ impl GameContext {
         } else {
             player.dir & !dir
         };
-    }
-
-    pub fn fire(&mut self) {
-        let player = self.get_player();
-        let dir = if player.dir == dir::NONE {
-            player.stop_dir
-        } else {
-            player.dir
-        };
-        let (row, col) = (player.pos.row, player.pos.col);
-        let (rows, cols) = (self.maze.rows(), self.maze.cols());
-
-        if let Some((row, col)) = match dir {
-            dir::DOWN => Some((row.inc(rows).inc(rows), col)),
-            dir::DOWN_LEFT => Some((row.inc(rows), col.dec(cols))),
-            dir::DOWN_RIGHT => {
-                Some((row.inc(rows).inc(rows), col.inc(cols).inc(cols)))
-            }
-            dir::UP => Some((row.dec(rows), col.inc(cols))),
-            dir::UP_LEFT => Some((row.dec(rows), col.dec(cols))),
-            dir::UP_RIGHT => Some((row.dec(rows), col.inc(cols))),
-            dir::LEFT => Some((row, col.dec(cols))),
-            dir::RIGHT => Some((row, col.inc(cols).inc(cols))),
-            _ => None,
-        } {
-            if !self.maze.is_wall(row, col) {
-                self.entities.push(Entity::Bullet(Bullet {
-                    update: self.frames,
-                    pos: Position { row, col },
-                    dir,
-                    state: state::ALIVE,
-                }));
-            }
-        }
     }
 }
 

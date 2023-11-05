@@ -127,7 +127,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             }
         }
         context.update();
-        if context.firing
+        if context.firing_dir != dir::NONE
             && context.bullet_fire_start.elapsed() >= bullet_firing_time
         {
             context.fire();
@@ -167,8 +167,8 @@ fn play(opts: CommandLineOpts) -> Result<()> {
 // return true to keep game running
 fn key_down(context: &mut GameContext, keycode: Keycode) {
     match keycode {
-        Keycode::Escape | Keycode::Q => context.game_state = GameState::QUIT,
-        Keycode::P => match context.game_state {
+        Keycode::Escape => context.game_state = GameState::QUIT,
+        Keycode::Space => match context.game_state {
             GameState::RUNNING => context.game_state = GameState::PAUSED,
             GameState::PAUSED => context.game_state = GameState::RUNNING,
             _ => {}
@@ -178,13 +178,10 @@ fn key_down(context: &mut GameContext, keycode: Keycode) {
         Keycode::Down => context.start(dir::DOWN),
         Keycode::Left => context.start(dir::LEFT),
         Keycode::Right => context.start(dir::RIGHT),
-        Keycode::Space => {
-            if !context.firing {
-                context.fire();
-                context.bullet_fire_start = Instant::now();
-            }
-            context.firing = true;
-        }
+        Keycode::W => context.start_firing(dir::UP),
+        Keycode::A => context.start_firing(dir::LEFT),
+        Keycode::S => context.start_firing(dir::DOWN),
+        Keycode::D => context.start_firing(dir::RIGHT),
         _ => {}
     }
 }
@@ -195,7 +192,10 @@ fn key_up(context: &mut GameContext, keycode: Keycode) {
         Keycode::Down => context.stop(dir::DOWN),
         Keycode::Left => context.stop(dir::LEFT),
         Keycode::Right => context.stop(dir::RIGHT),
-        Keycode::Space => context.firing = false,
+        Keycode::W => context.stop_firing(dir::UP),
+        Keycode::A => context.stop_firing(dir::LEFT),
+        Keycode::S => context.stop_firing(dir::DOWN),
+        Keycode::D => context.stop_firing(dir::RIGHT),
         _ => {}
     }
 }

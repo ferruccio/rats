@@ -68,10 +68,10 @@ pub type Direction = u8;
 pub mod dir {
     use super::Direction;
     pub const NONE: Direction = 0x00;
-    pub const UP: Direction = 0x01;
-    pub const DOWN: Direction = 0x02;
-    pub const LEFT: Direction = 0x04;
-    pub const RIGHT: Direction = 0x08;
+    pub const UP: Direction = 0x08;
+    pub const DOWN: Direction = 0x04;
+    pub const LEFT: Direction = 0x02;
+    pub const RIGHT: Direction = 0x01;
     pub const UP_LEFT: Direction = UP | LEFT;
     pub const UP_RIGHT: Direction = UP | RIGHT;
     pub const DOWN_LEFT: Direction = DOWN | LEFT;
