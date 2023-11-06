@@ -50,7 +50,7 @@ impl GameContext {
             }
             positions.push(pos);
             self.entities.push(Entity::Factory(Factory {
-                update: self.frames,
+                update: self.elapsed(),
                 pos,
                 state: state::ALIVE,
                 cycle: rng.sample(cycle_distribution),

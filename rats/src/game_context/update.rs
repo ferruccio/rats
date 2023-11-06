@@ -24,7 +24,7 @@ impl GameContext {
     }
 
     fn update_actions(&self) -> Vec<(usize, Action)> {
-        let update = self.start.elapsed().as_millis() as u32;
+        let update = self.elapsed();
         let mut actions: Vec<(usize, Action)> = vec![];
         for (index, entity) in self.entities.iter().enumerate() {
             let action = match entity {

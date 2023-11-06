@@ -111,8 +111,6 @@ fn play(opts: CommandLineOpts) -> Result<()> {
     };
     let mut frame_time = Instant::now();
     let mut event_pump = context.video.sdl.event_pump().map_err(sdl_error)?;
-    // player can fire 4 bullets/second
-    let bullet_firing_time = Duration::new(0, 1_000_000_000 / 4);
     let mut rat_spawn_time =
         Instant::now() - Duration::new(RAT_SPAWN_SECONDS, 0);
     let mut brat_spawn_time = Instant::now();
@@ -134,10 +132,9 @@ fn play(opts: CommandLineOpts) -> Result<()> {
         }
         context.update();
         if context.firing_dir != dir::NONE
-            && context.bullet_fire_start.elapsed() >= bullet_firing_time
+            && context.bullet_fire_start.elapsed() >= context.bullet_firing_time
         {
             context.fire();
-            context.bullet_fire_start = Instant::now();
         }
         if rat_spawn_time.elapsed().as_secs() >= RAT_SPAWN_SECONDS {
             context.new_rats = context.live_factories * 2;

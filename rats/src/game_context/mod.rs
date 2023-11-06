@@ -1,12 +1,19 @@
 use crate::{
-    entities::{dir, state, Direction, Entity, EntityList, Player, Position},
+    entities::{
+        dir, state, Direction, Entity, EntityList, Player, Position,
+        PLAYER_FIRE_RATE_NS,
+    },
     maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS},
 };
 use rand::{
     distributions::{uniform::SampleUniform, Uniform},
     thread_rng, Rng,
 };
-use std::{cmp::max, fmt::Display, time::Instant};
+use std::{
+    cmp::max,
+    fmt::Display,
+    time::{Duration, Instant},
+};
 use video::{InitOptions, Pos, Result, Size, Video};
 
 mod factories;
@@ -48,6 +55,8 @@ pub struct GameContext {
     pub maze: Maze,
     pub firing_dir: Direction,
     pub bullet_fire_start: Instant,
+    pub bullet_firing_time: Duration,
+    pub next_fire_time: Instant,
     pub entities: EntityList,
     pub live_factories: usize,
     pub dead_factories: usize,
@@ -84,6 +93,8 @@ impl GameContext {
             maze: Maze::new(maze_rows, maze_cols),
             firing_dir: dir::NONE,
             bullet_fire_start: Instant::now(),
+            bullet_firing_time: Duration::new(0, PLAYER_FIRE_RATE_NS),
+            next_fire_time: Instant::now(),
             entities: EntityList::new(),
             live_factories: 0,
             dead_factories: 0,
@@ -97,7 +108,7 @@ impl GameContext {
             score: 0,
         };
         context.entities.push(Entity::Player(Player {
-            update: context.frames,
+            update: context.elapsed(),
             pos: Position {
                 row: (MAZE_CELL_ROWS / 2) as Pos,
                 col: (MAZE_CELL_COLS / 2) as Pos,
@@ -109,6 +120,10 @@ impl GameContext {
         }));
         context.generate_factories(factories.clamp(1, 100), &pristine_maze);
         Ok(context)
+    }
+
+    pub fn elapsed(&self) -> u32 {
+        self.start.elapsed().as_millis() as u32
     }
 
     pub fn player_position(&self) -> Position {

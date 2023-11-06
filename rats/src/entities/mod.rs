@@ -30,6 +30,7 @@ pub enum Entity {
 
 // milliseconds between updates
 pub const PLAYER_UPDATE_MS: u32 = 50;
+pub const PLAYER_FIRE_RATE_NS: u32 = 1_000_000_000 / 8;
 pub const RAT_UPDATE_MS: u32 = 100;
 pub const BRAT_UPDATE_MS: u32 = 75;
 pub const FACTORY_UPDATE_MS: u32 = 250;
