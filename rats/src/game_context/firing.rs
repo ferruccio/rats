@@ -1,5 +1,7 @@
 use super::GameContext;
-use crate::entities::{dir, state, Bullet, Direction, Entity, Position};
+use crate::entities::{
+    dir, state, Bullet, Direction, Entity, EntityAction, Position,
+};
 use video::SizeWrapping;
 
 impl GameContext {
@@ -21,14 +23,22 @@ impl GameContext {
             dir::RIGHT => Some((row, col.inc(cols).inc(cols))),
             _ => None,
         } {
-            if !self.maze.is_wall(row, col) {
-                self.entities.push(Entity::Bullet(Bullet {
-                    update: self.frames,
-                    pos: Position { row, col },
-                    dir,
-                    state: state::ALIVE,
-                }));
+            if self.maze.is_wall(row, col) {
+                return;
             }
+            let pos = Position { row, col };
+            for entity in self.entities.iter_mut() {
+                if entity.hit(pos, self.maze.dimensions) {
+                    entity.explode();
+                    return;
+                }
+            }
+            self.entities.push(Entity::Bullet(Bullet {
+                update: self.frames,
+                pos,
+                dir,
+                state: state::ALIVE,
+            }));
         }
     }
 
