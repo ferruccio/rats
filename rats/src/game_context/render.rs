@@ -92,25 +92,25 @@ impl GameContext {
 
         // rat stats
         vbuf.set_quad(0, 1, RATS_UP_A1, ATTR_NONE);
-        vbuf.print(0, 3, ATTR_NONE, format!("{:3} dead", self.dead_rats));
-        vbuf.print(1, 3, ATTR_NONE, format!("{:3} left", self.live_rats));
+        vbuf.print(0, 3, ATTR_NONE, format!("{:4} dead", self.dead_rats));
+        vbuf.print(1, 3, ATTR_NONE, format!("{:4} left", self.live_rats));
         // brat stats
-        vbuf.set_chattr(0, 13, BRATS_UP_A1, ATTR_NONE);
-        vbuf.print(0, 14, ATTR_NONE, format!("{:3} dead", self.dead_brats));
-        vbuf.print(1, 14, ATTR_NONE, format!("{:3} left", self.live_brats));
+        vbuf.set_chattr(0, 14, BRATS_UP_A1, ATTR_NONE);
+        vbuf.print(0, 15, ATTR_NONE, format!("{:4} dead", self.dead_brats));
+        vbuf.print(1, 15, ATTR_NONE, format!("{:4} left", self.live_brats));
         // factory stats
-        vbuf.set_quad(0, 24, FACTORY_A2, ATTR_NONE);
-        vbuf.print(0, 26, ATTR_NONE, format!("{:3} dead", self.dead_factories));
-        vbuf.print(1, 26, ATTR_NONE, format!("{:3} left", self.live_factories));
+        vbuf.set_quad(0, 26, FACTORY_A2, ATTR_NONE);
+        vbuf.print(0, 28, ATTR_NONE, format!("{:3} dead", self.dead_factories));
+        vbuf.print(1, 28, ATTR_NONE, format!("{:3} left", self.live_factories));
         // player stats
-        vbuf.set_quad(0, 36, PLAYER_DOWN, ATTR_NONE);
-        vbuf.print(0, 39, ATTR_NONE, format!("{:1} dead", 0));
-        vbuf.print(1, 39, ATTR_NONE, format!("{:1} left", 2));
+        vbuf.set_quad(0, 38, PLAYER_DOWN, ATTR_NONE);
+        vbuf.print(0, 41, ATTR_NONE, format!("{:1} dead", 0));
+        vbuf.print(1, 41, ATTR_NONE, format!("{:1} left", 2));
         // game stats
-        vbuf.print(0, 47, ATTR_NONE, format!("Score: {:4}", self.score));
-        vbuf.print(1, 47, ATTR_NONE, "High:     0");
-        vbuf.print(0, 60, ATTR_NONE, format!("Time:  {:4}", time));
-        vbuf.print(1, 60, ATTR_NONE, format!("Maze: {:5}", 32768));
+        vbuf.print(0, 49, ATTR_NONE, format!("Score: {:7}", self.score));
+        vbuf.print(1, 49, ATTR_NONE, "High:        0");
+        vbuf.print(0, 66, ATTR_NONE, format!("Time:  {:4}", time));
+        vbuf.print(1, 66, ATTR_NONE, format!("Maze: {:5}", 32768));
 
         if self.game_state == GameState::PAUSED {
             let row = vbuf.rows / 2 + 2;
