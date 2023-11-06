@@ -18,7 +18,7 @@ impl GameContext {
     pub fn render_frame(
         &mut self,
         textures: &[Texture],
-        no_strobe: bool,
+        classic: bool,
     ) -> Result<()> {
         // start with a clear video buffer and pristine maze
         self.video.buffer.clear();
@@ -127,7 +127,7 @@ impl GameContext {
         }
 
         // if any factory is exploding light up the screen
-        if !no_strobe && self.super_boom > 0 {
+        if classic && self.super_boom > 0 {
             if self.frames % 12 < 6 {
                 for row in 2..self.maze.rows() {
                     for col in 0..self.maze.cols() {

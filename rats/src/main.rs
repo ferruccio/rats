@@ -22,9 +22,9 @@ struct CommandLineOpts {
     #[clap(short = 'd', long = "display")]
     display: Option<usize>,
 
-    /// Color mode
-    #[clap(short = 'c', long = "color", action)]
-    color: bool,
+    /// Classic mode
+    #[clap(short = 'c', long = "classic", action)]
+    classic: bool,
 
     /// Number of rat factories
     #[clap(short = 'f', long = "rat-factories", default_value_t = 5)]
@@ -53,10 +53,6 @@ struct CommandLineOpts {
     /// Scale factor (1 to 4)
     #[clap(short = 's', long = "scale")]
     scale: Option<usize>,
-
-    /// Turn off strobe effects whem a factory blows up
-    #[clap(long = "no-strobe", action)]
-    no_strobe: bool,
 
     /// Limit FPS (0 = no limit)
     #[clap(long = "fps", default_value_t = 60, hide = true)]
@@ -101,7 +97,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
     context.video.init_charmap_textures(
         &mut textures,
         context.video.scale,
-        opts.color,
+        !opts.classic,
     )?;
 
     let nanos_per_frame = if opts.fps > 0 {
@@ -115,7 +111,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
         Instant::now() - Duration::new(RAT_SPAWN_SECONDS, 0);
     let mut brat_spawn_time = Instant::now();
     while context.game_state != GameState::QUIT {
-        context.render_frame(&textures, opts.no_strobe)?;
+        context.render_frame(&textures, opts.classic)?;
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => context.game_state = GameState::QUIT,

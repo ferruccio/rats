@@ -5,9 +5,9 @@ use crate::{
     Result, Video, ATTR_COMBOS, BIG_BLANK, BIG_BLANK_START, BIG_BOOMS,
     BIG_BOOM_START, BRATS, BRATS_START, BULLETS, BULLETS_START,
     BYTES_PER_PIXEL, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, CRT_BACKGROUND,
-    CRT_GREEN, CYAN, EMPTY_CHAR_CELL, FACTORIES, FACTORIES_START, FONT_SIZE,
-    LIL_BOOMS, LIL_BOOM_START, PLAYER, PLAYER_START, RATS, RATS_START, RED,
-    WHITE, YELLOW,
+    CRT_GREEN, CYAN, DARK_GREEN, EMPTY_CHAR_CELL, FACTORIES, FACTORIES_START,
+    FONT_SIZE, LIL_BOOMS, LIL_BOOM_START, PLAYER, PLAYER_START, RATS,
+    RATS_START, RED, WHITE, YELLOW,
 };
 use sdl2::render::Texture;
 
@@ -41,14 +41,14 @@ impl Video {
             scale,
             &LIL_BOOMS,
             LIL_BOOM_START,
-            if color { YELLOW } else { CRT_GREEN },
+            if color { RED } else { CRT_GREEN },
         )?;
         wide_charmap_textures(
             textures,
             scale,
             &FACTORIES,
             FACTORIES_START,
-            if color { RED } else { CRT_GREEN },
+            if color { DARK_GREEN } else { CRT_GREEN },
         )?;
         wide_charmap_textures(
             textures,
@@ -63,7 +63,7 @@ impl Video {
             scale,
             &BIG_BOOMS,
             BIG_BOOM_START,
-            if color { YELLOW } else { CRT_GREEN },
+            if color { RED } else { CRT_GREEN },
         )?;
         wide_charmap_textures(
             textures,

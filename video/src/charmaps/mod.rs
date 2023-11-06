@@ -40,6 +40,7 @@ pub const BIG_BLANK: [u16; CHAR_CELL_HEIGHT * 2] = [0; CHAR_CELL_HEIGHT * 2];
 pub const WHITE: u32 = 0xffffff;
 pub const RED: u32 = 0xff0000;
 pub const GREEN: u32 = 0x00ff00;
+pub const DARK_GREEN: u32 = 0x008000;
 pub const BLUE: u32 = 0x0000ff;
 pub const YELLOW: u32 = RED | GREEN;
 pub const CYAN: u32 = GREEN | BLUE;
