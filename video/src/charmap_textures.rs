@@ -4,9 +4,10 @@ use crate::{
     errors::sdl_error,
     Result, Video, ATTR_COMBOS, BIG_BLANK, BIG_BLANK_START, BIG_BOOMS,
     BIG_BOOM_START, BRATS, BRATS_START, BULLETS, BULLETS_START,
-    BYTES_PER_PIXEL, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, EMPTY_CHAR_CELL,
-    FACTORIES, FACTORIES_START, FONT_SIZE, LIL_BOOMS, LIL_BOOM_START, PLAYER,
-    PLAYER_START, RATS, RATS_START,
+    BYTES_PER_PIXEL, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, CRT_BACKGROUND,
+    CRT_GREEN, CYAN, EMPTY_CHAR_CELL, FACTORIES, FACTORIES_START, FONT_SIZE,
+    LIL_BOOMS, LIL_BOOM_START, PLAYER, PLAYER_START, RATS, RATS_START, RED,
+    WHITE, YELLOW,
 };
 use sdl2::render::Texture;
 
@@ -15,19 +16,62 @@ impl Video {
         &self,
         textures: &mut Vec<Texture>,
         scale: usize,
+        color: bool,
     ) -> Result<()> {
         assert!(textures.len() == ATTR_COMBOS);
         clear_charmap_textures(textures, scale)?;
-        charmap_textures(textures, scale, &ASCII, ASCII_START)?;
-        charmap_textures(textures, scale, &MAZE_WALLS, MAZE_WALLS_START)?;
-        charmap_textures(textures, scale, &BULLETS, BULLETS_START)?;
-        charmap_textures(textures, scale, &BRATS, BRATS_START)?;
-        charmap_textures(textures, scale, &LIL_BOOMS, LIL_BOOM_START)?;
-        wide_charmap_textures(textures, scale, &FACTORIES, FACTORIES_START)?;
-        wide_charmap_textures(textures, scale, &PLAYER, PLAYER_START)?;
-        wide_charmap_textures(textures, scale, &RATS, RATS_START)?;
-        wide_charmap_textures(textures, scale, &BIG_BOOMS, BIG_BOOM_START)?;
-        wide_charmap_textures(textures, scale, &BIG_BLANK, BIG_BLANK_START)?;
+        charmap_textures(textures, scale, &ASCII, ASCII_START, CRT_GREEN)?;
+        charmap_textures(
+            textures,
+            scale,
+            &MAZE_WALLS,
+            MAZE_WALLS_START,
+            if color { WHITE } else { CRT_GREEN },
+        )?;
+        charmap_textures(
+            textures,
+            scale,
+            &BULLETS,
+            BULLETS_START,
+            if color { YELLOW } else { CRT_GREEN },
+        )?;
+        charmap_textures(textures, scale, &BRATS, BRATS_START, CRT_GREEN)?;
+        charmap_textures(
+            textures,
+            scale,
+            &LIL_BOOMS,
+            LIL_BOOM_START,
+            if color { YELLOW } else { CRT_GREEN },
+        )?;
+        wide_charmap_textures(
+            textures,
+            scale,
+            &FACTORIES,
+            FACTORIES_START,
+            if color { RED } else { CRT_GREEN },
+        )?;
+        wide_charmap_textures(
+            textures,
+            scale,
+            &PLAYER,
+            PLAYER_START,
+            if color { CYAN } else { CRT_GREEN },
+        )?;
+        wide_charmap_textures(textures, scale, &RATS, RATS_START, CRT_GREEN)?;
+        wide_charmap_textures(
+            textures,
+            scale,
+            &BIG_BOOMS,
+            BIG_BOOM_START,
+            if color { YELLOW } else { CRT_GREEN },
+        )?;
+        wide_charmap_textures(
+            textures,
+            scale,
+            &BIG_BLANK,
+            BIG_BLANK_START,
+            CRT_GREEN,
+        )?;
         Ok(())
     }
 }
@@ -64,25 +108,33 @@ fn charmap_textures(
     scale: usize,
     bitmap: &[u8],
     first: u8,
+    color: u32,
 ) -> Result<()> {
     textures[ATTR_NONE as usize]
         .with_lock(None, |pixels, _pitch| {
-            set_pixels(pixels, bitmap, first, ATTR_NONE, scale);
+            set_pixels(pixels, bitmap, first, ATTR_NONE, scale, color);
         })
         .map_err(sdl_error)?;
     textures[ATTR_REVERSE as usize]
         .with_lock(None, |pixels, _pitch| {
-            set_pixels(pixels, bitmap, first, ATTR_REVERSE, scale);
+            set_pixels(pixels, bitmap, first, ATTR_REVERSE, scale, color);
         })
         .map_err(sdl_error)?;
     textures[ATTR_DIM as usize]
         .with_lock(None, |pixels, _pitch| {
-            set_pixels(pixels, bitmap, first, ATTR_DIM, scale);
+            set_pixels(pixels, bitmap, first, ATTR_DIM, scale, color);
         })
         .map_err(sdl_error)?;
     textures[(ATTR_REVERSE | ATTR_DIM) as usize]
         .with_lock(None, |pixels, _pitch| {
-            set_pixels(pixels, bitmap, first, ATTR_REVERSE | ATTR_DIM, scale);
+            set_pixels(
+                pixels,
+                bitmap,
+                first,
+                ATTR_REVERSE | ATTR_DIM,
+                scale,
+                color,
+            );
         })
         .map_err(sdl_error)?;
     Ok(())
@@ -94,6 +146,7 @@ fn set_pixels(
     first: u8,
     attrs: u8,
     scale: usize,
+    color: u32,
 ) {
     assert_eq!(bitmap.len() % CHAR_CELL_HEIGHT, 0);
     assert_eq!(
@@ -107,14 +160,11 @@ fn set_pixels(
         * BYTES_PER_PIXEL
         * (CHAR_CELL_WIDTH * scale)
         * (CHAR_CELL_HEIGHT * scale);
-    const BACKGROUND: u32 = 0x252919;
-    const FOREGROUND_NORMAL: u32 = 0x5bffff;
-    const FOREGROUND_DIM: u32 = 0x2d8080;
     let (fg, bg) = match (attrs & ATTR_REVERSE != 0, attrs & ATTR_DIM != 0) {
-        (true, true) => (BACKGROUND, FOREGROUND_DIM),
-        (true, false) => (BACKGROUND, FOREGROUND_NORMAL),
-        (false, true) => (FOREGROUND_DIM, BACKGROUND),
-        (false, false) => (FOREGROUND_NORMAL, BACKGROUND),
+        (true, true) => (CRT_BACKGROUND, dim(color)),
+        (true, false) => (CRT_BACKGROUND, color),
+        (false, true) => (dim(color), CRT_BACKGROUND),
+        (false, false) => (color, CRT_BACKGROUND),
     };
     match scale {
         1 => set_pixels_1x1(pixels, bitmap, offset, fg, bg),
@@ -240,25 +290,33 @@ fn foreground(color: u32, predicate: bool) -> u32 {
     }
 }
 
+fn dim(color: u32) -> u32 {
+    let red = (((color >> 16) & 0xff) * 2) / 4;
+    let green = (((color >> 8) & 0xff) * 2) / 4;
+    let blue = ((color & 0xff) * 2) / 4;
+    (red << 16) | (green << 8) | blue
+}
+
 fn wide_charmap_textures(
     textures: &mut [Texture],
     scale: usize,
     bitmap: &[u16],
     first: u8,
+    color: u32,
 ) -> Result<()> {
     textures[ATTR_NONE as usize]
         .with_lock(None, |pixels, _pitch| {
-            set_pixels_wide(pixels, bitmap, first, ATTR_NONE, scale);
+            set_pixels_wide(pixels, bitmap, first, ATTR_NONE, scale, color);
         })
         .map_err(sdl_error)?;
     textures[ATTR_REVERSE as usize]
         .with_lock(None, |pixels, _pitch| {
-            set_pixels_wide(pixels, bitmap, first, ATTR_REVERSE, scale);
+            set_pixels_wide(pixels, bitmap, first, ATTR_REVERSE, scale, color);
         })
         .map_err(sdl_error)?;
     textures[ATTR_DIM as usize]
         .with_lock(None, |pixels, _pitch| {
-            set_pixels_wide(pixels, bitmap, first, ATTR_DIM, scale);
+            set_pixels_wide(pixels, bitmap, first, ATTR_DIM, scale, color);
         })
         .map_err(sdl_error)?;
     textures[(ATTR_REVERSE | ATTR_DIM) as usize]
@@ -269,6 +327,7 @@ fn wide_charmap_textures(
                 first,
                 ATTR_REVERSE | ATTR_DIM,
                 scale,
+                color,
             );
         })
         .map_err(sdl_error)?;
@@ -281,6 +340,7 @@ fn set_pixels_wide(
     mut first: u8,
     attrs: u8,
     scale: usize,
+    color: u32,
 ) {
     assert_eq!(bitmap.len() % (CHAR_CELL_HEIGHT * 2), 0);
     while !bitmap.is_empty() {
@@ -310,7 +370,7 @@ fn set_pixels_wide(
             bitmap2[offset] = (word & 0xff) as u8;
             offset += 1;
         }
-        set_pixels(pixels, &bitmap2, first, attrs, scale);
+        set_pixels(pixels, &bitmap2, first, attrs, scale, color);
         bitmap = &bitmap[CHAR_CELL_HEIGHT * 2..];
         first += 4;
     }

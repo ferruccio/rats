@@ -22,6 +22,10 @@ struct Options {
     /// Scale factor (1 to 4)
     #[clap(short = 's', long = "scale")]
     scale: Option<usize>,
+
+    /// Add some coloe
+    #[clap(short = 'c', long = "color", action)]
+    color: bool,
 }
 
 fn main() {
@@ -46,7 +50,7 @@ fn main() {
             .unwrap();
         textures.push(texture);
     }
-    _ = video.init_charmap_textures(&mut textures, video.scale);
+    _ = video.init_charmap_textures(&mut textures, video.scale, opts.color);
     let mut event_pump = video.sdl.event_pump().unwrap();
 
     let mut running = true;

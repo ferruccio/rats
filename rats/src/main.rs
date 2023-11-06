@@ -22,6 +22,10 @@ struct CommandLineOpts {
     #[clap(short = 'd', long = "display")]
     display: Option<usize>,
 
+    /// Color mode
+    #[clap(short = 'c', long = "color", action)]
+    color: bool,
+
     /// Number of rat factories
     #[clap(short = 'f', long = "rat-factories", default_value_t = 5)]
     factories: usize,
@@ -94,9 +98,11 @@ fn play(opts: CommandLineOpts) -> Result<()> {
         )?;
         textures.push(texture);
     }
-    context
-        .video
-        .init_charmap_textures(&mut textures, context.video.scale)?;
+    context.video.init_charmap_textures(
+        &mut textures,
+        context.video.scale,
+        opts.color,
+    )?;
 
     let nanos_per_frame = if opts.fps > 0 {
         (1_000_000_000 / opts.fps) as u32
