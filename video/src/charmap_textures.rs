@@ -208,7 +208,11 @@ fn set_pixels_2x2(
             while mask != 0 {
                 for c in 0..2 {
                     let color = if byte & mask != 0 {
-                        foreground(fg, r + c == 2)
+                        if c == 1 && r == 1 {
+                            between(fg, bg)
+                        } else {
+                            fg
+                        }
                     } else {
                         bg
                     };
@@ -236,7 +240,11 @@ fn set_pixels_3x3(
             while mask != 0 {
                 for c in 0..3 {
                     let color = if byte & mask != 0 {
-                        foreground(fg, r == 2 || c == 2)
+                        if (0..2).contains(&r) && (0..2).contains(&c) {
+                            fg
+                        } else {
+                            between(fg, bg)
+                        }
                     } else {
                         bg
                     };
@@ -264,7 +272,11 @@ fn set_pixels_4x4(
             while mask != 0 {
                 for c in 0..4 {
                     let color = if byte & mask != 0 {
-                        foreground(fg, r == 0 || r == 2 || c == 0 || c == 2)
+                        if (0..3).contains(&r) && (0..3).contains(&c) {
+                            fg
+                        } else {
+                            between(fg, bg)
+                        }
                     } else {
                         bg
                     };
@@ -279,21 +291,23 @@ fn set_pixels_4x4(
     }
 }
 
-fn foreground(color: u32, predicate: bool) -> u32 {
-    if predicate {
-        let red = (((color >> 16) & 0xff) * 2) / 4;
-        let green = (((color >> 8) & 0xff) * 2) / 4;
-        let blue = ((color & 0xff) * 2) / 4;
-        (red << 16) | (green << 8) | blue
-    } else {
-        color
-    }
-}
-
 fn dim(color: u32) -> u32 {
     let red = (((color >> 16) & 0xff) * 2) / 4;
     let green = (((color >> 8) & 0xff) * 2) / 4;
     let blue = ((color & 0xff) * 2) / 4;
+    (red << 16) | (green << 8) | blue
+}
+
+fn between(color1: u32, color2: u32) -> u32 {
+    let red1 = (((color1 >> 16) & 0xff) * 2) / 4;
+    let green1 = (((color1 >> 8) & 0xff) * 2) / 4;
+    let blue1 = ((color1 & 0xff) * 2) / 4;
+    let red2 = (((color2 >> 16) & 0xff) * 2) / 4;
+    let green2 = (((color2 >> 8) & 0xff) * 2) / 4;
+    let blue2 = ((color2 & 0xff) * 2) / 4;
+    let red = (red1 + red2) / 2;
+    let green = (green1 + green2) / 2;
+    let blue = (blue1 + blue2) / 2;
     (red << 16) | (green << 8) | blue
 }
 
