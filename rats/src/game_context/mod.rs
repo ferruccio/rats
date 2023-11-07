@@ -1,6 +1,6 @@
 use crate::{
     entities::{
-        dir, state, Direction, Entity, EntityList, Player, Position,
+        dir, Direction, Entity, EntityList, Player, Position, State,
         PLAYER_FIRE_RATE_NS,
     },
     maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS},
@@ -28,20 +28,21 @@ pub use update::*;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum GameState {
-    RUNNING,
-    PAUSED,
-    FINISHED,
-    QUIT,
+    Running,
+    Paused,
+    Finished,
+    Quit,
 }
 
 impl Display for GameState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Ok(match self {
-            GameState::RUNNING => write!(f, "RUNNING")?,
-            GameState::PAUSED => write!(f, "PAUSED")?,
-            GameState::FINISHED => write!(f, "FINISHED")?,
-            GameState::QUIT => write!(f, "QUIT")?,
-        })
+        match self {
+            GameState::Running => write!(f, "RUNNING")?,
+            GameState::Paused => write!(f, "PAUSED")?,
+            GameState::Finished => write!(f, "FINISHED")?,
+            GameState::Quit => write!(f, "QUIT")?,
+        }
+        Ok(())
     }
 }
 
@@ -84,7 +85,7 @@ impl GameContext {
         let mut pristine_maze = Maze::new(maze_rows, maze_cols);
         pristine_maze.generate(density);
         let mut context = GameContext {
-            game_state: GameState::RUNNING,
+            game_state: GameState::Running,
             diagnostics: false,
             video,
             start: Instant::now(),
@@ -115,7 +116,7 @@ impl GameContext {
             },
             dir: dir::NONE,
             stop_dir: dir::DOWN,
-            state: state::ALIVE,
+            state: State::Alive,
             cycle: 0,
         }));
         context.generate_factories(factories.clamp(1, 100), &pristine_maze);

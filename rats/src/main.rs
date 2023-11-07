@@ -110,11 +110,11 @@ fn play(opts: CommandLineOpts) -> Result<()> {
     let mut rat_spawn_time =
         Instant::now() - Duration::new(RAT_SPAWN_SECONDS, 0);
     let mut brat_spawn_time = Instant::now();
-    while context.game_state != GameState::QUIT {
+    while context.game_state != GameState::Quit {
         context.render_frame(&textures, opts.classic)?;
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. } => context.game_state = GameState::QUIT,
+                Event::Quit { .. } => context.game_state = GameState::Quit,
                 Event::KeyDown {
                     keycode: Some(keycode),
                     ..
@@ -143,12 +143,12 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             context.new_brats = context.live_rats / 8 + random(2, 10);
             brat_spawn_time = Instant::now();
         }
-        if context.game_state != GameState::QUIT
+        if context.game_state != GameState::Quit
             && context.live_factories == 0
             && context.live_rats == 0
             && context.live_brats == 0
         {
-            context.game_state = GameState::FINISHED;
+            context.game_state = GameState::Finished;
         }
 
         if nanos_per_frame > 0 {
@@ -167,10 +167,10 @@ fn play(opts: CommandLineOpts) -> Result<()> {
 // return true to keep game running
 fn key_down(context: &mut GameContext, keycode: Keycode) {
     match keycode {
-        Keycode::Escape => context.game_state = GameState::QUIT,
+        Keycode::Escape => context.game_state = GameState::Quit,
         Keycode::Space => match context.game_state {
-            GameState::RUNNING => context.game_state = GameState::PAUSED,
-            GameState::PAUSED => context.game_state = GameState::RUNNING,
+            GameState::Running => context.game_state = GameState::Paused,
+            GameState::Paused => context.game_state = GameState::Running,
             _ => {}
         },
         Keycode::F12 => context.diagnostics = !context.diagnostics,

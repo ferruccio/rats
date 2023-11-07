@@ -1,8 +1,8 @@
 use super::GameState;
 use crate::{
     entities::{
-        state, update_brat, update_bullet, update_factory, update_player,
-        update_rat, Entity, EntityAction,
+        update_brat, update_bullet, update_factory, update_player, update_rat,
+        Entity, EntityAction, State,
     },
     game_context::GameContext,
 };
@@ -16,7 +16,7 @@ pub enum Action {
 
 impl GameContext {
     pub fn update(&mut self) {
-        if self.game_state == GameState::RUNNING {
+        if self.game_state == GameState::Running {
             let actions = self.update_actions();
             self.apply_actions(actions);
             self.bullet_hit_tests();
@@ -110,7 +110,7 @@ impl GameContext {
             .iter()
             .enumerate()
             .filter_map(|(index, entity)| match entity {
-                Entity::Bullet(bullet) if bullet.state == state::ALIVE => {
+                Entity::Bullet(bullet) if bullet.state == State::Alive => {
                     Some((index, bullet.pos))
                 }
                 _ => None,

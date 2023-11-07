@@ -5,7 +5,7 @@ use video::{
 };
 
 use super::{
-    dir, state, Dimensions, Direction, Entity, EntityAction, Position, State,
+    dir, Dimensions, Direction, Entity, EntityAction, Position, State,
     BRAT_UPDATE_MS,
 };
 use crate::{
@@ -38,17 +38,17 @@ impl Brat {
 
 impl EntityAction for Brat {
     fn hit(&self, pos: Position, _dims: Dimensions) -> bool {
-        self.state == state::ALIVE && self.pos == pos
+        self.state == State::Alive && self.pos == pos
     }
 
     fn explode(&mut self) {
-        self.state = state::EXPLODING1;
+        self.state = State::Exploding1;
     }
 }
 
 pub fn render_brat(brat: &Brat, maze: &mut Maze) {
     let ch = match brat.state {
-        state::ALIVE => match (brat.dir, (brat.cycle) & 0x1 != 0) {
+        State::Alive => match (brat.dir, (brat.cycle) & 0x1 != 0) {
             (dir::UP, false) => BRATS_UP_A1,
             (dir::UP, true) => BRATS_UP_A2,
             (dir::DOWN, false) => BRATS_DOWN_A1,
@@ -58,11 +58,10 @@ pub fn render_brat(brat: &Brat, maze: &mut Maze) {
             (_, false) => BRATS_RIGHT_A1,
             (_, true) => BRATS_RIGHT_A2,
         },
-        state::EXPLODING1 => LIL_BOOM_A1,
-        state::EXPLODING2 => LIL_BOOM_A2,
-        state::EXPLODING3 => LIL_BOOM_A1,
-        // state::DEAD
-        _ => b' ',
+        State::Exploding1 => LIL_BOOM_A1,
+        State::Exploding2 => LIL_BOOM_A2,
+        State::Exploding3 => LIL_BOOM_A1,
+        State::Dead => b' ',
     };
     maze.buffer
         .set_chattr(brat.pos.row, brat.pos.col, ch, ATTR_NONE);
@@ -74,7 +73,7 @@ pub fn update_brat(brat: &Brat, maze: &Maze, update: u32) -> Action {
     }
     let mut brat = *brat;
     match brat.state {
-        state::ALIVE => {
+        State::Alive => {
             if brat.distance == 0 || !brat.can_advance(maze, brat.dir) {
                 brat.dir = random_direction();
                 brat.distance = random(5, 15);
@@ -88,22 +87,21 @@ pub fn update_brat(brat: &Brat, maze: &Maze, update: u32) -> Action {
                 ..brat
             }))
         }
-        state::EXPLODING1 => Action::Update(Entity::Brat(Brat {
+        State::Exploding1 => Action::Update(Entity::Brat(Brat {
             update: update + BRAT_UPDATE_MS / 2,
-            state: state::EXPLODING2,
+            state: State::Exploding2,
             ..brat
         })),
-        state::EXPLODING2 => Action::Update(Entity::Brat(Brat {
+        State::Exploding2 => Action::Update(Entity::Brat(Brat {
             update: update + BRAT_UPDATE_MS / 2,
-            state: state::EXPLODING3,
+            state: State::Exploding3,
             ..brat
         })),
-        state::EXPLODING3 => Action::Update(Entity::Brat(Brat {
+        State::Exploding3 => Action::Update(Entity::Brat(Brat {
             update: update + BRAT_UPDATE_MS / 2,
-            state: state::DEAD,
+            state: State::Dead,
             ..brat
         })),
-        // state::DEAD
-        _ => Action::Delete,
+        State::Dead => Action::Delete,
     }
 }

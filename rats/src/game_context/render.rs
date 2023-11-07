@@ -112,13 +112,13 @@ impl GameContext {
         vbuf.print(0, 66, ATTR_NONE, format!("Time:  {:4}", time));
         vbuf.print(1, 66, ATTR_NONE, format!("Maze: {:5}", 32768));
 
-        if self.game_state == GameState::PAUSED {
+        if self.game_state == GameState::Paused {
             let row = vbuf.rows / 2 + 2;
             let col = vbuf.cols / 2 - 4;
             vbuf.print(row - 1, col, ATTR_REVERSE, "         ");
             vbuf.print(row, col, ATTR_REVERSE, "  PAUSE  ");
             vbuf.print(row + 1, col, ATTR_REVERSE, "         ");
-        } else if self.game_state == GameState::FINISHED {
+        } else if self.game_state == GameState::Finished {
             let row = vbuf.rows / 2 + 2;
             let col = vbuf.cols / 2 - 2;
             vbuf.print(row - 1, col, ATTR_REVERSE, "             ");

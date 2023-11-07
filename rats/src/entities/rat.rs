@@ -5,8 +5,8 @@ use video::{
 };
 
 use super::{
-    dir, state, Brat, Dimensions, Direction, Entity, EntityAction, Position,
-    State, RAT_UPDATE_MS,
+    dir, Brat, Dimensions, Direction, Entity, EntityAction, Position, State,
+    RAT_UPDATE_MS,
 };
 use crate::{
     game_context::{flip_a_coin, random, random_direction, Action},
@@ -47,7 +47,7 @@ impl Rat {
 
 impl EntityAction for Rat {
     fn hit(&self, pos: Position, dims: Dimensions) -> bool {
-        if self.state != state::ALIVE {
+        if self.state != State::Alive {
             return false;
         }
         if pos == self.pos {
@@ -71,13 +71,13 @@ impl EntityAction for Rat {
     }
 
     fn explode(&mut self) {
-        self.state = state::EXPLODING1;
+        self.state = State::Exploding1;
     }
 }
 
 pub fn render_rat(rat: &Rat, maze: &mut Maze) {
     let ch = match rat.state {
-        state::ALIVE => match (rat.dir, (rat.cycle) & 0x1 != 0) {
+        State::Alive => match (rat.dir, (rat.cycle) & 0x1 != 0) {
             (dir::UP, false) => RATS_UP_A1,
             (dir::UP, true) => RATS_UP_A2,
             (dir::DOWN, false) => RATS_DOWN_A1,
@@ -87,11 +87,10 @@ pub fn render_rat(rat: &Rat, maze: &mut Maze) {
             (_, false) => RATS_RIGHT_A1,
             (_, true) => RATS_RIGHT_A2,
         },
-        state::EXPLODING1 => BIG_BOOM_A1,
-        state::EXPLODING2 => BIG_BOOM_A2,
-        state::EXPLODING3 => BIG_BOOM_A1,
-        // state::DEAD
-        _ => BIG_BLANK_START,
+        State::Exploding1 => BIG_BOOM_A1,
+        State::Exploding2 => BIG_BOOM_A2,
+        State::Exploding3 => BIG_BOOM_A1,
+        State::Dead => BIG_BLANK_START,
     };
     maze.buffer
         .set_quad(rat.pos.row, rat.pos.col, ch, ATTR_NONE);
@@ -103,14 +102,14 @@ pub fn update_rat(rat: &Rat, maze: &Maze, update: u32, spawn: bool) -> Action {
     }
     let mut rat = *rat;
     match rat.state {
-        state::ALIVE => {
+        State::Alive => {
             if spawn && flip_a_coin() {
                 return Action::New(Entity::Brat(Brat {
                     update,
                     distance: 10 + random(10, 20),
                     pos: rat.pos,
                     dir: random_direction(),
-                    state: state::ALIVE,
+                    state: State::Alive,
                     cycle: 0,
                 }));
             }
@@ -127,22 +126,21 @@ pub fn update_rat(rat: &Rat, maze: &Maze, update: u32, spawn: bool) -> Action {
                 ..rat
             }))
         }
-        state::EXPLODING1 => Action::Update(Entity::Rat(Rat {
+        State::Exploding1 => Action::Update(Entity::Rat(Rat {
             update: update + RAT_UPDATE_MS / 2,
-            state: state::EXPLODING2,
+            state: State::Exploding2,
             ..rat
         })),
-        state::EXPLODING2 => Action::Update(Entity::Rat(Rat {
+        State::Exploding2 => Action::Update(Entity::Rat(Rat {
             update: update + RAT_UPDATE_MS / 2,
-            state: state::EXPLODING3,
+            state: State::Exploding3,
             ..rat
         })),
-        state::EXPLODING3 => Action::Update(Entity::Rat(Rat {
+        State::Exploding3 => Action::Update(Entity::Rat(Rat {
             update: update + RAT_UPDATE_MS / 2,
-            state: state::DEAD,
+            state: State::Dead,
             ..rat
         })),
-        // state::DEAD
-        _ => Action::Delete,
+        State::Dead => Action::Delete,
     }
 }

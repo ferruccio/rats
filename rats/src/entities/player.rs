@@ -1,5 +1,5 @@
 use super::{
-    dir, state, Dimensions, Direction, Entity, EntityAction, Position, State,
+    dir, Dimensions, Direction, Entity, EntityAction, Position, State,
     PLAYER_UPDATE_MS,
 };
 use crate::{game_context::Action, maze::Maze};
@@ -53,7 +53,7 @@ impl Player {
 
 impl EntityAction for Player {
     fn hit(&self, pos: Position, dims: Dimensions) -> bool {
-        if self.state != state::ALIVE {
+        if self.state != State::Alive {
             return false;
         }
         if pos == self.pos {
@@ -77,13 +77,13 @@ impl EntityAction for Player {
     }
 
     fn explode(&mut self) {
-        self.state = state::EXPLODING1;
+        self.state = State::Exploding1;
     }
 }
 
 pub fn render_player(player: &Player, maze: &mut Maze) {
     let ch = match player.state {
-        state::ALIVE => {
+        State::Alive => {
             let dir = match player.effective_dir() {
                 dir::NONE => player.stop_dir,
                 dir => dir,
@@ -105,11 +105,10 @@ pub fn render_player(player: &Player, maze: &mut Maze) {
                 _ => PLAYER_DOWN,
             } + offset * 4)
         }
-        state::EXPLODING1 => BIG_BOOM_A1,
-        state::EXPLODING2 => BIG_BOOM_A2,
-        state::EXPLODING3 => BIG_BOOM_A1,
-        // state::DEAD
-        _ => BIG_BLANK_START,
+        State::Exploding1 => BIG_BOOM_A1,
+        State::Exploding2 => BIG_BOOM_A2,
+        State::Exploding3 => BIG_BOOM_A1,
+        State::Dead => BIG_BLANK_START,
     };
     maze.buffer
         .set_quad(player.pos.row, player.pos.col, ch, ATTR_NONE);
@@ -121,7 +120,7 @@ pub fn update_player(player: &Player, maze: &Maze, update: u32) -> Action {
     }
     let mut player = *player;
     match player.state {
-        state::ALIVE => {
+        State::Alive => {
             if player.can_advance(maze, player.dir) {
                 player.advance(player.dir, maze.dimensions);
             } else {
@@ -152,25 +151,24 @@ pub fn update_player(player: &Player, maze: &Maze, update: u32) -> Action {
                 ..player
             }))
         }
-        state::EXPLODING1 => Action::Update(Entity::Player(Player {
+        State::Exploding1 => Action::Update(Entity::Player(Player {
             update: update + PLAYER_UPDATE_MS / 2,
-            state: state::EXPLODING2,
+            state: State::Exploding2,
             ..player
         })),
-        state::EXPLODING2 => Action::Update(Entity::Player(Player {
+        State::Exploding2 => Action::Update(Entity::Player(Player {
             update: update + PLAYER_UPDATE_MS / 2,
-            state: state::EXPLODING3,
+            state: State::Exploding3,
             ..player
         })),
-        state::EXPLODING3 => Action::Update(Entity::Player(Player {
+        State::Exploding3 => Action::Update(Entity::Player(Player {
             update: update + PLAYER_UPDATE_MS / 2,
-            state: state::DEAD,
+            state: State::Dead,
             ..player
         })),
-        // state::DEAD
-        _ => Action::Update(Entity::Player(Player {
+        State::Dead => Action::Update(Entity::Player(Player {
             update: update + PLAYER_UPDATE_MS * 2,
-            state: state::ALIVE,
+            state: State::Alive,
             ..player
         })),
     }

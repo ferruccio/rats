@@ -1,6 +1,6 @@
 use super::GameContext;
 use crate::{
-    entities::{state, Dimensions, Entity, Factory, Position},
+    entities::{Dimensions, Entity, Factory, Position, State},
     maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS},
 };
 use rand::{distributions::Uniform, thread_rng, Rng};
@@ -52,7 +52,7 @@ impl GameContext {
             self.entities.push(Entity::Factory(Factory {
                 update: self.elapsed(),
                 pos,
-                state: state::ALIVE,
+                state: State::Alive,
                 cycle: rng.sample(cycle_distribution),
             }));
             generated += 1;

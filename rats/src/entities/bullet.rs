@@ -1,6 +1,5 @@
 use super::{
-    dir, state, Direction, Entity, EntityAction, Position, State,
-    BULLET_UPDATE_MS,
+    dir, Direction, Entity, EntityAction, Position, State, BULLET_UPDATE_MS,
 };
 use crate::{game_context::Action, maze::Maze};
 use video::{
@@ -19,17 +18,17 @@ pub struct Bullet {
 
 impl EntityAction for Bullet {
     fn hit(&self, pos: Position, _dims: super::Dimensions) -> bool {
-        self.state == state::ALIVE && self.pos == pos
+        self.state == State::Alive && self.pos == pos
     }
 
     fn explode(&mut self) {
-        self.state = state::EXPLODING1;
+        self.state = State::Exploding1;
     }
 }
 
 pub fn render_bullet(bullet: &Bullet, maze: &mut Maze) {
     let ch = match bullet.state {
-        state::ALIVE => match bullet.dir {
+        State::Alive => match bullet.dir {
             dir::DOWN => BULLET_DOWN,
             dir::DOWN_LEFT => BULLET_DOWN_LEFT,
             dir::DOWN_RIGHT => BULLET_DOWN_RIGHT,
@@ -40,11 +39,10 @@ pub fn render_bullet(bullet: &Bullet, maze: &mut Maze) {
             dir::RIGHT => BULLET_RIGHT,
             _ => b'?',
         },
-        state::EXPLODING1 => LIL_BOOM_A1,
-        state::EXPLODING2 => LIL_BOOM_A2,
-        state::EXPLODING3 => LIL_BOOM_A1,
-        // state::DEAD
-        _ => b'*',
+        State::Exploding1 => LIL_BOOM_A1,
+        State::Exploding2 => LIL_BOOM_A2,
+        State::Exploding3 => LIL_BOOM_A1,
+        State::Dead => b'*',
     };
     maze.buffer
         .set_chattr(bullet.pos.row, bullet.pos.col, ch, ATTR_NONE);
@@ -56,7 +54,7 @@ pub fn update_bullet(bullet: &Bullet, maze: &Maze, update: u32) -> Action {
     }
     let bullet = *bullet;
     match bullet.state {
-        state::ALIVE => {
+        State::Alive => {
             let (row, col) = (bullet.pos.row, bullet.pos.col);
             let (rows, cols) = (maze.rows(), maze.cols());
             let (row, col) = match bullet.dir {
@@ -80,22 +78,21 @@ pub fn update_bullet(bullet: &Bullet, maze: &Maze, update: u32) -> Action {
                 }))
             }
         }
-        state::EXPLODING1 => Action::Update(Entity::Bullet(Bullet {
+        State::Exploding1 => Action::Update(Entity::Bullet(Bullet {
             update: update + BULLET_UPDATE_MS,
-            state: state::EXPLODING2,
+            state: State::Exploding2,
             ..bullet
         })),
-        state::EXPLODING2 => Action::Update(Entity::Bullet(Bullet {
+        State::Exploding2 => Action::Update(Entity::Bullet(Bullet {
             update: update + BULLET_UPDATE_MS,
-            state: state::EXPLODING3,
+            state: State::Exploding3,
             ..bullet
         })),
-        state::EXPLODING3 => Action::Update(Entity::Bullet(Bullet {
+        State::Exploding3 => Action::Update(Entity::Bullet(Bullet {
             update: update + BULLET_UPDATE_MS,
-            state: state::DEAD,
+            state: State::Dead,
             ..bullet
         })),
-        // state::DEAD
-        _ => Action::Delete,
+        State::Dead => Action::Delete,
     }
 }

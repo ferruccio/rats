@@ -1,5 +1,5 @@
 use super::{
-    dir, state, Dimensions, Entity, EntityAction, Position, Rat, State,
+    dir, Dimensions, Entity, EntityAction, Position, Rat, State,
     FACTORY_UPDATE_MS,
 };
 use crate::{
@@ -21,7 +21,7 @@ pub struct Factory {
 
 impl EntityAction for Factory {
     fn hit(&self, pos: Position, dims: Dimensions) -> bool {
-        if self.state != state::ALIVE {
+        if self.state != State::Alive {
             return false;
         }
         if pos == self.pos {
@@ -45,24 +45,23 @@ impl EntityAction for Factory {
     }
 
     fn explode(&mut self) {
-        self.state = state::EXPLODING1;
+        self.state = State::Exploding1;
     }
 }
 
 pub fn render_factory(factory: &Factory, maze: &mut Maze) {
     let ch = match factory.state {
-        state::ALIVE => {
+        State::Alive => {
             if (factory.cycle & 1) == 0 {
                 FACTORY_A1
             } else {
                 FACTORY_A2
             }
         }
-        state::EXPLODING1 => BIG_BOOM_A1,
-        state::EXPLODING2 => BIG_BOOM_A2,
-        state::EXPLODING3 => BIG_BOOM_A1,
-        // state::DEAD
-        _ => BIG_BLANK_START,
+        State::Exploding1 => BIG_BOOM_A1,
+        State::Exploding2 => BIG_BOOM_A2,
+        State::Exploding3 => BIG_BOOM_A1,
+        State::Dead => BIG_BLANK_START,
     };
     maze.buffer
         .set_quad(factory.pos.row, factory.pos.col, ch, ATTR_NONE);
@@ -78,14 +77,14 @@ pub fn update_factory(
     }
     let factory = *factory;
     match factory.state {
-        state::ALIVE => {
+        State::Alive => {
             if make_rat {
                 Action::New(Entity::Rat(Rat {
                     update,
                     distance: random(5, 15),
                     pos: factory.pos,
                     dir: dir::RIGHT,
-                    state: state::ALIVE,
+                    state: State::Alive,
                     cycle: 0,
                 }))
             } else {
@@ -96,22 +95,21 @@ pub fn update_factory(
                 }))
             }
         }
-        state::EXPLODING1 => Action::Update(Entity::Factory(Factory {
+        State::Exploding1 => Action::Update(Entity::Factory(Factory {
             update: update + FACTORY_UPDATE_MS / 2,
-            state: state::EXPLODING2,
+            state: State::Exploding2,
             ..factory
         })),
-        state::EXPLODING2 => Action::Update(Entity::Factory(Factory {
+        State::Exploding2 => Action::Update(Entity::Factory(Factory {
             update: update + FACTORY_UPDATE_MS / 2,
-            state: state::EXPLODING3,
+            state: State::Exploding3,
             ..factory
         })),
-        state::EXPLODING3 => Action::Update(Entity::Factory(Factory {
+        State::Exploding3 => Action::Update(Entity::Factory(Factory {
             update: update + FACTORY_UPDATE_MS / 2,
-            state: state::DEAD,
+            state: State::Dead,
             ..factory
         })),
-        // state::DEAD
-        _ => Action::Delete,
+        State::Dead => Action::Delete,
     }
 }

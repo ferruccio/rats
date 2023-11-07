@@ -2,14 +2,14 @@ use std::time::Instant;
 
 use super::GameContext;
 use crate::entities::{
-    dir, state, Bullet, Direction, Entity, EntityAction, Position,
+    dir, Bullet, Direction, Entity, EntityAction, Position, State,
 };
 use video::SizeWrapping;
 
 impl GameContext {
     pub fn fire(&mut self) {
         let player = self.get_player();
-        if player.state != state::ALIVE || self.next_fire_time > Instant::now()
+        if player.state != State::Alive || self.next_fire_time > Instant::now()
         {
             return;
         }
@@ -44,7 +44,7 @@ impl GameContext {
                 update: self.elapsed(),
                 pos,
                 dir,
-                state: state::ALIVE,
+                state: State::Alive,
             }));
         }
     }

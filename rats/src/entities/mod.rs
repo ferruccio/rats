@@ -88,11 +88,11 @@ pub mod dir {
     }
 }
 
-pub type State = u8;
-pub mod state {
-    pub const ALIVE: u8 = 0;
-    pub const EXPLODING1: u8 = 1;
-    pub const EXPLODING2: u8 = 2;
-    pub const EXPLODING3: u8 = 3;
-    pub const DEAD: u8 = 4;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum State {
+    Alive,
+    Exploding1,
+    Exploding2,
+    Exploding3,
+    Dead,
 }
