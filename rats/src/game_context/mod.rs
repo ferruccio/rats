@@ -14,7 +14,7 @@ use std::{
     fmt::Display,
     time::{Duration, Instant},
 };
-use video::{InitOptions, Pos, Result, Size, Video};
+use video::{InitOptions, Pos, Result, Video};
 
 mod factories;
 mod firing;
@@ -72,18 +72,16 @@ pub struct GameContext {
 }
 
 impl GameContext {
-    pub fn create(
-        opts: InitOptions,
-        maze_height: Size,
-        maze_width: Size,
-        density: usize,
-        factories: usize,
-    ) -> Result<GameContext> {
+    pub fn create(opts: InitOptions) -> Result<GameContext> {
         let video = video::init(opts)?;
-        let maze_rows = max((video.rows() - 2) / MAZE_CELL_ROWS, maze_height);
-        let maze_cols = max(video.cols() / MAZE_CELL_COLS, maze_width);
+        let maze_rows = max(
+            (video.rows() - 2) / MAZE_CELL_ROWS,
+            opts.maze_height.unwrap_or(15),
+        );
+        let maze_cols =
+            max(video.cols() / MAZE_CELL_COLS, opts.maze_width.unwrap_or(15));
         let mut pristine_maze = Maze::new(maze_rows, maze_cols);
-        pristine_maze.generate(density);
+        pristine_maze.generate(opts.density.unwrap_or(75));
         let mut context = GameContext {
             game_state: GameState::Running,
             diagnostics: false,
@@ -119,7 +117,10 @@ impl GameContext {
             state: State::Alive,
             cycle: 0,
         }));
-        context.generate_factories(factories.clamp(1, 100), &pristine_maze);
+        context.generate_factories(
+            opts.factories.unwrap_or(5).clamp(1, 100),
+            &pristine_maze,
+        );
         Ok(context)
     }
 

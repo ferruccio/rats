@@ -4,12 +4,16 @@ use crate::{
 };
 use sdl2::rect::Rect;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct InitOptions {
-    display_index: Option<usize>,
-    window_width: Option<usize>,
-    window_height: Option<usize>,
-    scale: Option<usize>,
+    pub display_index: Option<usize>,
+    pub window_width: Option<usize>,
+    pub window_height: Option<usize>,
+    pub scale: Option<usize>,
+    pub maze_height: Option<Size>,
+    pub maze_width: Option<Size>,
+    pub density: Option<usize>,
+    pub factories: Option<usize>,
 }
 
 impl InitOptions {
@@ -48,6 +52,26 @@ impl InitOptions {
 
     pub fn scale(mut self, scale: Option<usize>) -> Self {
         self.scale = scale;
+        self
+    }
+
+    pub fn maze_height(mut self, maze_height: Option<Size>) -> Self {
+        self.maze_height = maze_height;
+        self
+    }
+
+    pub fn maze_width(mut self, maze_width: Option<Size>) -> Self {
+        self.maze_width = maze_width;
+        self
+    }
+
+    pub fn density(mut self, density: Option<usize>) -> Self {
+        self.density = density;
+        self
+    }
+
+    pub fn factories(mut self, factories: Option<usize>) -> Self {
+        self.factories = factories;
         self
     }
 }

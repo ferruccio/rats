@@ -1,3 +1,4 @@
+use crate::game_context::random;
 use clap::Parser;
 use entities::dir;
 use game_context::{GameContext, GameState};
@@ -9,8 +10,6 @@ use video::{
     sdl_error, Event, InitOptions, Keycode, PixelFormatEnum, Pixels, Result,
     Size, ATTR_COMBOS, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, FONT_SIZE,
 };
-
-use crate::game_context::random;
 
 mod entities;
 mod game_context;
@@ -27,20 +26,20 @@ struct CommandLineOpts {
     classic: bool,
 
     /// Number of rat factories
-    #[clap(short = 'f', long = "rat-factories", default_value_t = 5)]
-    factories: usize,
+    #[clap(short = 'f', long = "rat-factories")]
+    factories: Option<usize>,
 
     /// Maze height (maze cells)
     #[clap(short = 'H', long = "maze-height", alias = "mh")]
-    maze_height: Option<usize>,
+    maze_height: Option<Size>,
 
     /// Maze width (maze cells)
     #[clap(short = 'W', long = "maze-width", alias = "mw")]
-    maze_width: Option<usize>,
+    maze_width: Option<Size>,
 
     /// Maze density
-    #[clap(short = 'm', long = "maze-density", default_value_t = 85)]
-    density: usize,
+    #[clap(short = 'm', long = "maze-density")]
+    density: Option<usize>,
 
     /// Window height (pixels)
     #[clap(long = "window-height", alias = "wh")]
@@ -69,18 +68,16 @@ const RAT_SPAWN_SECONDS: u64 = 15;
 const BRAT_SPAWN_SECONDS: u64 = 30;
 
 fn play(opts: CommandLineOpts) -> Result<()> {
-    let cell_rows = opts.maze_height.unwrap_or(15);
-    let cell_cols = opts.maze_width.unwrap_or(15);
     let mut context = GameContext::create(
         InitOptions::new()
             .display_index(opts.display)
             .window_height(opts.window_height)
             .window_width(opts.window_width)
-            .scale(opts.scale),
-        cell_rows as Size,
-        cell_cols as Size,
-        opts.density,
-        opts.factories,
+            .scale(opts.scale)
+            .maze_height(opts.maze_height)
+            .maze_width(opts.maze_width)
+            .density(opts.density)
+            .factories(opts.factories),
     )?;
 
     let texture_creator = context.video.canvas.texture_creator();
