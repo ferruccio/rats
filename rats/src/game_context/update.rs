@@ -111,27 +111,40 @@ impl GameContext {
             .enumerate()
             .filter_map(|(index, entity)| match entity {
                 Entity::Bullet(bullet) if bullet.state == State::Alive => {
-                    Some((index, bullet.pos))
+                    Some((index, bullet.pos, bullet.dir))
                 }
                 _ => None,
             })
             .collect();
         let mut marks = vec![false; self.entities.len()];
-        for (bullet_index, pos) in live_bullets.into_iter().rev() {
+        for (bullet_index, pos, dir) in live_bullets.into_iter().rev() {
             for (entity_index, entity) in self.entities.iter_mut().enumerate() {
                 if entity.hit(pos, self.maze.dimensions)
                     && bullet_index != entity_index
                 {
-                    entity.explode();
                     match entity {
-                        Entity::Player(_) => self.super_boom = 60,
-                        Entity::Rat(_) => self.score += 50,
-                        Entity::Brat(_) => self.score += 25,
-                        Entity::Factory(_) => {
+                        Entity::Player(player) => {
+                            self.super_boom = 60;
+                            if player.dir != dir {
+                                player.explode();
+                            }
+                        }
+                        Entity::Rat(rat) => {
+                            self.score += 50;
+                            rat.explode();
+                        }
+                        Entity::Brat(brat) => {
+                            self.score += 25;
+                            brat.explode();
+                        }
+                        Entity::Factory(factory) => {
                             self.super_boom = 60;
                             self.score += 250;
+                            factory.explode();
                         }
-                        Entity::Bullet(_) => {}
+                        Entity::Bullet(bullet) => {
+                            bullet.explode();
+                        }
                     }
                     marks[bullet_index] = true;
                 }
