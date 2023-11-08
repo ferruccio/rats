@@ -1,11 +1,11 @@
 use video::{
-    Size, ATTR_NONE, BRATS_DOWN_A1, BRATS_DOWN_A2, BRATS_LEFT_A1,
+    Size, SizeWrapping, ATTR_NONE, BRATS_DOWN_A1, BRATS_DOWN_A2, BRATS_LEFT_A1,
     BRATS_LEFT_A2, BRATS_RIGHT_A1, BRATS_RIGHT_A2, BRATS_UP_A1, BRATS_UP_A2,
     LIL_BOOM_A1, LIL_BOOM_A2,
 };
 
 use super::{
-    dir, Dimensions, Direction, Entity, EntityAction, Position, State,
+    dir, Dimensions, Direction, Entity, EntityAction, Player, Position, State,
     BRAT_UPDATE_MS,
 };
 use crate::{
@@ -67,7 +67,13 @@ pub fn render_brat(brat: &Brat, maze: &mut Maze) {
         .set_chattr(brat.pos.row, brat.pos.col, ch, ATTR_NONE);
 }
 
-pub fn update_brat(brat: &Brat, maze: &Maze, update: u32) -> Action {
+pub fn update_brat(
+    brat: &Brat,
+    maze: &Maze,
+    player: &Player,
+    damage: usize,
+    update: u32,
+) -> Action {
     if update < brat.update + BRAT_UPDATE_MS {
         return Action::Nothing;
     }
@@ -80,6 +86,9 @@ pub fn update_brat(brat: &Brat, maze: &Maze, update: u32) -> Action {
             } else {
                 brat.advance(brat.dir, maze.dimensions);
                 brat.distance -= 1;
+            }
+            if hit_player_1(brat.pos, maze.dimensions, player) {
+                return Action::Attack(damage);
             }
             Action::Update(Entity::Brat(Brat {
                 update: update + BRAT_UPDATE_MS,
@@ -104,4 +113,25 @@ pub fn update_brat(brat: &Brat, maze: &Maze, update: u32) -> Action {
         })),
         State::Dead => Action::Delete,
     }
+}
+
+pub fn hit_player_1(pos: Position, dims: Dimensions, player: &Player) -> bool {
+    if pos == player.pos {
+        return true;
+    }
+    let row_1 = player.pos.row.inc(dims.rows);
+    let col_1 = player.pos.col.inc(dims.cols);
+    pos == Position {
+        row: player.pos.row,
+        col: col_1,
+    } || pos
+        == Position {
+            row: row_1,
+            col: player.pos.col,
+        }
+        || pos
+            == Position {
+                row: row_1,
+                col: col_1,
+            }
 }

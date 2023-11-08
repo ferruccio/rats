@@ -69,10 +69,17 @@ pub struct GameContext {
     pub new_brats: usize,
     pub super_boom: usize,
     pub score: usize,
+    pub health: usize,
+    pub rat_damage: usize,
+    pub brat_damage: usize,
 }
 
 impl GameContext {
-    pub fn create(opts: InitOptions) -> Result<GameContext> {
+    pub fn create(
+        opts: InitOptions,
+        rat_damage: usize,
+        brat_damage: usize,
+    ) -> Result<GameContext> {
         let video = video::init(opts)?;
         let maze_rows = max(
             (video.rows() - 2) / MAZE_CELL_ROWS,
@@ -105,6 +112,9 @@ impl GameContext {
             new_brats: 0,
             super_boom: 0,
             score: 0,
+            health: 100,
+            rat_damage: rat_damage.clamp(0, 100),
+            brat_damage: brat_damage.clamp(0, 100),
         };
         context.entities.push(Entity::Player(Player {
             update: context.elapsed(),

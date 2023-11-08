@@ -108,9 +108,18 @@ impl GameContext {
         vbuf.print(1, 41, ATTR_NONE, format!("{:1} left", 2));
         // game stats
         vbuf.print(0, 49, ATTR_NONE, format!("Score: {:7}", self.score));
-        vbuf.print(1, 49, ATTR_NONE, "High:        0");
         vbuf.print(0, 66, ATTR_NONE, format!("Time:  {:4}", time));
-        vbuf.print(1, 66, ATTR_NONE, format!("Maze: {:5}", 32768));
+        if classic {
+            vbuf.print(1, 49, ATTR_NONE, "High:        0");
+            vbuf.print(1, 66, ATTR_NONE, format!("Maze: {:5}", 32768));
+        } else {
+            vbuf.print(
+                1,
+                49,
+                ATTR_NONE,
+                format!("Health:    {health:3}", health = self.health),
+            );
+        }
 
         if self.game_state == GameState::Paused {
             let row = vbuf.rows / 2 + 2;

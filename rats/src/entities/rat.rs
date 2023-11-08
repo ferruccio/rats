@@ -5,8 +5,8 @@ use video::{
 };
 
 use super::{
-    dir, Brat, Dimensions, Direction, Entity, EntityAction, Position, State,
-    RAT_UPDATE_MS,
+    dir, hit_player_1, Brat, Dimensions, Direction, Entity, EntityAction,
+    Player, Position, State, RAT_UPDATE_MS,
 };
 use crate::{
     game_context::{flip_a_coin, random, random_direction, Action},
@@ -96,7 +96,14 @@ pub fn render_rat(rat: &Rat, maze: &mut Maze) {
         .set_quad(rat.pos.row, rat.pos.col, ch, ATTR_NONE);
 }
 
-pub fn update_rat(rat: &Rat, maze: &Maze, update: u32, spawn: bool) -> Action {
+pub fn update_rat(
+    rat: &Rat,
+    maze: &Maze,
+    player: &Player,
+    damage: usize,
+    update: u32,
+    spawn: bool,
+) -> Action {
     if update < rat.update + RAT_UPDATE_MS {
         return Action::Nothing;
     }
@@ -112,6 +119,9 @@ pub fn update_rat(rat: &Rat, maze: &Maze, update: u32, spawn: bool) -> Action {
                     state: State::Alive,
                     cycle: 0,
                 }));
+            }
+            if hit_player(rat.pos, maze.dimensions, player) {
+                return Action::Attack(damage);
             }
             if rat.distance == 0 || !rat.can_advance(maze, rat.dir) {
                 rat.dir = random_direction();
@@ -143,4 +153,22 @@ pub fn update_rat(rat: &Rat, maze: &Maze, update: u32, spawn: bool) -> Action {
         })),
         State::Dead => Action::Delete,
     }
+}
+
+fn hit_player(pos: Position, dims: Dimensions, player: &Player) -> bool {
+    if hit_player_1(pos, dims, player) {
+        return true;
+    }
+    let mut pos2 = pos;
+    pos2.move_right(1, dims);
+    if hit_player_1(pos2, dims, player) {
+        return true;
+    }
+    let mut pos2 = pos;
+    pos2.move_down(1, dims);
+    if hit_player_1(pos2, dims, player) {
+        return true;
+    }
+    pos2.move_right(1, dims);
+    hit_player_1(pos2, dims, player)
 }

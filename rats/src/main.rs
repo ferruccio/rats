@@ -56,6 +56,24 @@ struct CommandLineOpts {
     /// Limit FPS (0 = no limit)
     #[clap(long = "fps", default_value_t = 60, hide = true)]
     fps: usize,
+
+    /// Rat damage (decrease health)
+    #[clap(
+        short = 'r',
+        long = "rat-damage",
+        default_value_t = 50,
+        conflicts_with = "classic"
+    )]
+    rat_damage: usize,
+
+    /// Brat damage (decrease health)
+    #[clap(
+        short = 'b',
+        long = "brat-damage",
+        default_value_t = 25,
+        conflicts_with = "classic"
+    )]
+    brat_damage: usize,
 }
 
 fn main() {
@@ -78,6 +96,8 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             .maze_width(opts.maze_width)
             .density(opts.density)
             .factories(opts.factories),
+        opts.rat_damage,
+        opts.brat_damage,
     )?;
 
     let texture_creator = context.video.canvas.texture_creator();

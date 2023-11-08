@@ -12,6 +12,7 @@ pub enum Action {
     Delete,
     Update(Entity),
     New(Entity),
+    Attack(usize),
 }
 
 impl GameContext {
@@ -34,12 +35,18 @@ impl GameContext {
                 Entity::Rat(rat) => update_rat(
                     rat,
                     &self.pristine_maze,
+                    &self.get_player(),
+                    self.rat_damage,
                     update,
                     self.new_brats != 0,
                 ),
-                Entity::Brat(brat) => {
-                    update_brat(brat, &self.pristine_maze, update)
-                }
+                Entity::Brat(brat) => update_brat(
+                    brat,
+                    &self.pristine_maze,
+                    self.get_player(),
+                    self.brat_damage,
+                    update,
+                ),
                 Entity::Factory(factory) => {
                     update_factory(factory, update, self.new_rats != 0)
                 }
@@ -99,6 +106,14 @@ impl GameContext {
                         Entity::Bullet(_) => {}
                     }
                     self.entities.push(entity);
+                }
+                Action::Attack(damage) => {
+                    self.entities[index].explode();
+                    if damage >= self.health {
+                        self.entities[0].explode();
+                    } else {
+                        self.health -= damage;
+                    }
                 }
             };
         }
