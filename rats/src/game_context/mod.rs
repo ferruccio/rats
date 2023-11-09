@@ -72,6 +72,8 @@ pub struct GameContext {
     pub health: usize,
     pub rat_damage: usize,
     pub brat_damage: usize,
+    pub players_left: usize,
+    pub players_dead: usize,
 }
 
 impl GameContext {
@@ -115,6 +117,8 @@ impl GameContext {
             health: 100,
             rat_damage: rat_damage.clamp(0, 100),
             brat_damage: brat_damage.clamp(0, 100),
+            players_left: 3,
+            players_dead: 0,
         };
         context.entities.push(Entity::Player(Player {
             update: context.elapsed(),

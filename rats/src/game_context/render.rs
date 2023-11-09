@@ -104,8 +104,8 @@ impl GameContext {
         vbuf.print(1, 28, ATTR_NONE, format!("{:3} left", self.live_factories));
         // player stats
         vbuf.set_quad(0, 38, PLAYER_DOWN, ATTR_NONE);
-        vbuf.print(0, 41, ATTR_NONE, format!("{:1} dead", 0));
-        vbuf.print(1, 41, ATTR_NONE, format!("{:1} left", 2));
+        vbuf.print(0, 41, ATTR_NONE, format!("{:1} dead", self.players_dead));
+        vbuf.print(1, 41, ATTR_NONE, format!("{:1} left", self.players_left));
         // game stats
         vbuf.print(0, 49, ATTR_NONE, format!("Score: {:7}", self.score));
         vbuf.print(0, 66, ATTR_NONE, format!("Time:  {:4}", time));

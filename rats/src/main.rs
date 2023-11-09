@@ -77,7 +77,12 @@ struct CommandLineOpts {
 }
 
 fn main() {
-    if let Err(error) = play(CommandLineOpts::parse()) {
+    let mut opts = CommandLineOpts::parse();
+    if opts.classic {
+        opts.rat_damage = 100;
+        opts.brat_damage = 100;
+    }
+    if let Err(error) = play(opts) {
         println!("{error}");
     }
 }
@@ -161,9 +166,10 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             brat_spawn_time = Instant::now();
         }
         if context.game_state != GameState::Quit
-            && context.live_factories == 0
-            && context.live_rats == 0
-            && context.live_brats == 0
+            && ((context.live_factories == 0
+                && context.live_rats == 0
+                && context.live_brats == 0)
+                || context.players_left == 0)
         {
             context.game_state = GameState::Finished;
         }

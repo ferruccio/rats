@@ -111,6 +111,8 @@ impl GameContext {
                     self.entities[index].explode();
                     if damage >= self.health {
                         self.entities[0].explode();
+                        self.players_left -= 1;
+                        self.players_dead += 1;
                     } else {
                         self.health -= damage;
                     }
@@ -141,6 +143,8 @@ impl GameContext {
                         Entity::Player(player) => {
                             self.super_boom = 60;
                             if player.dir != dir {
+                                self.players_dead += 1;
+                                self.players_left -= 1;
                                 player.explode();
                             }
                         }
