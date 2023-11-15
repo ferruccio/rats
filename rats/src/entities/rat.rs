@@ -123,8 +123,7 @@ pub fn update_rat(
                     cycle: 0,
                 }));
             }
-            if let Some(dir) = player_dir(rat.pos, player.pos, maze.dimensions)
-            {
+            if let Some(dir) = player_dir(rat.pos, player.pos, maze) {
                 rat.dir = dir;
             }
             if rat.distance == 0 || !rat.can_advance(maze, rat.dir) {
@@ -180,10 +179,54 @@ fn hit_player(pos: Position, dims: Dimensions, player: &Player) -> bool {
 pub fn player_dir(
     pos: Position,
     player_pos: Position,
-    dims: Dimensions,
+    maze: &Maze,
 ) -> Option<Direction> {
-    if pos.distance_squared_to(player_pos, dims) < 100 {
-        Some(pos.direction_to(player_pos, dims))
+    if pos.distance_squared_to(player_pos, maze.dimensions) < 25 * 25 {
+        let dir = pos.direction_to(player_pos, maze.dimensions);
+        match dir {
+            dir::UP => {
+                let mut pos = pos.clone();
+                while pos.row != player_pos.row {
+                    pos.move_up(1, maze.dimensions);
+                    if maze.is_wall(pos.row, pos.col) {
+                        return None;
+                    }
+                }
+                Some(dir::UP)
+            }
+            dir::DOWN => {
+                let mut pos = pos.clone();
+                while pos.row != player_pos.row {
+                    pos.move_down(1, maze.dimensions);
+                    if maze.is_wall(pos.row, pos.col) {
+                        return None;
+                    }
+                }
+                Some(dir::DOWN)
+            }
+            dir::LEFT => {
+                let mut pos = pos.clone();
+                while pos.col != player_pos.col {
+                    pos.move_left(1, maze.dimensions);
+                    if maze.is_wall(pos.row, pos.col) {
+                        return None;
+                    }
+                }
+                Some(dir::LEFT)
+            }
+            dir::RIGHT => {
+                let mut pos = pos.clone();
+                while pos.col != player_pos.col {
+                    pos.move_right(1, maze.dimensions);
+                    if maze.is_wall(pos.row, pos.col) {
+                        return None;
+                    }
+                }
+                Some(dir::RIGHT)
+            }
+
+            _ => None,
+        }
     } else {
         None
     }

@@ -82,8 +82,7 @@ pub fn update_brat(
             if hit_player_1(brat.pos, maze.dimensions, player) {
                 return Action::Attack(damage);
             }
-            if let Some(dir) = player_dir(brat.pos, player.pos, maze.dimensions)
-            {
+            if let Some(dir) = player_dir(brat.pos, player.pos, maze) {
                 brat.dir = dir;
             }
             if brat.distance == 0 || !brat.can_advance(maze, brat.dir) {
