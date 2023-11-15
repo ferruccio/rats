@@ -1,16 +1,15 @@
-use video::{
-    Size, SizeWrapping, ATTR_NONE, BRATS_DOWN_A1, BRATS_DOWN_A2, BRATS_LEFT_A1,
-    BRATS_LEFT_A2, BRATS_RIGHT_A1, BRATS_RIGHT_A2, BRATS_UP_A1, BRATS_UP_A2,
-    LIL_BOOM_A1, LIL_BOOM_A2,
-};
-
 use super::{
-    dir, Dimensions, Direction, Entity, EntityAction, Player, Position, State,
-    BRAT_UPDATE_MS,
+    dir, rat::player_dir, Dimensions, Direction, Entity, EntityAction, Player,
+    Position, State, BRAT_UPDATE_MS,
 };
 use crate::{
     game_context::{random, random_direction, Action},
     maze::Maze,
+};
+use video::{
+    Size, SizeWrapping, ATTR_NONE, BRATS_DOWN_A1, BRATS_DOWN_A2, BRATS_LEFT_A1,
+    BRATS_LEFT_A2, BRATS_RIGHT_A1, BRATS_RIGHT_A2, BRATS_UP_A1, BRATS_UP_A2,
+    LIL_BOOM_A1, LIL_BOOM_A2,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -80,15 +79,19 @@ pub fn update_brat(
     let mut brat = *brat;
     match brat.state {
         State::Alive => {
+            if hit_player_1(brat.pos, maze.dimensions, player) {
+                return Action::Attack(damage);
+            }
+            if let Some(dir) = player_dir(brat.pos, player.pos, maze.dimensions)
+            {
+                brat.dir = dir;
+            }
             if brat.distance == 0 || !brat.can_advance(maze, brat.dir) {
                 brat.dir = random_direction();
                 brat.distance = random(5, 15);
             } else {
                 brat.advance(brat.dir, maze.dimensions);
                 brat.distance -= 1;
-            }
-            if hit_player_1(brat.pos, maze.dimensions, player) {
-                return Action::Attack(damage);
             }
             Action::Update(Entity::Brat(Brat {
                 update: update + BRAT_UPDATE_MS,

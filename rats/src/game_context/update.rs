@@ -110,9 +110,11 @@ impl GameContext {
                 Action::Attack(damage) => {
                     self.entities[index].explode();
                     if damage >= self.health {
-                        self.entities[0].explode();
-                        self.players_left -= 1;
-                        self.players_dead += 1;
+                        if self.players_left > 0 {
+                            self.entities[0].explode();
+                            self.players_left -= 1;
+                            self.players_dead += 1;
+                        }
                     } else {
                         self.health -= damage;
                     }

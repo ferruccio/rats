@@ -9,7 +9,9 @@ use super::{
     Player, Position, State, RAT_UPDATE_MS,
 };
 use crate::{
-    game_context::{flip_a_coin, random, random_direction, Action},
+    game_context::{
+        distance_squared, flip_a_coin, random, random_direction, Action,
+    },
     maze::Maze,
 };
 
@@ -110,6 +112,9 @@ pub fn update_rat(
     let mut rat = *rat;
     match rat.state {
         State::Alive => {
+            if hit_player(rat.pos, maze.dimensions, player) {
+                return Action::Attack(damage);
+            }
             if spawn && flip_a_coin() {
                 return Action::New(Entity::Brat(Brat {
                     update,
@@ -120,8 +125,9 @@ pub fn update_rat(
                     cycle: 0,
                 }));
             }
-            if hit_player(rat.pos, maze.dimensions, player) {
-                return Action::Attack(damage);
+            if let Some(dir) = player_dir(rat.pos, player.pos, maze.dimensions)
+            {
+                rat.dir = dir;
             }
             if rat.distance == 0 || !rat.can_advance(maze, rat.dir) {
                 rat.dir = random_direction();
@@ -171,4 +177,16 @@ fn hit_player(pos: Position, dims: Dimensions, player: &Player) -> bool {
     }
     pos2.move_right(1, dims);
     hit_player_1(pos2, dims, player)
+}
+
+pub fn player_dir(
+    pos: Position,
+    player_pos: Position,
+    dims: Dimensions,
+) -> Option<Direction> {
+    if distance_squared(pos, player_pos, dims) < 100 {
+        Some(pos.direction_to(player_pos, dims))
+    } else {
+        None
+    }
 }
