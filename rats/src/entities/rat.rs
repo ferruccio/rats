@@ -9,9 +9,7 @@ use super::{
     Player, Position, State, RAT_UPDATE_MS,
 };
 use crate::{
-    game_context::{
-        distance_squared, flip_a_coin, random, random_direction, Action,
-    },
+    game_context::{flip_a_coin, random, random_direction, Action},
     maze::Maze,
 };
 
@@ -184,7 +182,7 @@ pub fn player_dir(
     player_pos: Position,
     dims: Dimensions,
 ) -> Option<Direction> {
-    if distance_squared(pos, player_pos, dims) < 100 {
+    if pos.distance_squared_to(player_pos, dims) < 100 {
         Some(pos.direction_to(player_pos, dims))
     } else {
         None
