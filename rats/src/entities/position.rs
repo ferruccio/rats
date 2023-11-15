@@ -14,7 +14,7 @@ impl Position {
         with_pristine_maze(|maze| Position {
             row: self.row,
             col: if self.col == 0 {
-                maze.dimensions.cols - 1
+                maze.cols() - 1
             } else {
                 self.col - 1
             },
@@ -22,7 +22,7 @@ impl Position {
     }
 
     pub fn move_left(&mut self, mut steps: Size) {
-        let cols = with_pristine_maze(|maze| maze.dimensions.cols);
+        let cols = with_pristine_maze(|maze| maze.cols());
         while steps > 0 {
             self.col = if self.col == 0 {
                 cols - 1
@@ -36,7 +36,7 @@ impl Position {
     pub fn right(&self) -> Position {
         with_pristine_maze(|maze| Position {
             row: self.row,
-            col: if self.col < maze.dimensions.cols - 1 {
+            col: if self.col < maze.cols() - 1 {
                 self.col + 1
             } else {
                 0
@@ -45,7 +45,7 @@ impl Position {
     }
 
     pub fn move_right(&mut self, mut steps: Size) {
-        let cols = with_pristine_maze(|maze| maze.dimensions.cols);
+        let cols = with_pristine_maze(|maze| maze.cols());
         while steps > 0 {
             self.col = if self.col < cols - 1 { self.col + 1 } else { 0 };
             steps -= 1;
@@ -57,14 +57,14 @@ impl Position {
             row: if self.row > 0 {
                 self.row - 1
             } else {
-                maze.dimensions.rows - 1
+                maze.rows() - 1
             },
             col: self.col,
         })
     }
 
     pub fn move_up(&mut self, mut steps: Size) {
-        let rows = with_pristine_maze(|maze| maze.dimensions.rows);
+        let rows = with_pristine_maze(|maze| maze.rows());
         while steps > 0 {
             self.row = if self.row > 0 { self.row - 1 } else { rows - 1 };
             steps -= 1;
@@ -73,7 +73,7 @@ impl Position {
 
     pub fn down(&self) -> Position {
         with_pristine_maze(|maze| Position {
-            row: if self.row < maze.dimensions.rows - 1 {
+            row: if self.row < maze.rows() - 1 {
                 self.row + 1
             } else {
                 0
@@ -83,7 +83,7 @@ impl Position {
     }
 
     pub fn move_down(&mut self, mut steps: Size) {
-        let rows = with_pristine_maze(|maze| maze.dimensions.rows);
+        let rows = with_pristine_maze(|maze| maze.rows());
         while steps > 0 {
             self.row = if self.row < rows - 1 { self.row + 1 } else { 0 };
             steps -= 1;
@@ -129,9 +129,8 @@ impl Position {
         let x2 = pos.col as i32;
         let y1 = self.row as i32;
         let y2 = pos.row as i32;
-        let (w, h) = with_pristine_maze(|maze| {
-            (maze.dimensions.cols as i32, maze.dimensions.rows as i32)
-        });
+        let (w, h) =
+            with_pristine_maze(|maze| (maze.cols() as i32, maze.rows() as i32));
         // min(|x1 - x2|, w - |x1 - x2|)^2 + min(|y1 - y2|, h - |y1 - y2|)^2
         let mx = min((x1 - x2).abs(), w - (x1 - x2).abs());
         let my = min((y1 - y2).abs(), h - (y1 - y2).abs());

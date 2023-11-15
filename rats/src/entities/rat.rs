@@ -5,8 +5,8 @@ use video::{
 };
 
 use super::{
-    dir, hit_player_1, Brat, Dimensions, Direction, Entity, EntityAction,
-    Player, Position, State, RAT_UPDATE_MS,
+    dir, hit_player_1, Brat, Direction, Entity, EntityAction, Player, Position,
+    State, RAT_UPDATE_MS,
 };
 use crate::{
     game_context::{flip_a_coin, random, random_direction, Action},
@@ -33,8 +33,8 @@ impl Rat {
             let mut player = *self;
             player.advance(dir);
             let (row1, col1) = (player.pos.row, player.pos.col);
-            let row2 = player.pos.row.inc(maze.dimensions.rows);
-            let col2 = player.pos.col.inc(maze.dimensions.cols);
+            let row2 = player.pos.row.inc(maze.rows());
+            let col2 = player.pos.col.inc(maze.cols());
             !(((dir & dir::UP) != 0
                 && (maze.is_wall(row1, col1) || maze.is_wall(row1, col2)))
                 || ((dir & dir::DOWN) != 0
@@ -48,15 +48,17 @@ impl Rat {
 }
 
 impl EntityAction for Rat {
-    fn hit(&self, pos: Position, dims: Dimensions) -> bool {
+    fn hit(&self, pos: Position) -> bool {
         if self.state != State::Alive {
             return false;
         }
         if pos == self.pos {
             return true;
         }
-        let row_1 = self.pos.row.inc(dims.rows);
-        let col_1 = self.pos.col.inc(dims.cols);
+        let (rows, cols) =
+            with_pristine_maze(|maze| (maze.rows(), maze.cols()));
+        let row_1 = self.pos.row.inc(rows);
+        let col_1 = self.pos.col.inc(cols);
         pos == Position {
             row: self.pos.row,
             col: col_1,
@@ -183,7 +185,7 @@ pub fn player_dir(pos: Position, player_pos: Position) -> Option<Direction> {
             let dir = pos.direction_to(player_pos);
             match dir {
                 dir::UP => {
-                    let mut pos = pos.clone();
+                    let mut pos = pos;
                     while pos.row != player_pos.row {
                         pos.move_up(1);
                         if maze.is_wall(pos.row, pos.col) {
@@ -193,7 +195,7 @@ pub fn player_dir(pos: Position, player_pos: Position) -> Option<Direction> {
                     Some(dir::UP)
                 }
                 dir::DOWN => {
-                    let mut pos = pos.clone();
+                    let mut pos = pos;
                     while pos.row != player_pos.row {
                         pos.move_down(1);
                         if maze.is_wall(pos.row, pos.col) {
@@ -203,7 +205,7 @@ pub fn player_dir(pos: Position, player_pos: Position) -> Option<Direction> {
                     Some(dir::DOWN)
                 }
                 dir::LEFT => {
-                    let mut pos = pos.clone();
+                    let mut pos = pos;
                     while pos.col != player_pos.col {
                         pos.move_left(1);
                         if maze.is_wall(pos.row, pos.col) {
@@ -213,7 +215,7 @@ pub fn player_dir(pos: Position, player_pos: Position) -> Option<Direction> {
                     Some(dir::LEFT)
                 }
                 dir::RIGHT => {
-                    let mut pos = pos.clone();
+                    let mut pos = pos;
                     while pos.col != player_pos.col {
                         pos.move_right(1);
                         if maze.is_wall(pos.row, pos.col) {

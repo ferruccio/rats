@@ -15,7 +15,7 @@ pub use position::*;
 pub use rat::*;
 
 pub trait EntityAction {
-    fn hit(&self, pos: Position, dims: Dimensions) -> bool;
+    fn hit(&self, pos: Position) -> bool;
     fn explode(&mut self);
 }
 
@@ -37,15 +37,16 @@ pub const FACTORY_UPDATE_MS: u32 = 250;
 pub const BULLET_UPDATE_MS: u32 = 10;
 
 impl EntityAction for Entity {
-    fn hit(&self, pos: Position, dims: Dimensions) -> bool {
+    fn hit(&self, pos: Position) -> bool {
         match self {
-            Entity::Player(player) => player.hit(pos, dims),
-            Entity::Rat(rat) => rat.hit(pos, dims),
-            Entity::Brat(brat) => brat.hit(pos, dims),
-            Entity::Factory(factory) => factory.hit(pos, dims),
-            Entity::Bullet(bullet) => bullet.hit(pos, dims),
+            Entity::Player(player) => player.hit(pos),
+            Entity::Rat(rat) => rat.hit(pos),
+            Entity::Brat(brat) => brat.hit(pos),
+            Entity::Factory(factory) => factory.hit(pos),
+            Entity::Bullet(bullet) => bullet.hit(pos),
         }
     }
+
     fn explode(&mut self) {
         match self {
             Entity::Player(player) => player.explode(),

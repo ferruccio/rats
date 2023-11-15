@@ -1,6 +1,5 @@
 use super::{
-    dir, Dimensions, Direction, Entity, EntityAction, Position, State,
-    PLAYER_UPDATE_MS,
+    dir, Direction, Entity, EntityAction, Position, State, PLAYER_UPDATE_MS,
 };
 use crate::{
     game_context::Action,
@@ -31,8 +30,8 @@ impl Player {
             let mut player = *self;
             player.advance(dir);
             let (row1, col1) = (player.pos.row, player.pos.col);
-            let row2 = player.pos.row.inc(maze.dimensions.rows);
-            let col2 = player.pos.col.inc(maze.dimensions.cols);
+            let row2 = player.pos.row.inc(maze.rows());
+            let col2 = player.pos.col.inc(maze.cols());
             !(((dir & dir::UP) != 0
                 && (maze.is_wall(row1, col1) || maze.is_wall(row1, col2)))
                 || ((dir & dir::DOWN) != 0
@@ -57,15 +56,17 @@ impl Player {
 }
 
 impl EntityAction for Player {
-    fn hit(&self, pos: Position, dims: Dimensions) -> bool {
+    fn hit(&self, pos: Position) -> bool {
         if self.state != State::Alive {
             return false;
         }
         if pos == self.pos {
             return true;
         }
-        let row_1 = self.pos.row.inc(dims.rows);
-        let col_1 = self.pos.col.inc(dims.cols);
+        let (rows, cols) =
+            with_pristine_maze(|maze| (maze.rows(), maze.cols()));
+        let row_1 = self.pos.row.inc(rows);
+        let col_1 = self.pos.col.inc(cols);
         pos == Position {
             row: self.pos.row,
             col: col_1,

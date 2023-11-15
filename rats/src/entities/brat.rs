@@ -1,6 +1,6 @@
 use super::{
-    dir, rat::player_dir, Dimensions, Direction, Entity, EntityAction, Player,
-    Position, State, BRAT_UPDATE_MS,
+    dir, rat::player_dir, Direction, Entity, EntityAction, Player, Position,
+    State, BRAT_UPDATE_MS,
 };
 use crate::{
     game_context::{random, random_direction, Action},
@@ -38,7 +38,7 @@ impl Brat {
 }
 
 impl EntityAction for Brat {
-    fn hit(&self, pos: Position, _dims: Dimensions) -> bool {
+    fn hit(&self, pos: Position) -> bool {
         self.state == State::Alive && self.pos == pos
     }
 
@@ -122,8 +122,7 @@ pub fn hit_player_1(pos: Position, player: &Player) -> bool {
     if pos == player.pos {
         return true;
     }
-    let (rows, cols) =
-        with_pristine_maze(|maze| (maze.dimensions.rows, maze.dimensions.cols));
+    let (rows, cols) = with_pristine_maze(|maze| (maze.rows(), maze.cols()));
     let row_1 = player.pos.row.inc(rows);
     let col_1 = player.pos.col.inc(cols);
     pos == Position {

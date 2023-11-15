@@ -1,4 +1,3 @@
-use crate::entities::Dimensions;
 use knossos::maze::{HuntAndKill, OrthogonalMazeBuilder};
 use rand::{distributions::Uniform, thread_rng, Rng};
 use std::cell::RefCell;
@@ -14,8 +13,6 @@ pub struct Maze {
     // size in maze cells
     cell_rows: Size,
     cell_cols: Size,
-    // size in characters
-    pub dimensions: Dimensions,
     pub buffer: Buffer,
 }
 
@@ -37,22 +34,21 @@ pub const MAZE_CELL_COLS: Size = 16;
 impl Maze {
     pub fn new(cell_rows: Size, cell_cols: Size) -> Maze {
         assert!(cell_cols >= 2 && cell_rows >= 2, "invalid maze dimensions");
-        let rows: Size = (MAZE_CELL_ROWS + 1) * cell_rows as Size;
-        let cols: Size = (MAZE_CELL_COLS + 1) * cell_cols as Size;
+        let rows = (MAZE_CELL_ROWS + 1) * cell_rows as Size;
+        let cols = (MAZE_CELL_COLS + 1) * cell_cols as Size;
         Maze {
             cell_rows,
             cell_cols,
-            dimensions: Dimensions { rows, cols },
             buffer: Buffer::new(rows, cols),
         }
     }
 
     pub fn rows(&self) -> Size {
-        self.dimensions.rows
+        self.buffer.rows
     }
 
     pub fn cols(&self) -> Size {
-        self.dimensions.cols
+        self.buffer.cols
     }
 
     pub fn is_wall(&self, row: Pos, col: Pos) -> bool {

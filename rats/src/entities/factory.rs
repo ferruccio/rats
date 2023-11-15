@@ -1,10 +1,9 @@
 use super::{
-    dir, Dimensions, Entity, EntityAction, Position, Rat, State,
-    FACTORY_UPDATE_MS,
+    dir, Entity, EntityAction, Position, Rat, State, FACTORY_UPDATE_MS,
 };
 use crate::{
     game_context::{random, Action},
-    maze::Maze,
+    maze::{with_pristine_maze, Maze},
 };
 use video::{
     SizeWrapping, ATTR_NONE, BIG_BLANK_START, BIG_BOOM_A1, BIG_BOOM_A2,
@@ -20,15 +19,17 @@ pub struct Factory {
 }
 
 impl EntityAction for Factory {
-    fn hit(&self, pos: Position, dims: Dimensions) -> bool {
+    fn hit(&self, pos: Position) -> bool {
         if self.state != State::Alive {
             return false;
         }
         if pos == self.pos {
             return true;
         }
-        let row_1 = self.pos.row.inc(dims.rows);
-        let col_1 = self.pos.col.inc(dims.cols);
+        let (rows, cols) =
+            with_pristine_maze(|maze| (maze.rows(), maze.cols()));
+        let row_1 = self.pos.row.inc(rows);
+        let col_1 = self.pos.col.inc(cols);
         pos == Position {
             row: self.pos.row,
             col: col_1,

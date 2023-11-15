@@ -35,7 +35,7 @@ impl GameContext {
                 self.bullet_fire_start + self.bullet_firing_time;
             let pos = Position { row, col };
             for entity in self.entities.iter_mut().skip(1) {
-                if entity.hit(pos, self.maze.dimensions) {
+                if entity.hit(pos) {
                     entity.explode();
                     return;
                 }

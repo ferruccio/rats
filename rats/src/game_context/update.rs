@@ -32,7 +32,7 @@ impl GameContext {
                 Entity::Player(player) => update_player(player, update),
                 Entity::Rat(rat) => update_rat(
                     rat,
-                    &self.get_player(),
+                    self.get_player(),
                     self.rat_damage,
                     update,
                     self.new_brats != 0,
@@ -132,9 +132,7 @@ impl GameContext {
         let mut marks = vec![false; self.entities.len()];
         for (bullet_index, pos, dir) in live_bullets.into_iter().rev() {
             for (entity_index, entity) in self.entities.iter_mut().enumerate() {
-                if entity.hit(pos, self.maze.dimensions)
-                    && bullet_index != entity_index
-                {
+                if entity.hit(pos) && bullet_index != entity_index {
                     match entity {
                         Entity::Player(player) => {
                             self.super_boom = 60;

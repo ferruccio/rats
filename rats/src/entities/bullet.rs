@@ -20,7 +20,7 @@ pub struct Bullet {
 }
 
 impl EntityAction for Bullet {
-    fn hit(&self, pos: Position, _dims: super::Dimensions) -> bool {
+    fn hit(&self, pos: Position) -> bool {
         self.state == State::Alive && self.pos == pos
     }
 
