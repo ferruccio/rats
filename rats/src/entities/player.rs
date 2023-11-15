@@ -2,7 +2,10 @@ use super::{
     dir, Dimensions, Direction, Entity, EntityAction, Position, State,
     PLAYER_UPDATE_MS,
 };
-use crate::{game_context::Action, maze::Maze};
+use crate::{
+    game_context::Action,
+    maze::{with_pristine_maze, Maze},
+};
 use video::{
     SizeWrapping, ATTR_NONE, BIG_BLANK_START, BIG_BOOM_A1, BIG_BOOM_A2,
     PLAYER_DOWN, PLAYER_LEFT, PLAYER_RIGHT, PLAYER_UP,
@@ -19,24 +22,26 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn advance(&mut self, dir: Direction, dims: Dimensions) {
-        self.pos = self.pos.advance(dir, dims);
+    pub fn advance(&mut self, dir: Direction) {
+        self.pos = self.pos.advance(dir);
     }
 
-    pub fn can_advance(&self, maze: &Maze, dir: Direction) -> bool {
-        let mut player = *self;
-        player.advance(dir, maze.dimensions);
-        let (row1, col1) = (player.pos.row, player.pos.col);
-        let row2 = player.pos.row.inc(maze.dimensions.rows);
-        let col2 = player.pos.col.inc(maze.dimensions.cols);
-        !(((dir & dir::UP) != 0
-            && (maze.is_wall(row1, col1) || maze.is_wall(row1, col2)))
-            || ((dir & dir::DOWN) != 0
-                && (maze.is_wall(row2, col1) || maze.is_wall(row2, col2)))
-            || ((dir & dir::LEFT) != 0
-                && (maze.is_wall(row1, col1) || maze.is_wall(row2, col1)))
-            || ((dir & dir::RIGHT) != 0
-                && (maze.is_wall(row1, col2) || maze.is_wall(row2, col2))))
+    pub fn can_advance(&self, dir: Direction) -> bool {
+        with_pristine_maze(|maze| {
+            let mut player = *self;
+            player.advance(dir);
+            let (row1, col1) = (player.pos.row, player.pos.col);
+            let row2 = player.pos.row.inc(maze.dimensions.rows);
+            let col2 = player.pos.col.inc(maze.dimensions.cols);
+            !(((dir & dir::UP) != 0
+                && (maze.is_wall(row1, col1) || maze.is_wall(row1, col2)))
+                || ((dir & dir::DOWN) != 0
+                    && (maze.is_wall(row2, col1) || maze.is_wall(row2, col2)))
+                || ((dir & dir::LEFT) != 0
+                    && (maze.is_wall(row1, col1) || maze.is_wall(row2, col1)))
+                || ((dir & dir::RIGHT) != 0
+                    && (maze.is_wall(row1, col2) || maze.is_wall(row2, col2))))
+        })
     }
 
     pub fn effective_dir(&self) -> Direction {
@@ -114,35 +119,31 @@ pub fn render_player(player: &Player, maze: &mut Maze) {
         .set_quad(player.pos.row, player.pos.col, ch, ATTR_NONE);
 }
 
-pub fn update_player(player: &Player, maze: &Maze, update: u32) -> Action {
+pub fn update_player(player: &Player, update: u32) -> Action {
     if update < player.update + PLAYER_UPDATE_MS {
         return Action::Nothing;
     }
     let mut player = *player;
     match player.state {
         State::Alive => {
-            if player.can_advance(maze, player.dir) {
-                player.advance(player.dir, maze.dimensions);
+            if player.can_advance(player.dir) {
+                player.advance(player.dir);
             } else {
-                if player.dir & dir::UP != 0
-                    && player.can_advance(maze, dir::UP)
-                {
-                    player.advance(dir::UP, maze.dimensions);
+                if player.dir & dir::UP != 0 && player.can_advance(dir::UP) {
+                    player.advance(dir::UP);
                 }
-                if player.dir & dir::DOWN != 0
-                    && player.can_advance(maze, dir::DOWN)
+                if player.dir & dir::DOWN != 0 && player.can_advance(dir::DOWN)
                 {
-                    player.advance(dir::DOWN, maze.dimensions);
+                    player.advance(dir::DOWN);
                 }
-                if player.dir & dir::LEFT != 0
-                    && player.can_advance(maze, dir::LEFT)
+                if player.dir & dir::LEFT != 0 && player.can_advance(dir::LEFT)
                 {
-                    player.advance(dir::LEFT, maze.dimensions);
+                    player.advance(dir::LEFT);
                 }
                 if player.dir & dir::RIGHT != 0
-                    && player.can_advance(maze, dir::RIGHT)
+                    && player.can_advance(dir::RIGHT)
                 {
-                    player.advance(dir::RIGHT, maze.dimensions);
+                    player.advance(dir::RIGHT);
                 }
             }
             Action::Update(Entity::Player(Player {

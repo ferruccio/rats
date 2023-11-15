@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{
     game_context::{random, random_direction, Action},
-    maze::Maze,
+    maze::{with_pristine_maze, Maze},
 };
 use video::{
     Size, SizeWrapping, ATTR_NONE, BRATS_DOWN_A1, BRATS_DOWN_A2, BRATS_LEFT_A1,
@@ -23,15 +23,17 @@ pub struct Brat {
 }
 
 impl Brat {
-    pub fn advance(&mut self, dir: Direction, dims: Dimensions) {
-        self.pos = self.pos.advance(dir, dims);
+    pub fn advance(&mut self, dir: Direction) {
+        self.pos = self.pos.advance(dir);
     }
 
-    pub fn can_advance(&self, maze: &Maze, dir: Direction) -> bool {
-        let mut player = *self;
-        player.advance(dir, maze.dimensions);
-        let (row, col) = (player.pos.row, player.pos.col);
-        !maze.is_wall(row, col)
+    pub fn can_advance(&self, dir: Direction) -> bool {
+        with_pristine_maze(|maze| {
+            let mut player = *self;
+            player.advance(dir);
+            let (row, col) = (player.pos.row, player.pos.col);
+            !maze.is_wall(row, col)
+        })
     }
 }
 
@@ -68,7 +70,6 @@ pub fn render_brat(brat: &Brat, maze: &mut Maze) {
 
 pub fn update_brat(
     brat: &Brat,
-    maze: &Maze,
     player: &Player,
     damage: usize,
     update: u32,
@@ -79,17 +80,17 @@ pub fn update_brat(
     let mut brat = *brat;
     match brat.state {
         State::Alive => {
-            if hit_player_1(brat.pos, maze.dimensions, player) {
+            if hit_player_1(brat.pos, player) {
                 return Action::Attack(damage);
             }
-            if let Some(dir) = player_dir(brat.pos, player.pos, maze) {
+            if let Some(dir) = player_dir(brat.pos, player.pos) {
                 brat.dir = dir;
             }
-            if brat.distance == 0 || !brat.can_advance(maze, brat.dir) {
+            if brat.distance == 0 || !brat.can_advance(brat.dir) {
                 brat.dir = random_direction();
                 brat.distance = random(5, 15);
             } else {
-                brat.advance(brat.dir, maze.dimensions);
+                brat.advance(brat.dir);
                 brat.distance -= 1;
             }
             Action::Update(Entity::Brat(Brat {
@@ -117,12 +118,14 @@ pub fn update_brat(
     }
 }
 
-pub fn hit_player_1(pos: Position, dims: Dimensions, player: &Player) -> bool {
+pub fn hit_player_1(pos: Position, player: &Player) -> bool {
     if pos == player.pos {
         return true;
     }
-    let row_1 = player.pos.row.inc(dims.rows);
-    let col_1 = player.pos.col.inc(dims.cols);
+    let (rows, cols) =
+        with_pristine_maze(|maze| (maze.dimensions.rows, maze.dimensions.cols));
+    let row_1 = player.pos.row.inc(rows);
+    let col_1 = player.pos.col.inc(cols);
     pos == Position {
         row: player.pos.row,
         col: col_1,

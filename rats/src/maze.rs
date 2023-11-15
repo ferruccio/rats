@@ -1,6 +1,7 @@
 use crate::entities::Dimensions;
 use knossos::maze::{HuntAndKill, OrthogonalMazeBuilder};
 use rand::{distributions::Uniform, thread_rng, Rng};
+use std::cell::RefCell;
 use video::{
     Buffer, Pos, Size, ATTR_NONE, MAZE_ACROSS, MAZE_BOTTOM, MAZE_BOTTOM_LEFT,
     MAZE_BOTTOM_RIGHT, MAZE_BOTTOM_T, MAZE_CROSS, MAZE_DOWN, MAZE_LEFT,
@@ -16,6 +17,17 @@ pub struct Maze {
     // size in characters
     pub dimensions: Dimensions,
     pub buffer: Buffer,
+}
+
+thread_local! {
+    pub static PRISTINE_MAZE:RefCell<Maze> = RefCell::new(Maze::new(10,10));
+}
+
+pub fn with_pristine_maze<F, T>(action: F) -> T
+where
+    F: Fn(&Maze) -> T,
+{
+    PRISTINE_MAZE.with(|maze| action(&maze.borrow()))
 }
 
 // maze cell dimensions

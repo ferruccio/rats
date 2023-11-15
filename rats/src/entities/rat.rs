@@ -10,7 +10,7 @@ use super::{
 };
 use crate::{
     game_context::{flip_a_coin, random, random_direction, Action},
-    maze::Maze,
+    maze::{with_pristine_maze, Maze},
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -24,24 +24,26 @@ pub struct Rat {
 }
 
 impl Rat {
-    pub fn advance(&mut self, dir: Direction, dims: Dimensions) {
-        self.pos = self.pos.advance(dir, dims);
+    pub fn advance(&mut self, dir: Direction) {
+        self.pos = self.pos.advance(dir);
     }
 
-    pub fn can_advance(&self, maze: &Maze, dir: Direction) -> bool {
-        let mut player = *self;
-        player.advance(dir, maze.dimensions);
-        let (row1, col1) = (player.pos.row, player.pos.col);
-        let row2 = player.pos.row.inc(maze.dimensions.rows);
-        let col2 = player.pos.col.inc(maze.dimensions.cols);
-        !(((dir & dir::UP) != 0
-            && (maze.is_wall(row1, col1) || maze.is_wall(row1, col2)))
-            || ((dir & dir::DOWN) != 0
-                && (maze.is_wall(row2, col1) || maze.is_wall(row2, col2)))
-            || ((dir & dir::LEFT) != 0
-                && (maze.is_wall(row1, col1) || maze.is_wall(row2, col1)))
-            || ((dir & dir::RIGHT) != 0
-                && (maze.is_wall(row1, col2) || maze.is_wall(row2, col2))))
+    pub fn can_advance(&self, dir: Direction) -> bool {
+        with_pristine_maze(|maze| {
+            let mut player = *self;
+            player.advance(dir);
+            let (row1, col1) = (player.pos.row, player.pos.col);
+            let row2 = player.pos.row.inc(maze.dimensions.rows);
+            let col2 = player.pos.col.inc(maze.dimensions.cols);
+            !(((dir & dir::UP) != 0
+                && (maze.is_wall(row1, col1) || maze.is_wall(row1, col2)))
+                || ((dir & dir::DOWN) != 0
+                    && (maze.is_wall(row2, col1) || maze.is_wall(row2, col2)))
+                || ((dir & dir::LEFT) != 0
+                    && (maze.is_wall(row1, col1) || maze.is_wall(row2, col1)))
+                || ((dir & dir::RIGHT) != 0
+                    && (maze.is_wall(row1, col2) || maze.is_wall(row2, col2))))
+        })
     }
 }
 
@@ -98,7 +100,6 @@ pub fn render_rat(rat: &Rat, maze: &mut Maze) {
 
 pub fn update_rat(
     rat: &Rat,
-    maze: &Maze,
     player: &Player,
     damage: usize,
     update: u32,
@@ -110,7 +111,7 @@ pub fn update_rat(
     let mut rat = *rat;
     match rat.state {
         State::Alive => {
-            if hit_player(rat.pos, maze.dimensions, player) {
+            if hit_player(rat.pos, player) {
                 return Action::Attack(damage);
             }
             if spawn && flip_a_coin() {
@@ -123,14 +124,14 @@ pub fn update_rat(
                     cycle: 0,
                 }));
             }
-            if let Some(dir) = player_dir(rat.pos, player.pos, maze) {
+            if let Some(dir) = player_dir(rat.pos, player.pos) {
                 rat.dir = dir;
             }
-            if rat.distance == 0 || !rat.can_advance(maze, rat.dir) {
+            if rat.distance == 0 || !rat.can_advance(rat.dir) {
                 rat.dir = random_direction();
                 rat.distance = random(5, 15);
             } else {
-                rat.advance(rat.dir, maze.dimensions);
+                rat.advance(rat.dir);
                 rat.distance -= 1;
             }
             Action::Update(Entity::Rat(Rat {
@@ -158,76 +159,74 @@ pub fn update_rat(
     }
 }
 
-fn hit_player(pos: Position, dims: Dimensions, player: &Player) -> bool {
-    if hit_player_1(pos, dims, player) {
+fn hit_player(pos: Position, player: &Player) -> bool {
+    if hit_player_1(pos, player) {
         return true;
     }
     let mut pos2 = pos;
-    pos2.move_right(1, dims);
-    if hit_player_1(pos2, dims, player) {
+    pos2.move_right(1);
+    if hit_player_1(pos2, player) {
         return true;
     }
     let mut pos2 = pos;
-    pos2.move_down(1, dims);
-    if hit_player_1(pos2, dims, player) {
+    pos2.move_down(1);
+    if hit_player_1(pos2, player) {
         return true;
     }
-    pos2.move_right(1, dims);
-    hit_player_1(pos2, dims, player)
+    pos2.move_right(1);
+    hit_player_1(pos2, player)
 }
 
-pub fn player_dir(
-    pos: Position,
-    player_pos: Position,
-    maze: &Maze,
-) -> Option<Direction> {
-    if pos.distance_squared_to(player_pos, maze.dimensions) < 25 * 25 {
-        let dir = pos.direction_to(player_pos, maze.dimensions);
-        match dir {
-            dir::UP => {
-                let mut pos = pos.clone();
-                while pos.row != player_pos.row {
-                    pos.move_up(1, maze.dimensions);
-                    if maze.is_wall(pos.row, pos.col) {
-                        return None;
+pub fn player_dir(pos: Position, player_pos: Position) -> Option<Direction> {
+    with_pristine_maze(|maze| {
+        if pos.distance_squared_to(player_pos) < 25 * 25 {
+            let dir = pos.direction_to(player_pos);
+            match dir {
+                dir::UP => {
+                    let mut pos = pos.clone();
+                    while pos.row != player_pos.row {
+                        pos.move_up(1);
+                        if maze.is_wall(pos.row, pos.col) {
+                            return None;
+                        }
                     }
+                    Some(dir::UP)
                 }
-                Some(dir::UP)
-            }
-            dir::DOWN => {
-                let mut pos = pos.clone();
-                while pos.row != player_pos.row {
-                    pos.move_down(1, maze.dimensions);
-                    if maze.is_wall(pos.row, pos.col) {
-                        return None;
+                dir::DOWN => {
+                    let mut pos = pos.clone();
+                    while pos.row != player_pos.row {
+                        pos.move_down(1);
+                        if maze.is_wall(pos.row, pos.col) {
+                            return None;
+                        }
                     }
+                    Some(dir::DOWN)
                 }
-                Some(dir::DOWN)
-            }
-            dir::LEFT => {
-                let mut pos = pos.clone();
-                while pos.col != player_pos.col {
-                    pos.move_left(1, maze.dimensions);
-                    if maze.is_wall(pos.row, pos.col) {
-                        return None;
+                dir::LEFT => {
+                    let mut pos = pos.clone();
+                    while pos.col != player_pos.col {
+                        pos.move_left(1);
+                        if maze.is_wall(pos.row, pos.col) {
+                            return None;
+                        }
                     }
+                    Some(dir::LEFT)
                 }
-                Some(dir::LEFT)
-            }
-            dir::RIGHT => {
-                let mut pos = pos.clone();
-                while pos.col != player_pos.col {
-                    pos.move_right(1, maze.dimensions);
-                    if maze.is_wall(pos.row, pos.col) {
-                        return None;
+                dir::RIGHT => {
+                    let mut pos = pos.clone();
+                    while pos.col != player_pos.col {
+                        pos.move_right(1);
+                        if maze.is_wall(pos.row, pos.col) {
+                            return None;
+                        }
                     }
+                    Some(dir::RIGHT)
                 }
-                Some(dir::RIGHT)
-            }
 
-            _ => None,
+                _ => None,
+            }
+        } else {
+            None
         }
-    } else {
-        None
-    }
+    })
 }

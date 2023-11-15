@@ -3,7 +3,7 @@ use crate::{
         dir, Direction, Entity, EntityList, Player, Position, State,
         PLAYER_FIRE_RATE_NS,
     },
-    maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS},
+    maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS, PRISTINE_MAZE},
 };
 use rand::{
     distributions::{uniform::SampleUniform, Uniform},
@@ -52,7 +52,6 @@ pub struct GameContext {
     pub video: Video,
     pub start: Instant,
     pub frames: u32,
-    pub pristine_maze: Maze,
     pub maze: Maze,
     pub firing_dir: Direction,
     pub bullet_fire_start: Instant,
@@ -89,15 +88,17 @@ impl GameContext {
         );
         let maze_cols =
             max(video.cols() / MAZE_CELL_COLS, opts.maze_width.unwrap_or(15));
-        let mut pristine_maze = Maze::new(maze_rows, maze_cols);
-        pristine_maze.generate(opts.density.unwrap_or(75));
+        PRISTINE_MAZE.with(|maze| {
+            let mut maze = maze.borrow_mut();
+            *maze = Maze::new(maze_rows, maze_cols);
+            maze.generate(opts.density.unwrap_or(75));
+        });
         let mut context = GameContext {
             game_state: GameState::Running,
             diagnostics: false,
             video,
             start: Instant::now(),
             frames: 0,
-            pristine_maze: pristine_maze.clone(),
             maze: Maze::new(maze_rows, maze_cols),
             firing_dir: dir::NONE,
             bullet_fire_start: Instant::now(),
@@ -131,10 +132,7 @@ impl GameContext {
             state: State::Alive,
             cycle: 0,
         }));
-        context.generate_factories(
-            opts.factories.unwrap_or(5).clamp(1, 100),
-            &pristine_maze,
-        );
+        context.generate_factories(opts.factories.unwrap_or(5).clamp(1, 100));
         Ok(context)
     }
 

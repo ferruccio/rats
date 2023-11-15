@@ -4,7 +4,7 @@ use crate::{
         Entity,
     },
     game_context::GameContext,
-    maze::Maze,
+    maze::{Maze, PRISTINE_MAZE},
     Result,
 };
 use sdl2::render::Texture;
@@ -22,7 +22,10 @@ impl GameContext {
     ) -> Result<()> {
         // start with a clear video buffer and pristine maze
         self.video.buffer.clear();
-        self.pristine_maze.buffer.copy_to(&mut self.maze.buffer);
+        PRISTINE_MAZE.with(|maze| {
+            let maze = maze.borrow();
+            maze.buffer.copy_to(&mut self.maze.buffer)
+        });
 
         // render all entities in reverse order so that player
         // and rat factories are rendered last
@@ -32,9 +35,8 @@ impl GameContext {
 
         // copy the visible portion of our current maze into the video buffer
         let mut start_pos = self.player_position();
-        start_pos
-            .move_up((self.video.buffer.rows - 2) / 2, self.maze.dimensions);
-        start_pos.move_left(self.video.buffer.cols / 2, self.maze.dimensions);
+        start_pos.move_up((self.video.buffer.rows - 2) / 2);
+        start_pos.move_left(self.video.buffer.cols / 2);
         self.maze.buffer.copy_buffer(
             start_pos.row,
             start_pos.col,
