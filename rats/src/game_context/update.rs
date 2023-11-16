@@ -124,19 +124,19 @@ impl GameContext {
             .enumerate()
             .filter_map(|(index, entity)| match entity {
                 Entity::Bullet(bullet) if bullet.state == State::Alive => {
-                    Some((index, bullet.pos, bullet.dir))
+                    Some((index, bullet.pos, bullet.lifetime))
                 }
                 _ => None,
             })
             .collect();
         let mut marks = vec![false; self.entities.len()];
-        for (bullet_index, pos, dir) in live_bullets.into_iter().rev() {
+        for (bullet_index, pos, lifetime) in live_bullets.into_iter().rev() {
             for (entity_index, entity) in self.entities.iter_mut().enumerate() {
                 if entity.hit(pos) && bullet_index != entity_index {
                     match entity {
                         Entity::Player(player) => {
-                            self.super_boom = 60;
-                            if player.dir != dir {
+                            if lifetime > 10 {
+                                self.super_boom = 60;
                                 self.players_dead += 1;
                                 self.players_left -= 1;
                                 player.explode();

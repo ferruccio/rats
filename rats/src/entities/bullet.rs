@@ -14,6 +14,7 @@ use video::{
 #[derive(Debug, Clone, Copy)]
 pub struct Bullet {
     pub update: u32,
+    pub lifetime: u32,
     pub pos: Position,
     pub dir: Direction,
     pub state: State,
@@ -77,6 +78,7 @@ pub fn update_bullet(bullet: &Bullet, update: u32) -> Action {
                 } else {
                     Action::Update(Entity::Bullet(Bullet {
                         update: update + BULLET_UPDATE_MS,
+                        lifetime: bullet.lifetime + 1,
                         pos: Position { row, col },
                         ..bullet
                     }))

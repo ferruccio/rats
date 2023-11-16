@@ -42,6 +42,7 @@ impl GameContext {
             }
             self.entities.push(Entity::Bullet(Bullet {
                 update: self.elapsed(),
+                lifetime: 0,
                 pos,
                 dir,
                 state: State::Alive,
