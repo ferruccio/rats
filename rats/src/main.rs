@@ -148,6 +148,20 @@ fn play(opts: CommandLineOpts) -> Result<()> {
                 _ => {}
             }
         }
+        if context.game_state == GameState::Restart {
+            context.new_game(
+                InitOptions::new()
+                    .display_index(opts.display)
+                    .window_height(opts.window_height)
+                    .window_width(opts.window_width)
+                    .scale(opts.scale)
+                    .maze_height(opts.maze_height)
+                    .maze_width(opts.maze_width)
+                    .density(opts.density)
+                    .factories(opts.factories),
+            );
+        }
+
         context.update();
         if context.firing_dir != dir::NONE
             && context.bullet_fire_start.elapsed() >= context.bullet_firing_time
@@ -181,6 +195,7 @@ fn play(opts: CommandLineOpts) -> Result<()> {
                 sleep(Duration::new(0, nanos_per_frame - nanos_elapsed));
             }
         }
+
         frame_time = Instant::now();
     }
 
@@ -205,6 +220,12 @@ fn key_down(context: &mut GameContext, keycode: Keycode) {
         Keycode::A => context.start_firing(dir::LEFT),
         Keycode::S => context.start_firing(dir::DOWN),
         Keycode::D => context.start_firing(dir::RIGHT),
+        Keycode::Y if context.game_state == GameState::Finished => {
+            context.game_state = GameState::Restart;
+        }
+        Keycode::N if context.game_state == GameState::Finished => {
+            context.game_state = GameState::Quit;
+        }
         _ => {}
     }
 }

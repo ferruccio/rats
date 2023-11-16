@@ -32,6 +32,7 @@ pub enum GameState {
     Paused,
     Finished,
     Quit,
+    Restart,
 }
 
 impl Display for GameState {
@@ -41,6 +42,7 @@ impl Display for GameState {
             GameState::Paused => write!(f, "PAUSED")?,
             GameState::Finished => write!(f, "FINISHED")?,
             GameState::Quit => write!(f, "QUIT")?,
+            GameState::Restart => write!(f, "RESTART")?,
         }
         Ok(())
     }
@@ -134,6 +136,30 @@ impl GameContext {
         }));
         context.generate_factories(opts.factories.unwrap_or(5).clamp(1, 100));
         Ok(context)
+    }
+
+    pub fn new_game(&mut self, opts: InitOptions) {
+        self.game_state = GameState::Running;
+        self.live_factories = 0;
+        self.dead_factories = 0;
+        self.live_rats = 0;
+        self.dead_rats = 0;
+        self.live_brats = 0;
+        self.dead_brats = 0;
+        self.new_rats = 0;
+        self.new_brats = 0;
+        self.super_boom = 0;
+        self.score = 0;
+        self.health = 100;
+        self.players_left = 3;
+        self.players_dead = 0;
+        self.entities.truncate(1);
+        PRISTINE_MAZE.with(|maze| {
+            let mut maze = maze.borrow_mut();
+            maze.buffer.clear();
+            maze.generate(opts.density.unwrap_or(75));
+        });
+        self.generate_factories(opts.factories.unwrap_or(5).clamp(1, 100));
     }
 
     pub fn elapsed(&self) -> u32 {
