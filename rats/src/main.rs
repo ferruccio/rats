@@ -185,6 +185,9 @@ fn play(opts: CommandLineOpts) -> Result<()> {
                 && context.live_brats == 0)
                 || context.players_left == 0)
         {
+            if context.game_state != GameState::Finished {
+                context.time = context.start.elapsed().as_secs() as usize;
+            }
             context.game_state = GameState::Finished;
         }
 
