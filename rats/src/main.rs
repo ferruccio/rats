@@ -161,6 +161,8 @@ fn play(opts: CommandLineOpts) -> Result<()> {
                     .density(opts.density)
                     .factories(opts.factories),
             );
+            rat_spawn_time =
+                Instant::now() - Duration::new(RAT_SPAWN_SECONDS, 0);
         }
 
         context.update();

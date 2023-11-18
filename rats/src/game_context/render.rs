@@ -141,7 +141,11 @@ impl GameContext {
                 ATTR_REVERSE,
                 format!(
                     " Final Score: {score:6} ",
-                    score = self.score - self.time
+                    score = if self.score < self.time {
+                        0
+                    } else {
+                        self.score - self.time
+                    }
                 ),
             );
             vbuf.print(row + 5, col, ATTR_REVERSE, "                     ");

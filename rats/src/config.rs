@@ -26,7 +26,9 @@ pub const SUPER_BOOM_FRAMES: usize = 60;
 // This is done to prevent the situation where the player happens to be moving
 // in the same direction they are firing and the update cycles overlap in such a
 // way that the player briefly occupies the same position as the bullet; which
-// causes the game to treat it as a player kill. They bullet will still kill the
+// causes the game to treat it as a player kill. The bullet will still kill the
 // player if the maze is sparse enough so that the bullet can wrap around and
 // hit the player from the opposite direction.
 pub const BULLET_HARMLESS_LIFETIME: u32 = 10;
+
+pub const PLAYER_BLAST_RADIUS_SQUARED: u16 = 25 * 25;

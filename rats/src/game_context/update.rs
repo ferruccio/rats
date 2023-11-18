@@ -1,8 +1,8 @@
 use super::GameState;
 use crate::{
     config::{
-        BRAT_KILL, BULLET_HARMLESS_LIFETIME, FACTORY_KILL, RAT_KILL,
-        SUPER_BOOM_FRAMES,
+        BRAT_KILL, BULLET_HARMLESS_LIFETIME, FACTORY_KILL,
+        PLAYER_BLAST_RADIUS_SQUARED, RAT_KILL, SUPER_BOOM_FRAMES,
     },
     entities::{
         update_brat, update_bullet, update_factory, update_player, update_rat,
@@ -25,6 +25,7 @@ impl GameContext {
             let actions = self.update_actions();
             self.apply_actions(actions);
             self.bullet_hit_tests();
+            self.player_update();
         }
     }
 
@@ -106,15 +107,18 @@ impl GameContext {
                     self.entities.push(entity);
                 }
                 Action::Attack(damage) => {
-                    self.entities[index].explode();
-                    if damage >= self.health {
-                        if self.players_left > 0 {
-                            self.entities[0].explode();
-                            self.players_left -= 1;
-                            self.players_dead += 1;
+                    let player = self.get_player();
+                    if player.state == State::Alive {
+                        self.entities[index].explode();
+                        if damage >= self.health {
+                            if self.players_left > 0 {
+                                self.entities[0].explode();
+                                self.players_left -= 1;
+                                self.players_dead += 1;
+                            }
+                        } else {
+                            self.health -= damage;
                         }
-                    } else {
-                        self.health -= damage;
                     }
                 }
             };
@@ -174,6 +178,41 @@ impl GameContext {
                     self.entities.swap(index, last);
                 }
                 self.entities.truncate(last);
+            }
+        }
+    }
+
+    // while a player is exploding, anything dangerous within its blast radius
+    // also explodes (without scoring any points) to make it possible for the
+    // player to recover
+    fn player_update(&mut self) {
+        let player = self.get_player().clone();
+        if player.state != State::Alive {
+            for entity in self.entities.iter_mut() {
+                match entity {
+                    Entity::Rat(rat) => {
+                        if rat.pos.distance_squared_to(player.pos)
+                            < PLAYER_BLAST_RADIUS_SQUARED
+                        {
+                            rat.explode();
+                        }
+                    }
+                    Entity::Brat(brat) => {
+                        if brat.pos.distance_squared_to(player.pos)
+                            < PLAYER_BLAST_RADIUS_SQUARED
+                        {
+                            brat.explode();
+                        }
+                    }
+                    Entity::Bullet(bullet) => {
+                        if bullet.pos.distance_squared_to(player.pos)
+                            < PLAYER_BLAST_RADIUS_SQUARED
+                        {
+                            bullet.explode();
+                        }
+                    }
+                    _ => {}
+                }
             }
         }
     }
