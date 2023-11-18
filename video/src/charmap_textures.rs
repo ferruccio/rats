@@ -160,17 +160,17 @@ fn set_pixels(
         * BYTES_PER_PIXEL
         * (CHAR_CELL_WIDTH * scale)
         * (CHAR_CELL_HEIGHT * scale);
-    let (fg, bg) = match (attrs & ATTR_REVERSE != 0, attrs & ATTR_DIM != 0) {
-        (true, true) => (CRT_BACKGROUND, dim(color)),
-        (true, false) => (CRT_BACKGROUND, color),
-        (false, true) => (dim(color), CRT_BACKGROUND),
-        (false, false) => (color, CRT_BACKGROUND),
+    let fg = if attrs & ATTR_DIM == 0 {
+        color
+    } else {
+        dim(color)
     };
+    let xor_mask = if attrs & ATTR_REVERSE == 0 { 0 } else { 0xff };
     match scale {
-        1 => set_pixels_1x1(pixels, bitmap, offset, fg, bg),
-        2 => set_pixels_2x2(pixels, bitmap, offset, fg, bg),
-        3 => set_pixels_3x3(pixels, bitmap, offset, fg, bg),
-        4 => set_pixels_4x4(pixels, bitmap, offset, fg, bg),
+        1 => set_pixels_1x1(pixels, bitmap, offset, fg, xor_mask),
+        2 => set_pixels_2x2(pixels, bitmap, offset, fg, xor_mask),
+        3 => set_pixels_3x3(pixels, bitmap, offset, fg, xor_mask),
+        4 => set_pixels_4x4(pixels, bitmap, offset, fg, xor_mask),
         _ => {}
     };
 }
@@ -180,15 +180,19 @@ fn set_pixels_1x1(
     bitmap: &[u8],
     mut offset: usize,
     fg: u32,
-    bg: u32,
+    xor_mask: u8,
 ) {
     for byte in bitmap {
         let mut mask = 0x80;
         while mask != 0 {
-            let color = if byte & mask != 0 { fg } else { bg };
-            pixels[offset] = ((color >> 16) & 0xff) as u8;
-            pixels[offset + 1] = ((color >> 8) & 0xff) as u8;
-            pixels[offset + 2] = (color & 0xff) as u8;
+            let color = if (byte ^ xor_mask) & mask != 0 {
+                fg
+            } else {
+                CRT_BACKGROUND
+            };
+            pixels[offset] = red(color);
+            pixels[offset + 1] = green(color);
+            pixels[offset + 2] = blue(color);
             offset += BYTES_PER_PIXEL;
             mask >>= 1;
         }
@@ -200,25 +204,25 @@ fn set_pixels_2x2(
     bitmap: &[u8],
     mut offset: usize,
     fg: u32,
-    bg: u32,
+    xor_mask: u8,
 ) {
     for byte in bitmap {
         for r in 0..2 {
             let mut mask = 0x80;
             while mask != 0 {
                 for c in 0..2 {
-                    let color = if byte & mask != 0 {
+                    let color = if (byte ^ xor_mask) & mask != 0 {
                         if c == 1 && r == 1 {
-                            between(fg, bg)
+                            between(fg, CRT_BACKGROUND)
                         } else {
                             fg
                         }
                     } else {
-                        bg
+                        CRT_BACKGROUND
                     };
-                    pixels[offset] = ((color >> 16) & 0xff) as u8;
-                    pixels[offset + 1] = ((color >> 8) & 0xff) as u8;
-                    pixels[offset + 2] = (color & 0xff) as u8;
+                    pixels[offset] = red(color);
+                    pixels[offset + 1] = green(color);
+                    pixels[offset + 2] = blue(color);
                     offset += BYTES_PER_PIXEL;
                 }
                 mask >>= 1;
@@ -232,25 +236,25 @@ fn set_pixels_3x3(
     bitmap: &[u8],
     mut offset: usize,
     fg: u32,
-    bg: u32,
+    xor_mask: u8,
 ) {
     for byte in bitmap {
         for r in 0..3 {
             let mut mask = 0x80;
             while mask != 0 {
                 for c in 0..3 {
-                    let color = if byte & mask != 0 {
+                    let color = if (byte ^ xor_mask) & mask != 0 {
                         if (0..2).contains(&r) && (0..2).contains(&c) {
                             fg
                         } else {
-                            between(fg, bg)
+                            between(fg, CRT_BACKGROUND)
                         }
                     } else {
-                        bg
+                        CRT_BACKGROUND
                     };
-                    pixels[offset] = ((color >> 16) & 0xff) as u8;
-                    pixels[offset + 1] = ((color >> 8) & 0xff) as u8;
-                    pixels[offset + 2] = (color & 0xff) as u8;
+                    pixels[offset] = red(color);
+                    pixels[offset + 1] = green(color);
+                    pixels[offset + 2] = blue(color);
                     offset += BYTES_PER_PIXEL;
                 }
                 mask >>= 1;
@@ -264,31 +268,43 @@ fn set_pixels_4x4(
     bitmap: &[u8],
     mut offset: usize,
     fg: u32,
-    bg: u32,
+    xor_mask: u8,
 ) {
     for byte in bitmap {
         for r in 0..4 {
             let mut mask = 0x80;
             while mask != 0 {
                 for c in 0..4 {
-                    let color = if byte & mask != 0 {
+                    let color = if (byte ^ xor_mask) & mask != 0 {
                         if (0..3).contains(&r) && (0..3).contains(&c) {
                             fg
                         } else {
-                            between(fg, bg)
+                            between(fg, CRT_BACKGROUND)
                         }
                     } else {
-                        bg
+                        CRT_BACKGROUND
                     };
-                    pixels[offset] = ((color >> 16) & 0xff) as u8;
-                    pixels[offset + 1] = ((color >> 8) & 0xff) as u8;
-                    pixels[offset + 2] = (color & 0xff) as u8;
+                    pixels[offset] = red(color);
+                    pixels[offset + 1] = green(color);
+                    pixels[offset + 2] = blue(color);
                     offset += BYTES_PER_PIXEL;
                 }
                 mask >>= 1;
             }
         }
     }
+}
+
+fn red(color: u32) -> u8 {
+    ((color >> 16) & 0xff) as u8
+}
+
+fn green(color: u32) -> u8 {
+    ((color >> 8) & 0xff) as u8
+}
+
+fn blue(color: u32) -> u8 {
+    (color & 0xff) as u8
 }
 
 fn dim(color: u32) -> u32 {
