@@ -6,9 +6,10 @@ use video::{
 
 use super::{
     dir, hit_player_1, Brat, Direction, Entity, EntityAction, Player, Position,
-    State, RAT_UPDATE_MS,
+    State,
 };
 use crate::{
+    config::RAT_UPDATE_MS,
     game_context::{flip_a_coin, random, random_direction, Action},
     maze::{with_pristine_maze, Maze},
 };

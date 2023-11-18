@@ -130,13 +130,13 @@ impl GameContext {
             vbuf.print(row, col, ATTR_REVERSE, "  PAUSE  ");
             vbuf.print(row + 1, col, ATTR_REVERSE, "         ");
         } else if self.game_state == GameState::Finished {
-            let row = 2 + vbuf.rows / 2 - 3;
+            let row = 2 + vbuf.rows / 2 - 5;
             let col = vbuf.cols / 2 - 10;
-            vbuf.print(row - 1, col, ATTR_REVERSE, "                     ");
-            vbuf.print(row + 0, col, ATTR_REVERSE, "      GAME OVER      ");
             vbuf.print(row + 1, col, ATTR_REVERSE, "                     ");
+            vbuf.print(row + 2, col, ATTR_REVERSE, "      GAME OVER      ");
+            vbuf.print(row + 3, col, ATTR_REVERSE, "                     ");
             vbuf.print(
-                row + 2,
+                row + 4,
                 col,
                 ATTR_REVERSE,
                 format!(
@@ -144,9 +144,9 @@ impl GameContext {
                     score = self.score - self.time
                 ),
             );
-            vbuf.print(row + 3, col, ATTR_REVERSE, "                     ");
-            vbuf.print(row + 4, col, ATTR_REVERSE, "   Play Again? Y/N   ");
             vbuf.print(row + 5, col, ATTR_REVERSE, "                     ");
+            vbuf.print(row + 6, col, ATTR_REVERSE, "   Play Again? Y/N   ");
+            vbuf.print(row + 7, col, ATTR_REVERSE, "                     ");
         }
 
         // if any factory is exploding light up the screen

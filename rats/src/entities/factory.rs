@@ -1,7 +1,6 @@
-use super::{
-    dir, Entity, EntityAction, Position, Rat, State, FACTORY_UPDATE_MS,
-};
+use super::{dir, Entity, EntityAction, Position, Rat, State};
 use crate::{
+    config::FACTORY_UPDATE_MS,
     game_context::{random, Action},
     maze::{with_pristine_maze, Maze},
 };

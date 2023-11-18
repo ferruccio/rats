@@ -1,5 +1,6 @@
 use super::GameState;
 use crate::{
+    config::{BRAT_KILL, FACTORY_KILL, RAT_KILL},
     entities::{
         update_brat, update_bullet, update_factory, update_player, update_rat,
         Entity, EntityAction, State,
@@ -143,16 +144,16 @@ impl GameContext {
                             }
                         }
                         Entity::Rat(rat) => {
-                            self.score += 50;
+                            self.score += RAT_KILL;
                             rat.explode();
                         }
                         Entity::Brat(brat) => {
-                            self.score += 25;
+                            self.score += BRAT_KILL;
                             brat.explode();
                         }
                         Entity::Factory(factory) => {
                             self.super_boom = 60;
-                            self.score += 250;
+                            self.score += FACTORY_KILL;
                             factory.explode();
                         }
                         Entity::Bullet(bullet) => {

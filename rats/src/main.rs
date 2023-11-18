@@ -1,5 +1,6 @@
 use crate::game_context::random;
 use clap::Parser;
+use config::BRAT_KILL;
 use entities::dir;
 use game_context::{GameContext, GameState};
 use std::{
@@ -11,6 +12,7 @@ use video::{
     Size, ATTR_COMBOS, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH, FONT_SIZE,
 };
 
+mod config;
 mod entities;
 mod game_context;
 mod maze;
@@ -180,15 +182,20 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             brat_spawn_time = Instant::now();
         }
         if context.game_state != GameState::Quit
-            && ((context.live_factories == 0
-                && context.live_rats == 0
-                && context.live_brats == 0)
+            && ((context.live_factories == 0 && context.live_rats == 0)
                 || context.players_left == 0)
         {
-            if context.game_state != GameState::Finished {
-                context.time = context.start.elapsed().as_secs() as usize;
+            if !opts.classic {
+                context.score += context.live_brats * BRAT_KILL;
+                context.dead_brats += context.live_brats;
+                context.live_brats = 0;
             }
-            context.game_state = GameState::Finished;
+            if context.live_brats == 0 {
+                if context.game_state != GameState::Finished {
+                    context.time = context.start.elapsed().as_secs() as usize;
+                }
+                context.game_state = GameState::Finished;
+            }
         }
 
         if nanos_per_frame > 0 {

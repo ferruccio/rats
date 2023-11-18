@@ -1,7 +1,6 @@
-use super::{
-    dir, Direction, Entity, EntityAction, Position, State, BULLET_UPDATE_MS,
-};
+use super::{dir, Direction, Entity, EntityAction, Position, State};
 use crate::{
+    config::BULLET_UPDATE_MS,
     game_context::Action,
     maze::{with_pristine_maze, Maze},
 };

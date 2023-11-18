@@ -1,8 +1,9 @@
 use super::{
     dir, rat::player_dir, Direction, Entity, EntityAction, Player, Position,
-    State, BRAT_UPDATE_MS,
+    State,
 };
 use crate::{
+    config::BRAT_UPDATE_MS,
     game_context::{random, random_direction, Action},
     maze::{with_pristine_maze, Maze},
 };

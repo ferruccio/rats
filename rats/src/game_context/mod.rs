@@ -1,8 +1,6 @@
 use crate::{
-    entities::{
-        dir, Direction, Entity, EntityList, Player, Position, State,
-        PLAYER_FIRE_RATE_NS,
-    },
+    config::PLAYER_FIRE_RATE_NS,
+    entities::{dir, Direction, Entity, EntityList, Player, Position, State},
     maze::{Maze, MAZE_CELL_COLS, MAZE_CELL_ROWS, PRISTINE_MAZE},
 };
 use rand::{
