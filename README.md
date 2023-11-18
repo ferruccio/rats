@@ -10,10 +10,14 @@ mechanics.
 
 ## Gameplay
 
-The game is playable but incomplete.
+The game's controls are pretty simple.
 
-- Arrow keys control player motion.
-- WASD keys control firing.
+- Arrow keys control player motion. You can move on a diagonal by pressing two
+  keys at the same time. e.g. Holding down both up and right arrows will move
+  the player up and to the right at the same time.
+- WASD keys control firing. You can shoot in a different direction than the
+  direction you're moving in. You can also shoot on diagonals by holding down
+  two firing keys at the same time.
 - Space bar pauses game.
 - Esc exits game.
 
@@ -46,4 +50,4 @@ cargo install --git https://github.com/ferruccio/rats.git rats
 ```
 
 Theoretically, this thing should run on macOS and Windows as well, but I don't
-have the time (or the inclination) to tackle either one of those at this time.
+have the time to try to tackle either of those right now.
