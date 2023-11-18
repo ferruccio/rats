@@ -1,6 +1,8 @@
 use crate::game_context::random;
 use clap::Parser;
-use config::BRAT_KILL;
+use config::{
+    BRAT_KILL, BRAT_SPAWN_SECONDS, RATS_PER_FACTORY, RAT_SPAWN_SECONDS,
+};
 use entities::dir;
 use game_context::{GameContext, GameState};
 use std::{
@@ -89,9 +91,6 @@ fn main() {
     }
 }
 
-const RAT_SPAWN_SECONDS: u64 = 15;
-const BRAT_SPAWN_SECONDS: u64 = 30;
-
 fn play(opts: CommandLineOpts) -> Result<()> {
     let mut context = GameContext::create(
         InitOptions::new()
@@ -171,7 +170,8 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             context.fire();
         }
         if rat_spawn_time.elapsed().as_secs() >= RAT_SPAWN_SECONDS {
-            context.new_rats = context.live_factories * 2;
+            context.new_rats =
+                (context.live_factories as f32 * RATS_PER_FACTORY) as usize;
             rat_spawn_time = Instant::now();
         }
         if context.live_rats > 0

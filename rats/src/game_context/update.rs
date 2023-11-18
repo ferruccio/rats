@@ -1,6 +1,9 @@
 use super::GameState;
 use crate::{
-    config::{BRAT_KILL, FACTORY_KILL, RAT_KILL},
+    config::{
+        BRAT_KILL, BULLET_HARMLESS_LIFETIME, FACTORY_KILL, RAT_KILL,
+        SUPER_BOOM_FRAMES,
+    },
     entities::{
         update_brat, update_bullet, update_factory, update_player, update_rat,
         Entity, EntityAction, State,
@@ -136,8 +139,8 @@ impl GameContext {
                 if entity.hit(pos) && bullet_index != entity_index {
                     match entity {
                         Entity::Player(player) => {
-                            if lifetime > 10 {
-                                self.super_boom = 60;
+                            if lifetime > BULLET_HARMLESS_LIFETIME {
+                                self.super_boom = SUPER_BOOM_FRAMES;
                                 self.players_dead += 1;
                                 self.players_left -= 1;
                                 player.explode();
@@ -152,7 +155,7 @@ impl GameContext {
                             brat.explode();
                         }
                         Entity::Factory(factory) => {
-                            self.super_boom = 60;
+                            self.super_boom = SUPER_BOOM_FRAMES;
                             self.score += FACTORY_KILL;
                             factory.explode();
                         }
