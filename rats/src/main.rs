@@ -215,7 +215,6 @@ fn play(opts: CommandLineOpts) -> Result<()> {
     Ok(())
 }
 
-// return true to keep game running
 fn key_down(context: &mut GameContext, keycode: Keycode) {
     match keycode {
         Keycode::Escape => context.game_state = GameState::Quit,
