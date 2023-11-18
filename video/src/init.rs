@@ -120,7 +120,7 @@ pub fn init(opts: InitOptions) -> Result<Video> {
 
     sdl2::mixer::open_audio(44_100, AUDIO_S16LSB, DEFAULT_CHANNELS, 1024)
         .map_err(sdl_error)?;
-    sdl2::mixer::allocate_channels(20);
+    sdl2::mixer::allocate_channels(30);
 
     Ok(Video {
         sdl,
