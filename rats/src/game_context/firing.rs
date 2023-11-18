@@ -40,6 +40,7 @@ impl GameContext {
                     return;
                 }
             }
+            self.video.play_gunshot();
             self.entities.push(Entity::Bullet(Bullet {
                 update: self.elapsed(),
                 lifetime: 0,

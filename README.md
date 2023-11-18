@@ -25,6 +25,8 @@ and play more like the original.
 
 Run `rats --help` for a more detailed list of options.
 
+The sound effects came from [kronbits](https://kronbits.itch.io/freesfx)
+
 ## Installation
 
 ### Requirements
@@ -34,6 +36,7 @@ Run `rats --help` for a more detailed list of options.
   with the command:
   ```sh
   sudo apt install libsdl2-dev
+  sudo apt install libsdl2-mixer-dev
   ```
 
 then you can install the game:

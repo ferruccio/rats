@@ -77,7 +77,9 @@ impl GameContext {
                             self.live_factories -= 1;
                             self.dead_factories += 1;
                         }
-                        Entity::Bullet(_) => {}
+                        Entity::Bullet(_) => {
+                            self.video.play_impact();
+                        }
                     }
                     let last = self.entities.len() - 1;
                     self.entities.swap(index, last);
@@ -110,6 +112,7 @@ impl GameContext {
                     let player = self.get_player();
                     if player.state == State::Alive {
                         self.entities[index].explode();
+                        self.video.play_short_explosion();
                         if damage >= self.health {
                             if self.players_left > 0 {
                                 self.entities[0].explode();
@@ -148,23 +151,28 @@ impl GameContext {
                                 self.players_dead += 1;
                                 self.players_left -= 1;
                                 player.explode();
+                                self.video.play_short_explosion();
                             }
                         }
                         Entity::Rat(rat) => {
                             self.score += RAT_KILL;
                             rat.explode();
+                            self.video.play_short_explosion();
                         }
                         Entity::Brat(brat) => {
                             self.score += BRAT_KILL;
                             brat.explode();
+                            self.video.play_short_explosion();
                         }
                         Entity::Factory(factory) => {
                             self.super_boom = SUPER_BOOM_FRAMES;
                             self.score += FACTORY_KILL;
                             factory.explode();
+                            self.video.play_long_explosion();
                         }
                         Entity::Bullet(bullet) => {
                             bullet.explode();
+                            self.video.play_impact();
                         }
                     }
                     marks[bullet_index] = true;
@@ -183,8 +191,8 @@ impl GameContext {
     }
 
     // while a player is exploding, anything dangerous within its blast radius
-    // also explodes (without scoring any points) to make it possible for the
-    // player to recover
+    // also explodes (without scoring any points) in order to make it possible
+    // for the player to recover
     fn player_update(&mut self) {
         let player = self.get_player().clone();
         if player.state != State::Alive {

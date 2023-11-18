@@ -101,7 +101,8 @@ fn play(opts: CommandLineOpts) -> Result<()> {
             .maze_height(opts.maze_height)
             .maze_width(opts.maze_width)
             .density(opts.density)
-            .factories(opts.factories),
+            .factories(opts.factories)
+            .quiet(opts.classic),
         opts.rat_damage,
         opts.brat_damage,
     )?;

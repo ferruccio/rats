@@ -1,8 +1,11 @@
 use crate::{
-    buffer::Buffer, errors::sdl_error, Pixels, Result, Size, Video,
-    CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
+    buffer::Buffer, errors::sdl_error, Pixels, Result, Size, SoundEffects,
+    Video, CHAR_CELL_HEIGHT, CHAR_CELL_WIDTH,
 };
-use sdl2::rect::Rect;
+use sdl2::{
+    mixer::{AUDIO_S16LSB, DEFAULT_CHANNELS},
+    rect::Rect,
+};
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct InitOptions {
@@ -14,6 +17,7 @@ pub struct InitOptions {
     pub maze_width: Option<Size>,
     pub density: Option<usize>,
     pub factories: Option<usize>,
+    pub quiet: bool,
 }
 
 impl InitOptions {
@@ -74,6 +78,11 @@ impl InitOptions {
         self.factories = factories;
         self
     }
+
+    pub fn quiet(mut self, quiet: bool) -> Self {
+        self.quiet = quiet;
+        self
+    }
 }
 
 pub fn init(opts: InitOptions) -> Result<Video> {
@@ -109,6 +118,10 @@ pub fn init(opts: InitOptions) -> Result<Video> {
     sdl.mouse().show_cursor(false);
     let canvas = window.into_canvas().build()?;
 
+    sdl2::mixer::open_audio(44_100, AUDIO_S16LSB, DEFAULT_CHANNELS, 1024)
+        .map_err(sdl_error)?;
+    sdl2::mixer::allocate_channels(20);
+
     Ok(Video {
         sdl,
         bounds,
@@ -116,6 +129,8 @@ pub fn init(opts: InitOptions) -> Result<Video> {
         rows,
         cols,
         canvas,
+        sounds: SoundEffects::new()?,
         buffer: Buffer::new(rows, cols),
+        quiet: opts.quiet,
     })
 }

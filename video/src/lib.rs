@@ -16,12 +16,14 @@ mod charmap_textures;
 mod charmaps;
 mod errors;
 mod init;
+mod sounds;
 
 pub use buffer::{Buffer, ATTR_COMBOS, ATTR_DIM, ATTR_NONE, ATTR_REVERSE};
 pub use charmaps::*;
 pub use errors::{sdl_error, Result};
 pub use init::{init, InitOptions};
 pub use sdl2::pixels::PixelFormatEnum;
+pub use sounds::*;
 
 // use Pixels for bitmap dimensions
 pub type Pixels = usize;
@@ -36,8 +38,10 @@ pub struct Video {
     pub scale: usize,
     rows: Size,
     cols: Size,
+    pub sounds: SoundEffects,
     pub canvas: Canvas<Window>,
     pub buffer: Buffer,
+    quiet: bool,
 }
 
 pub const FONT_SIZE: Size = 256;
@@ -96,6 +100,12 @@ impl Video {
         }
         self.render();
         Ok(())
+    }
+}
+
+impl Drop for Video {
+    fn drop(&mut self) {
+        sdl2::mixer::Music::halt();
     }
 }
 
