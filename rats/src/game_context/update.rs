@@ -86,6 +86,21 @@ impl GameContext {
                     self.entities.truncate(last);
                 }
                 Action::Update(entity) => {
+                    if index == 0 {
+                        match (&self.entities[0], &entity) {
+                            (
+                                Entity::Player(current),
+                                Entity::Player(update),
+                            ) => {
+                                if current.state == State::Dead
+                                    && update.state == State::Alive
+                                {
+                                    self.health = 100;
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
                     self.entities[index] = entity;
                 }
                 Action::New(entity) => {
